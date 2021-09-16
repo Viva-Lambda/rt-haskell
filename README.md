@@ -1,0 +1,26 @@
+# rt-haskell
+
+A Path Tracer in Haskell
+
+We follow mostly the P. Shirley's architecture with couple of differences.
+
+The branches follow the chapters from [online](raytracing.github.io/)
+repository.
+
+
+## Show case
+
+- Small color gradient in 01-ppm branch:
+
+![ppm-color-gradient](./images/gradient.png)
+
+
+## Planned Features
+
+I hope to make the tracer as minimal but useful as possible.
+Here is a list of planned features:
+
+- Loading assets with obj files
+- Spectral rendering switch
+- BVH acceleration structure
+- Multithreaded rendering
