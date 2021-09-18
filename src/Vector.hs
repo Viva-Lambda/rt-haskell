@@ -40,15 +40,28 @@ vecArithmeticOp opname f v e =
     where opZip [] = []
           opZip (z:zs) = (f z) : opZip zs
 
+vecScalarOp :: (Double -> Double) -> Vector -> Vector
+vecScalarOp f v =
+    let vd = fromScalarToList v
+        (VecFromList vs) = vd
+    in VecFromList $ map f vs 
 
 add :: Vector -> Vector -> Vector
 add v e = vecArithmeticOp "add" (\tp -> (fst tp) + (snd tp)) v e
+addS :: Vector -> Double -> Vector
+addS v s = let f = \d -> d + s in vecScalarOp f v
 
 subtract :: Vector -> Vector -> Vector
 subtract v e = vecArithmeticOp "subtract" (\tp -> (fst tp) - (snd tp)) v e
 
+subtractS :: Vector -> Double -> Vector
+subtractS v s = let f = \d -> d - s in vecScalarOp f v
+
 multiply :: Vector -> Vector -> Vector
 multiply v e = vecArithmeticOp "multiply" (\tp -> (fst tp) * (snd tp)) v e
+
+multiplyS :: Vector -> Double -> Vector
+multiplyS v s = let f = \d -> d * s in vecScalarOp f v
 
 divide :: Vector -> Vector -> Vector
 divide v e =
@@ -58,8 +71,16 @@ divide v e =
        then error $ vecError e "contains zero in a division operation"
        else vecArithmeticOp "divide" (\tp -> (fst tp) / (snd tp)) v e
 
+divideS :: Vector -> Double -> Vector
+divideS v s =
+    if s == 0.0
+    then error "performing zero division"
+    else let f = \d -> d / s in vecScalarOp f v
+
 dot :: Vector -> Vector -> Double
-dot v e = let (VecFromList vs) = (multiply v e) in foldl (+) 0 vs
+dot v e = let mult = multiply v e
+              (VecFromList vs) = mult
+          in foldl1 (+) vs
 
 lengthSquared :: Vector -> Double
 lengthSquared v = dot v v
