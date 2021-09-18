@@ -28,6 +28,7 @@ library
       Color
       ColorIO
       Lib
+      Ray
       Vector
   other-modules:
       Paths_rt_haskell
