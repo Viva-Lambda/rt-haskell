@@ -15,6 +15,11 @@ repository.
 ![ppm-color-gradient](./images/gradient.png)
 
 
+- Red sphere from 04-sphere branch:
+
+![red-sphere](./images/sphere.png)
+
+
 ## Planned Features
 
 I hope to make the tracer as minimal but useful as possible.
