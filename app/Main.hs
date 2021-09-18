@@ -25,6 +25,7 @@ imageHeight :: Int
 
 imageWidth = 400
 imageHeight = double2Int $ (int2Double imageWidth) / aspectRatio
+-- imageHeight = 400
 
 aspectRatio :: Double
 aspectRatio = 16.0 / 9.0
@@ -42,7 +43,7 @@ mkPixelCoordinates (j:jjs) iis =
     mkImageColCoordinate j iis ++ mkPixelCoordinates jjs iis
 
 mkPixelRay :: (Int,Int) -> Ray 
-mkPixelRay (i,j) =
+mkPixelRay (j,i) =
     let u = (int2Double i) / (int2Double (imageWidth - 1))
         v = (int2Double j) / (int2Double (imageHeight - 1))
         vvert = multiplyS cameraV v
@@ -62,6 +63,7 @@ rayColor Rd {origin = a, direction = b} =
        then VecFromList [1.0, 0.0, 0.0]
        else let
                 unitDirection = toUnit b
+                
                 (VecFromList vdata) = fromScalarToList unitDirection
                 yval = vdata !! 1 -- access y value
                 tval = (yval + 1.0) * 0.5
@@ -69,6 +71,7 @@ rayColor Rd {origin = a, direction = b} =
                 cval = multiplyS (VecFromList [1.0, 1.0, 1.0]) oneMin
                 oval = multiplyS (VecFromList [0.5, 0.7, 1.0]) tval
             in add cval oval
+            -- in error $ "b: " ++ show b ++ " unit " ++ show unitDirection
 
 mkPixelColor :: (Int, Int) -> Vector
 
@@ -89,17 +92,16 @@ cameraH :: Vector
 cameraH = VecFromList [viewPortW, 0.0, 0.0]
 
 cameraV :: Vector
-cameraV = VecFromList [ 0.0,viewPortH, 0.0]
+cameraV = VecFromList [ 0.0, viewPortH, 0.0]
 
 lowerLeftCorner :: Vector
 lowerLeftCorner = 
     let fvec = VecFromList [0.0, 0.0, focalLength]
         vhalf = divideS cameraV 2.0
         hhalf = divideS cameraH 2.0
-        vMinF = subtract vhalf fvec
-        hMinV = subtract hhalf vMinF
-        origMinH = subtract cameraOrigin hMinV
-    in origMinH
+        origMinH = subtract cameraOrigin hhalf
+        origMinHMinV = subtract origMinH vhalf
+    in subtract origMinHMinV fvec
 
 
 -- rendering ppm related
@@ -110,17 +112,11 @@ printPPMHeader = do
     putStrLn "255"
 
 
-printCList :: Show a => [a] -> IO ()
-printCList lst = putStrLn $ unwords $ map show lst
-
-pixColorToInt :: [Double] -> [Int]
-pixColorToInt d = map double2Int d
-
 -- make pixel colors from pixel coordinates
 mkPixels :: [(Int, Int)] -> [Pixel]
 mkPixels [] = []
-mkPixels ((cx, cy):cs) =
-    Pix {x = cx, y = cy, color = mkPixelColor (cx, cy)} : mkPixels cs
+mkPixels ((cy, cx):cs) =
+    Pix {x = cx, y = cy, color = mkPixelColor (cy, cx)} : mkPixels cs
 
 printPixel :: Pixel -> IO ()
 printPixel (Pix {x = _, y = _, color = cs}) =
@@ -138,10 +134,12 @@ printColor = do
     _ <- printPPMHeader
     let {
         jjs = reverse [0..(imageHeight-1)]; 
-        iis = [0..imageWidth-1];
-        pixCoords = mkPixelCoordinates jjs iis;
+        iis = [0..(imageWidth-1)];
+        pixCoords = [(j,i) | j <- jjs, -- outer loop first
+                             i <- iis];
         ps = mkPixels pixCoords;
         }
+    -- print pixCoords
     printPixels ps
 
 main :: IO ()
