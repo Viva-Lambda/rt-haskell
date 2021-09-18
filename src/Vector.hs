@@ -88,3 +88,5 @@ cross3d v e =
                 r1 = us2 * vs0 - us0 * vs2
                 r2 = us0 * vs1 - us1 * vs0
             in VecFromList [r0, r1, r2]
+
+
