@@ -27,8 +27,11 @@ library
   exposed-modules:
       Color
       ColorIO
+      Hittable
+      HittableList
       Lib
       Ray
+      Sphere
       Vector
   other-modules:
       Paths_rt_haskell
