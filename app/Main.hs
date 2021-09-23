@@ -10,14 +10,16 @@ import Prelude hiding(subtract)
 
 -- hit object
 
-hitSphere :: Vector -> Double -> Ray -> Bool
+hitSphere :: Vector -> Double -> Ray -> Double
 hitSphere center radius (Rd {origin = ro, direction = rd}) =
     let distOrCent = subtract ro center
         discrimA = lengthSquared rd
         discrimB = 2.0 * (dot distOrCent rd)
         discrimC = (lengthSquared distOrCent) - (radius * radius)
         discriminant = (discrimB * discrimB) - (4.0 * discrimA * discrimC)
-    in discriminant > 0
+    in if discriminant < 0
+       then -1.0
+       else (-discrimB - (sqrt discriminant) ) / (2.0 * discrimA)
 
 -- image related
 imageWidth :: Int
@@ -58,18 +60,21 @@ mkPixelRay (j,i) =
 rayColor :: Ray -> Vector
 rayColor Rd {origin = a, direction = b} =
     let ray = Rd {origin = a, direction = b}
-        hsphere = hitSphere (VecFromList [0.0, 0.0, -1.0]) 0.5 ray
-    in if hsphere
-       then VecFromList [1.0, 0.0, 0.0]
+        tval = hitSphere (VecFromList [0.0, 0.0, -1.0]) 0.5 ray
+    in if tval > 0.0
+       then let unitv = toUnit (subtract (at ray tval) (VecFromList [0, 0, -1]))
+                nx = vget 0 unitv 
+                ny = vget 1 unitv 
+                nz = vget 2 unitv 
+                nvec = VecFromList [nx + 1.0, ny + 1.0, nz + 1.0]
+            in multiplyS nvec 0.5
        else let
                 unitDirection = toUnit b
-                
-                (VecFromList vdata) = fromScalarToList unitDirection
-                yval = vdata !! 1 -- access y value
-                tval = (yval + 1.0) * 0.5
-                oneMin = 1.0 - tval
+                yval = vget 1 unitDirection
+                ntval = (yval + 1.0) * 0.5
+                oneMin = 1.0 - ntval
                 cval = multiplyS (VecFromList [1.0, 1.0, 1.0]) oneMin
-                oval = multiplyS (VecFromList [0.5, 0.7, 1.0]) tval
+                oval = multiplyS (VecFromList [0.5, 0.7, 1.0]) ntval
             in add cval oval
             -- in error $ "b: " ++ show b ++ " unit " ++ show unitDirection
 

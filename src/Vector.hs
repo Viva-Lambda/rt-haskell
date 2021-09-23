@@ -10,6 +10,15 @@ vsize :: Vector -> Int
 vsize (VecFromScalar v s) = s
 vsize (VecFromList v) = length v
 
+vget :: Int -> Vector -> Double
+vget index v = 
+    let vlst = fromScalarToList v
+        VecFromList vs = vlst
+    in if (vsize v) <= index || index < 0
+       then error $ "IndexError: uncorrect index size: " ++ show index
+       else vs !! index
+
+
 fromScalarToList :: Vector -> Vector
 fromScalarToList (VecFromList v) = (VecFromList v)
 fromScalarToList (VecFromScalar d vsize) = 
