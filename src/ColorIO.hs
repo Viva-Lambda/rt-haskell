@@ -21,7 +21,7 @@ rayColor Rd {origin = a, direction = b} world =
             in multiplyS hnorm 0.5
        else let
                 unitDirection = toUnit b
-                yval = vget 1 unitDirection
+                yval = vget unitDirection 1
                 ntval = (yval + 1.0) * 0.5
                 oneMin = 1.0 - ntval
                 cval = multiplyS (VecFromList [1.0, 1.0, 1.0]) oneMin

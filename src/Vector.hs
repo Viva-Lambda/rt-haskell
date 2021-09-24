@@ -10,8 +10,8 @@ vsize :: Vector -> Int
 vsize (VecFromScalar v s) = s
 vsize (VecFromList v) = length v
 
-vget :: Int -> Vector -> Double
-vget index v = 
+vget :: Vector -> Int -> Double
+vget v index = 
     let vlst = fromScalarToList v
         VecFromList vs = vlst
     in if (vsize v) <= index || index < 0

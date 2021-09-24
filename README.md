@@ -19,6 +19,17 @@ repository.
 
 ![red-sphere](./images/sphere.png)
 
+- Normals from branch 05-surface:
+
+![surface-normals](./images/05-surface.png)
+
+- Multiple objects from branch 06-multiple:
+
+![multiple-normals](./images/multiple.png)
+
+- Antialiasing from branch 07-antialias:
+
+![antialias-normals](./images/antialias.png)
 
 ## Planned Features
 
