@@ -1,8 +1,8 @@
 -- module for sphere objects
-module Sphere where
+module Hittable.Sphere where
 
 import Vector
-import Hittable
+import Hittable.Hittable
 import Ray
 import Prelude hiding(subtract)
 

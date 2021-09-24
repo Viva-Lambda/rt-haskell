@@ -1,5 +1,5 @@
 -- module for hittable type
-module Hittable where
+module Hittable.Hittable where
 
 import Vector
 import Ray

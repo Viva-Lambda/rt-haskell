@@ -1,8 +1,8 @@
 -- hittable list module contains hittables and related
-module HittableList where
+module Hittable.HittableList where
 
-import Hittable
-import Sphere
+import Hittable.Hittable
+import Hittable.Sphere
 
 import Data.List
 import Data.Function
