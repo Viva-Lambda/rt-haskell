@@ -7,25 +7,34 @@ import Ray
 import Hittable.HittableList
 import Hittable.Hittable
 import Utils
+import System.Random
+import Random
+import Prelude hiding(subtract)
 
 
-rayColor :: Ray -> HittableList -> Vector
-rayColor Rd {origin = a, direction = b} world =
-    let ray = Rd {origin = a, direction = b}
-        hrec = HRec {point = VecFromList [0.0, 0.0, 0.0],
+rayColor :: RandomGen g => Ray -> HittableList -> Int -> g -> Vector
+rayColor ray world depth gen =
+    if depth <= 0
+    then VecFromList [0.0, 0.0, 0.0]
+    else let hrec = HRec {point = VecFromList [0.0, 0.0, 0.0],
                      pnormal = VecFromList [0.0, 0.0, 0.0],
                      dist = 0.0}
-        (nhrec, isHit) = hit world ray 0.0 infty hrec
-    in if isHit
-       then let hnorm = add (pnormal nhrec) (VecFromList [1.0, 1.0, 1.0])
-            in multiplyS hnorm 0.5
-       else let
-                unitDirection = toUnit b
-                yval = vget unitDirection 1
-                ntval = (yval + 1.0) * 0.5
-                oneMin = 1.0 - ntval
-                cval = multiplyS (VecFromList [1.0, 1.0, 1.0]) oneMin
-                oval = multiplyS (VecFromList [0.5, 0.7, 1.0]) ntval
-            in add cval oval
+             (HRec{point = recp, 
+                   pnormal = recnorm, 
+                   dist=_}, isHit) = hit world ray 0.001 infty hrec
+         in if isHit
+            then let (randv, g) = randomUnitVector gen
+                     t2 = add recnorm randv
+                     -- (t2, g) = randomHemisphere gen recnorm
+                     target = add recp t2
+                     nray = Rd {origin = recp, 
+                                direction = subtract target recp}
+                     ncolor = rayColor nray world (depth-1) g
+                 in multiplyS ncolor 0.5
+            else let unitDirection = toUnit (direction ray)
+                     ntval = ((vget unitDirection 1) + 1.0) * 0.5
+                     oneMin = 1.0 - ntval
+                     cval = VecFromList [oneMin, oneMin, oneMin]
+                     oval = multiplyS (VecFromList [0.5, 0.7, 1.0]) ntval
+                 in add cval oval
             -- in error $ "b: " ++ show b ++ " unit " ++ show unitDirection
-

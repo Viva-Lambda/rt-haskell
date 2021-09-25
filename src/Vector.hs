@@ -1,10 +1,11 @@
 -- vector library
 module Vector where
-
+import System.Random
+import Random
 
 data Vector = VecFromList [Double]
             | VecFromScalar Double Int
-            deriving (Eq, Show, Ord)
+            deriving (Eq, Show)
 
 vsize :: Vector -> Int
 vsize (VecFromScalar v s) = s
@@ -20,14 +21,12 @@ vget v index =
 
 
 fromScalarToList :: Vector -> Vector
-fromScalarToList (VecFromList v) = (VecFromList v)
-fromScalarToList (VecFromScalar d vsize) = 
-    let dlist = replicate vsize d
-    in VecFromList dlist
+fromScalarToList (VecFromList v) = VecFromList v
+fromScalarToList (VecFromScalar d vs) = VecFromList $! replicate vs d
 
 sizeError :: Vector -> Vector -> String -> String
 sizeError v s m =
-    let msg = "vector sizes: " ++ (show $ vsize v) ++ " and " ++ (show $ vsize s)
+    let msg = "vector sizes: " ++ (show $! vsize v) ++ " and " ++ (show $! vsize s)
         msg2 = msg ++ " are incorrect for operation " ++ m
     in msg2
 
@@ -36,38 +35,33 @@ vecError v m =
     let msg = "vector: " ++ show v ++ " " ++ m 
     in msg
 
-vecArithmeticOp :: String -> ((Double, Double) -> Double) -> Vector -> Vector -> Vector
+vecArithmeticOp :: String -> (Double -> Double -> Double) -> Vector -> Vector -> Vector
 vecArithmeticOp opname f v e =
-    let vd = fromScalarToList v
-        ve = fromScalarToList e 
-        (VecFromList ds) = vd
-        (VecFromList es) = ve
-    in if (length ds) == (length es)
-       then let dsEs = zip ds es
-            in VecFromList $ opZip dsEs
-       else error $ sizeError vd ve opname
-    where opZip [] = []
-          opZip (z:zs) = (f z) : opZip zs
+    if (vsize v) /= (vsize e)
+    then error $ sizeError v e opname
+    else let (VecFromList ds) = fromScalarToList v
+             (VecFromList es) = fromScalarToList e 
+         in VecFromList $! zipWith f ds es
 
 vecScalarOp :: (Double -> Double) -> Vector -> Vector
 vecScalarOp f v =
     let vd = fromScalarToList v
         (VecFromList vs) = vd
-    in VecFromList $ map f vs 
+    in VecFromList $! map f vs 
 
 add :: Vector -> Vector -> Vector
-add v e = vecArithmeticOp "add" (\tp -> (fst tp) + (snd tp)) v e
+add v e = vecArithmeticOp "add" (+) v e
 addS :: Vector -> Double -> Vector
 addS v s = let f = \d -> d + s in vecScalarOp f v
 
 subtract :: Vector -> Vector -> Vector
-subtract v e = vecArithmeticOp "subtract" (\tp -> (fst tp) - (snd tp)) v e
+subtract v e = vecArithmeticOp "subtract" (-) v e
 
 subtractS :: Vector -> Double -> Vector
 subtractS v s = let f = \d -> d - s in vecScalarOp f v
 
 multiply :: Vector -> Vector -> Vector
-multiply v e = vecArithmeticOp "multiply" (\tp -> (fst tp) * (snd tp)) v e
+multiply v e = vecArithmeticOp "multiply" (*) v e
 
 multiplyS :: Vector -> Double -> Vector
 multiplyS v s = let f = \d -> d * s in vecScalarOp f v
@@ -78,7 +72,7 @@ divide v e =
         (VecFromList es) = ve
     in if 0.0 `elem` es
        then error $ vecError e "contains zero in a division operation"
-       else vecArithmeticOp "divide" (\tp -> (fst tp) / (snd tp)) v e
+       else vecArithmeticOp "divide" (/) v e
 
 divideS :: Vector -> Double -> Vector
 divideS v s =
@@ -119,4 +113,34 @@ cross3d v e =
                 r2 = us0 * vs1 - us1 * vs0
             in VecFromList [r0, r1, r2]
 
+
+randomVecGen :: RandomGen g => (Double, Double) -> g -> Int -> (Vector, g)
+randomVecGen (mn, mx) gen size =
+    let gens = randomGens gen size
+        (vdoubles, gs) = unzip [randomDouble g mn mx | g <- gens ]
+    in (VecFromList vdoubles, last gs)
+
+randomVec :: RandomGen g => (Double, Double) -> g -> (Vector, g)
+randomVec a g = randomVecGen a g 3
+
+randV :: RandomGen g => g -> (Vector, g)
+randV g = randomVec (0.0, 1.0) g
+
+-- random functions resulting in vectors
+randomUnitSphere :: RandomGen g => g -> (Vector, g)
+
+randomUnitSphere gen = let (rvec, g) = randomVec (-1.0, 1.0) gen
+                       in if (lengthSquared rvec) >= 1.0
+                          then randomUnitSphere g
+                          else (rvec, g)
+
+randomUnitVector :: RandomGen g => g -> (Vector, g)
+randomUnitVector gen = let (v, g) = randomUnitSphere gen in (toUnit v, g)
+
+randomHemisphere :: RandomGen g => g -> Vector -> (Vector, g)
+randomHemisphere gen norm =
+    let (rv, g) = randomUnitSphere gen
+    in if (dot rv norm) > 0.0
+       then (rv, g)
+       else (multiplyS rv (-1.0), g)
 

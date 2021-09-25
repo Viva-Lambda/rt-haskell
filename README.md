@@ -31,6 +31,20 @@ repository.
 
 ![antialias-normals](./images/antialias.png)
 
+- Diffuse image from branch 08-diffuse
+
+![diffuse-image](./images/diffuse.png)
+
+
+## Some Notes on Performance
+
+The from branch 08-diffuse an onwards as the usage of random functions become
+prominent the performance decreases considerably. However the inverse is also
+true, if you can place your random generators efficiently, you can easily
+increase your performance. I simply concentrated on getting the images right.
+Do not be surprised if you find that some other arrangement of RNGs result in
+better performance.
+
 ## Planned Features
 
 I hope to make the tracer as minimal but useful as possible.

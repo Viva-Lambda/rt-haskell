@@ -1,6 +1,5 @@
 module Main where
 
-import Lib
 import ColorIO
 import Pixel
 import Color
@@ -12,7 +11,9 @@ import Ray
 import Camera
 import Hittable.HittableList
 import Hittable.Sphere
-import Prelude hiding(subtract, rand)
+import Prelude hiding(subtract)
+import Data.Time.Clock
+import System.IO
 
 -- image related
 
@@ -27,6 +28,9 @@ aspectRatio = 16.0 / 9.0
 
 sample_per_pixel :: Int
 sample_per_pixel = 100
+
+bounceDepth :: Int
+bounceDepth = 50
 
 -- world
 
@@ -44,8 +48,10 @@ world = HList [
 
 mkPixelRay :: RandomGen g => (Int, Int) -> g -> Camera -> Ray
 mkPixelRay (j,i) gen cm =
-    let u = ((rand gen) + (int2Double i)) / (int2Double (imageWidth - 1))
-        v = ((rand gen) + (int2Double j)) / (int2Double (imageHeight - 1))
+    let (udouble, g1) = rand gen
+        (vdouble, _) = rand g1
+        u = (udouble + (int2Double i)) / (int2Double (imageWidth - 1))
+        v = (vdouble + (int2Double j)) / (int2Double (imageHeight - 1))
     in getRay cm u v
 
 -- rendering ppm related
@@ -58,18 +64,23 @@ printPPMHeader = do
 -- make pixel colors from pixel coordinates
 
 mkPixelColor :: RandomGen g => (Int, Int) -> g -> Camera -> Vector
-mkPixelColor a g cm = rayColor ( mkPixelRay a g cm) world
+mkPixelColor a g cm = 
+    let -- (g1, g2) = split g
+        ray = mkPixelRay a g cm
+    in rayColor ray world bounceDepth g
 
 foldPixelColors :: RandomGen g => (Int, Int) -> g -> Camera -> Vector
 foldPixelColors a gen cm =
-    let startv = VecFromList [0.0, 0.0, 0.0]
-        pcolors = [mkPixelColor a gen cm | _ <- [0..sample_per_pixel]]
+    let gens = randomGens gen sample_per_pixel
+        pcolors = [mkPixelColor a g cm | g <- gens]
     in foldl1 add pcolors
 
 mkPixels :: RandomGen g => [(Int, Int)] -> g -> Camera -> [Pixel]
 mkPixels [] _ _ = []
 mkPixels ((cy, cx):cs) g cm =
-    Pix {x = cx, y = cy, color = foldPixelColors (cy, cx) g cm} : mkPixels cs g cm
+    let --(g1, g2) = split g
+        p = Pix {x = cx, y = cy, color = foldPixelColors (cy, cx) g cm}
+    in p : mkPixels cs g cm
 
 printPixel :: Pixel -> IO ()
 printPixel (Pix {x = _, y = _, color = cs}) =
@@ -84,6 +95,7 @@ printPixels (p:ps) = do
 
 printColor :: IO ()
 printColor = do
+    tstart <- getCurrentTime
     _ <- printPPMHeader
     g <- newStdGen
     let {
@@ -94,7 +106,13 @@ printColor = do
         ps = mkPixels pixCoords g (mkCamera);
         }
     -- print pixCoords
-    printPixels ps
+    _ <- printPixels ps
+    tend <- getCurrentTime
+    let {diff = diffUTCTime tend tstart;
+         secs = diff
+        }
+    hPutStrLn stderr ("duration in seconds: " ++ show secs )
+
 
 main :: IO ()
 main = printColor

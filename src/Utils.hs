@@ -1,6 +1,8 @@
 -- utility function
 module Utils where
 
+import Vector
+
 infty :: Double
 infty = (read "Infinity") :: Double
 
@@ -17,3 +19,11 @@ clamp x min max = if x < min
                   else if x > max
                        then max
                        else x
+
+clampV :: Vector -> Double -> Double -> Vector
+clampV v mn mx =
+    let (VecFromList vs) = fromScalarToList v
+        nvs = clampvals vs
+    in VecFromList nvs
+    where clampvals [] = []
+          clampvals (e:es) = clamp e mn mx : clampvals es
