@@ -22,8 +22,8 @@ clamp x min max = if x < min
 
 clampV :: Vector -> Double -> Double -> Vector
 clampV v mn mx =
-    let (VecFromList vs) = fromScalarToList v
+    let (VList vs) = v
         nvs = clampvals vs
-    in VecFromList nvs
+    in VList nvs
     where clampvals [] = []
           clampvals (e:es) = clamp e mn mx : clampvals es

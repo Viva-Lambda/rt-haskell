@@ -19,10 +19,10 @@ mkCamera =
         viewPortH = 2.0
         viewPortW = aspectRatio * viewPortH
         focalLength = 1.0
-        cameraOrigin = VecFromList [0.0, 0.0, 0.0]
-        cameraH = VecFromList [viewPortW, 0.0, 0.0]
-        cameraV = VecFromList [ 0.0, viewPortH, 0.0]
-        llCorner = let fvec = VecFromList [0.0, 0.0, focalLength]
+        cameraOrigin = VList [0.0, 0.0, 0.0]
+        cameraH = VList [viewPortW, 0.0, 0.0]
+        cameraV = VList [ 0.0, viewPortH, 0.0]
+        llCorner = let fvec = VList [0.0, 0.0, focalLength]
                        vhalf = divideS cameraV 2.0
                        hhalf = divideS cameraH 2.0
                        origMinH = subtract cameraOrigin hhalf

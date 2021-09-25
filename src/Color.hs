@@ -8,8 +8,7 @@ import Utils
 -- print vector
 vecToInt :: Vector -> [Int]
 vecToInt v =
-    let vd = fromScalarToList v
-        (VecFromList d) = vd
+    let VList d = v
     in map double2Int d
 
 writeColor :: Vector -> Int -> String

@@ -11,6 +11,7 @@ import Ray
 import Camera
 import Hittable.HittableList
 import Hittable.Sphere
+import Material.Material
 import Prelude hiding(subtract)
 import Data.Time.Clock
 import System.IO
@@ -37,10 +38,26 @@ bounceDepth = 50
 world :: HittableList
 
 world = HList [
-    (HitSphere (SphereObj {sphereCenter = VecFromList [0.0, 0.0, -1.0], 
-                           sphereRadius = 0.5})),
-    (HitSphere (SphereObj {sphereCenter = VecFromList [0.0, -100.5, -1.0], 
-                           sphereRadius = 100}))
+    -- center
+    (HitSphere (SphereObj {sphereCenter = VList [0.0, 0.0, -1.0], 
+                           sphereRadius = 0.5,
+                           sphereMat = LambMat $ Lamb {lalbedo = VList [0.7, 0.3, 0.3]}
+                           })),
+    -- ground
+    (HitSphere (SphereObj {sphereCenter = VList [0.0, -100.5, -1.0], 
+                           sphereRadius = 100,
+                           sphereMat = LambMat $ Lamb {lalbedo = VList [0.8, 0.8, 0.0]}
+                           })),
+    -- left
+    (HitSphere (SphereObj {sphereCenter = VList [-1.0, 0.0, -1.0], 
+                           sphereRadius = 0.5,
+                           sphereMat = MetalMat $ Met {malbedo = VList [0.8, 0.8, 0.8]}
+                           })),
+    -- right
+    (HitSphere (SphereObj {sphereCenter = VList [1.0, 0.0, -1.0],
+                           sphereRadius = 0.5,
+                           sphereMat = MetalMat $ Met {malbedo = VList [0.8, 0.6, 0.2]}
+                           }))
     ]
 
 

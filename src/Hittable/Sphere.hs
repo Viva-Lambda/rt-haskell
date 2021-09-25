@@ -3,11 +3,15 @@ module Hittable.Sphere where
 
 import Vector
 import Hittable.Hittable
+import Hittable.HitRecord
 import Ray
 import Prelude hiding(subtract)
+import Material.Material
 
 
-data Sphere  = SphereObj {sphereCenter :: Vector, sphereRadius :: Double}
+data Sphere  = SphereObj {sphereCenter :: Vector,
+                          sphereRadius :: Double, 
+                          sphereMat :: Material}
 
 instance Eq Sphere where
     (SphereObj {sphereCenter = a,
@@ -22,7 +26,8 @@ instance Show Sphere where
 
 instance Hittable Sphere where
     hit (SphereObj {sphereCenter = sc,
-                    sphereRadius = sr}) (Rd {origin = ro, 
+                    sphereRadius = sr,
+                    sphereMat = sm}) (Rd {origin = ro, 
                                              direction = rd}) tmin tmax hrec =
         let oc = subtract ro sc
             a = lengthSquared rd
@@ -43,10 +48,11 @@ instance Hittable Sphere where
                         else let hpoint = at ry nroot
                                  hnorm = divideS (subtract hpoint sc) sr
                                  hr = HRec {dist = nroot, point = hpoint,
-                                            pnormal = hnorm}
+                                            pnormal = hnorm,
+                                            matPtr = sm}
                              in (setFaceNormal hr ry hnorm, True)
                    else let hpoint = at ry root
                             hnorm = divideS (subtract hpoint sc) sr
                             hr = HRec {dist = root, point = hpoint,
-                                       pnormal = hnorm}
+                                       pnormal = hnorm, matPtr = sm}
                         in (setFaceNormal hr ry hnorm, True)

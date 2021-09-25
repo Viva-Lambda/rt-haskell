@@ -28,10 +28,13 @@ library
       Camera
       Color
       ColorIO
+      Hittable.HitRecord
       Hittable.Hittable
       Hittable.HittableList
       Hittable.Sphere
       Lib
+      Material.Material
+      Material.Scatter
       Pixel
       Random
       Ray

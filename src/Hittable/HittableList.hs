@@ -3,6 +3,8 @@ module Hittable.HittableList where
 
 import Hittable.Hittable
 import Hittable.Sphere
+import Hittable.HitRecord
+import Material.Material
 
 import Data.List
 import Data.Function

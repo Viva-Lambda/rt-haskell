@@ -2,27 +2,26 @@
 module Vector where
 import System.Random
 import Random
+import Prelude hiding(subtract)
+import Debug.Trace
 
-data Vector = VecFromList [Double]
-            | VecFromScalar Double Int
+data Vector = VList [Double]
             deriving (Eq, Show)
 
+zeroV :: Int -> Vector
+zeroV size = VList $ replicate size 0.0
+
 vsize :: Vector -> Int
-vsize (VecFromScalar v s) = s
-vsize (VecFromList v) = length v
+vsize (VList v) = length v
 
 vget :: Vector -> Int -> Double
 vget v index = 
-    let vlst = fromScalarToList v
-        VecFromList vs = vlst
+    let VList vs = v
     in if (vsize v) <= index || index < 0
        then error $ "IndexError: uncorrect index size: " ++ show index
        else vs !! index
 
 
-fromScalarToList :: Vector -> Vector
-fromScalarToList (VecFromList v) = VecFromList v
-fromScalarToList (VecFromScalar d vs) = VecFromList $! replicate vs d
 
 sizeError :: Vector -> Vector -> String -> String
 sizeError v s m =
@@ -39,15 +38,21 @@ vecArithmeticOp :: String -> (Double -> Double -> Double) -> Vector -> Vector ->
 vecArithmeticOp opname f v e =
     if (vsize v) /= (vsize e)
     then error $ sizeError v e opname
-    else let (VecFromList ds) = fromScalarToList v
-             (VecFromList es) = fromScalarToList e 
-         in VecFromList $! zipWith f ds es
+    else let (VList ds) = v
+             (VList es) = e 
+         in VList $! zipWith f ds es
 
 vecScalarOp :: (Double -> Double) -> Vector -> Vector
 vecScalarOp f v =
-    let vd = fromScalarToList v
-        (VecFromList vs) = vd
-    in VecFromList $! map f vs 
+    let 
+        (VList vs) = v
+    in VList $! map f vs 
+
+nearZeroVec :: Vector -> Bool
+nearZeroVec v =
+    let (VList vs) = v
+        nzero = 1e-10
+    in foldl1 (&&) $! map (< nzero) vs
 
 add :: Vector -> Vector -> Vector
 add v e = vecArithmeticOp "add" (+) v e
@@ -68,8 +73,8 @@ multiplyS v s = let f = \d -> d * s in vecScalarOp f v
 
 divide :: Vector -> Vector -> Vector
 divide v e =
-    let ve = fromScalarToList e 
-        (VecFromList es) = ve
+    let 
+        (VList es) = e
     in if 0.0 `elem` es
        then error $ vecError e "contains zero in a division operation"
        else vecArithmeticOp "divide" (/) v e
@@ -77,12 +82,12 @@ divide v e =
 divideS :: Vector -> Double -> Vector
 divideS v s =
     if s == 0.0
-    then error "performing zero division"
+    then traceStack ("performing zero division: " ++ show v) (zeroV 3)
     else let f = \d -> d / s in vecScalarOp f v
 
 dot :: Vector -> Vector -> Double
 dot v e = let mult = multiply v e
-              (VecFromList vs) = mult
+              (VList vs) = mult
           in foldl1 (+) vs
 
 lengthSquared :: Vector -> Double
@@ -91,17 +96,15 @@ magnitude :: Vector -> Double
 magnitude v = sqrt $ lengthSquared v
 
 toUnit :: Vector -> Vector
-toUnit v = divide v (VecFromScalar (magnitude v) (vsize v))
+toUnit v = divideS v (magnitude v)
 
 cross3d :: Vector -> Vector -> Vector
 cross3d v e =
-    let vv = fromScalarToList v
-        ev = fromScalarToList e 
-    in if (((vsize vv) /= 3) || ((vsize ev) /= 3))
-       then error $ sizeError v e "cross product"
-       else 
-            let (VecFromList vs) = vv
-                (VecFromList es) = ev
+    if (((vsize v) /= 3) || ((vsize e) /= 3))
+    then error $ sizeError v e "cross product"
+    else 
+            let (VList vs) = v
+                (VList es) = e
                 us0 = vs !! 0
                 us1 = vs !! 1
                 us2 = vs !! 2
@@ -111,14 +114,14 @@ cross3d v e =
                 r0 = us1 * vs2 - us2 * vs1
                 r1 = us2 * vs0 - us0 * vs2
                 r2 = us0 * vs1 - us1 * vs0
-            in VecFromList [r0, r1, r2]
+            in VList [r0, r1, r2]
 
 
 randomVecGen :: RandomGen g => (Double, Double) -> g -> Int -> (Vector, g)
 randomVecGen (mn, mx) gen size =
     let gens = randomGens gen size
         (vdoubles, gs) = unzip [randomDouble g mn mx | g <- gens ]
-    in (VecFromList vdoubles, last gs)
+    in (VList vdoubles, last gs)
 
 randomVec :: RandomGen g => (Double, Double) -> g -> (Vector, g)
 randomVec a g = randomVecGen a g 3
@@ -144,3 +147,5 @@ randomHemisphere gen norm =
        then (rv, g)
        else (multiplyS rv (-1.0), g)
 
+reflect :: Vector -> Vector -> Vector
+reflect v norm = subtract v (multiplyS (multiplyS norm (dot v norm) ) 2.0)
