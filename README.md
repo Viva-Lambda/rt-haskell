@@ -35,6 +35,14 @@ repository.
 
 ![diffuse-image](./images/diffuse.png)
 
+- Metal image from branch 09-metal
+
+![metal-image-01](./images/metal.png)
+
+- Fuzzy metal image from branch 09-metal
+
+![metal-image-02](./images/fuzzmetal.png)
+
 
 ## Some Notes on Performance
 

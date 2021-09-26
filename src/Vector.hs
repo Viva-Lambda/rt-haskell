@@ -11,6 +11,9 @@ data Vector = VList [Double]
 zeroV :: Int -> Vector
 zeroV size = VList $ replicate size 0.0
 
+zeroV3 :: Vector
+zeroV3 = zeroV 3
+
 vsize :: Vector -> Int
 vsize (VList v) = length v
 
@@ -52,7 +55,7 @@ nearZeroVec :: Vector -> Bool
 nearZeroVec v =
     let (VList vs) = v
         nzero = 1e-10
-    in foldl1 (&&) $! map (< nzero) vs
+    in foldl1 (&&) $! map (< nzero) (map abs vs)
 
 add :: Vector -> Vector -> Vector
 add v e = vecArithmeticOp "add" (+) v e
@@ -82,7 +85,7 @@ divide v e =
 divideS :: Vector -> Double -> Vector
 divideS v s =
     if s == 0.0
-    then traceStack ("performing zero division: " ++ show v) (zeroV 3)
+    then traceStack ("performing zero division: " ++ show v) (zeroV3)
     else let f = \d -> d / s in vecScalarOp f v
 
 dot :: Vector -> Vector -> Double

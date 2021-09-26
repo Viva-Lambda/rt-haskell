@@ -15,4 +15,4 @@ type Color = Vector
 data Lambertian = Lamb {lalbedo :: Color} deriving (Eq, Show)
 
 -- metal material
-data Metal = Met {malbedo :: Color} deriving (Eq, Show)
+data Metal = Met {malbedo :: Color, fuzz :: Double} deriving (Eq, Show)

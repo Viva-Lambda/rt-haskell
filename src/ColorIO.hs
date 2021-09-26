@@ -17,20 +17,19 @@ import Prelude hiding(subtract)
 rayColor :: RandomGen g => Ray -> HittableList -> Int -> g -> Vector
 rayColor ray world depth gen =
     if depth <= 0
-    then zeroV 3
+    then zeroV3
     else let hrec = emptyRecord 3
-             (HRec{point = recp,
+             (hithrec, isHit) = hit world ray 0.001 infty hrec
+             HRec{point = recp,
                    pnormal = recnorm,
-                   dist=_, matPtr = m}, isHit) = hit world ray 0.001 infty hrec
+                   dist=_, matPtr = m} = hithrec
          in if isHit
-            then let nray = zeroRay 3
-                     atten = zeroV 3
-                     sout = scatter gen m ray hrec atten nray
+            then let sout = scatter gen m ray hithrec
                      (g, natten, outray, isScattering) = sout
                  in if isScattering
                     then let ncolor = rayColor outray world (depth-1) g
                          in multiply ncolor natten
-                    else zeroV 3
+                    else zeroV3
             else let unitDirection = toUnit (direction ray)
                      ntval = ((vget unitDirection 1) + 1.0) * 0.5
                      oneMin = 1.0 - ntval
