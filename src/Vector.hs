@@ -150,6 +150,15 @@ randomHemisphere gen norm =
        then (rv, g)
        else (multiplyS rv (-1.0), g)
 
+-- random in unit disk
+randomUnitDisk :: RandomGen g => g -> (Vector, g)
+randomUnitDisk gen =
+    let (VList [a,b,_], g) = randomVec (-1.0, 1.0) gen
+        rvec = VList [a,b,0.0]
+    in if (lengthSquared rvec) >= 1.0
+       then randomUnitDisk g
+       else (rvec, g)
+
 reflect :: Vector -> Vector -> Vector
 reflect v norm = subtract v (multiplyS (multiplyS norm (dot v norm) ) 2.0)
 

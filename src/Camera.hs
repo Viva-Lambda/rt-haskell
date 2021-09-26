@@ -3,46 +3,84 @@ module Camera where
 
 import Vector
 import Ray
+import Utils
 import Prelude hiding (subtract)
+import System.Random
+import Random
 
 
 data Camera = Cam {
     corigin :: Vector,
     lowerLeftCorner :: Vector,
     horizontal :: Vector,
-    vertical :: Vector
+    vertical :: Vector,
+    camU :: Vector,
+    camV :: Vector,
+    camW :: Vector,
+    lensRadius :: Double
     } deriving (Eq, Show)
+
+mkCam :: Vector -> Vector -> Vector -> Double -> Double -> Double -> Double -> Camera
+mkCam lookFrom lookAt vup vfov aspect_ratio aperture focusDist =
+    let theta = degrees_to_radians vfov
+        h = tan (theta / 2.0)
+        viewPortH = 2.0 * h
+        viewPortW = aspect_ratio * viewPortH
+        cw = toUnit $! (subtract lookFrom lookAt)
+        cu = toUnit $! (cross3d vup cw)
+        cv = cross3d cw cu
+        cameraOrigin = lookFrom
+        cameraH = multiplyS cu (focusDist * viewPortW)
+        cameraV = multiplyS cv (focusDist * viewPortH)
+        fDcw = multiplyS cw focusDist
+        vhalf = divideS cameraV 2.0
+        hhalf = divideS cameraH 2.0
+        llC1 = subtract cameraOrigin hhalf
+        llc2 = subtract llC1 vhalf
+        llCorner = subtract llc2 fDcw
+    in Cam {
+        corigin = cameraOrigin,
+        lowerLeftCorner = llCorner,
+        horizontal = cameraH,
+        vertical = cameraV,
+        camU = cu,
+        camW = cw,
+        camV = cv,
+        lensRadius = aperture / 2.0
+        }
+
+-- camera for listing 69
+lookF :: Vector
+lookF = VList [3.0, 3.0, 2.0]
+lookT :: Vector
+lookT = VList [0.0, 0.0, -1.0]
+vUp :: Vector
+vUp = VList [0.0, 1.0, 0.0]
 
 mkCamera :: Camera
 mkCamera =
-    let aspectRatio = 16.0 / 9.0
-        viewPortH = 2.0
-        viewPortW = aspectRatio * viewPortH
-        focalLength = 1.0
-        cameraOrigin = VList [0.0, 0.0, 0.0]
-        cameraH = VList [viewPortW, 0.0, 0.0]
-        cameraV = VList [ 0.0, viewPortH, 0.0]
-        llCorner = let fvec = VList [0.0, 0.0, focalLength]
-                       vhalf = divideS cameraV 2.0
-                       hhalf = divideS cameraH 2.0
-                       origMinH = subtract cameraOrigin hhalf
-                       origMinHMinV = subtract origMinH vhalf
-                   in subtract origMinHMinV fvec
-    in Cam {
-        corigin = cameraOrigin,
-        horizontal = cameraH,
-        vertical = cameraV,
-        lowerLeftCorner = llCorner
-        }
+    mkCam
+        lookF -- look from
+        lookT -- look to
+        vUp -- vup
+        20.0 -- vfov
+        (16.0/9.0) -- aspect ratio
+        2.0 -- aperture
+        (magnitude (subtract lookF lookT)) -- focus distance 
 
-getRay :: Camera -> Double -> Double -> Ray
-getRay Cam {corigin = cameraOrigin, horizontal = cameraH,
-            vertical = cameraV, lowerLeftCorner = llCorner} u v =
-    --
-    let vvert = multiplyS cameraV v
-        uhor = multiplyS cameraH u
-        vvMinOr = subtract vvert cameraOrigin
-        uhorPlusVv = add uhor vvMinOr
-        llcPlusUHor = add llCorner uhorPlusVv
-    in Rd {origin = cameraOrigin, direction = llcPlusUHor}
-
+getRay :: RandomGen g => g -> Camera -> Double -> Double -> (Ray, g)
+getRay gen Cam {corigin = cameraOrigin, horizontal = cameraH,
+            vertical = cameraV, lowerLeftCorner = llCorner,
+            camU = cu, camW = cw, camV = cv, lensRadius = lr
+            } s t =
+    let (uvec, g) = randomUnitDisk gen
+        rd = multiplyS uvec lr
+        rdx = vget rd 0
+        rdy = vget rd 1
+        offset = add (multiplyS cu rdx) (multiplyS cv rdy)
+        rorigin = add cameraOrigin offset
+        rdir1 = add llCorner (multiplyS cameraH s)
+        rdir2 = add rdir1 (multiplyS cameraV t)
+        rdir3 = subtract rdir2 cameraOrigin
+        rdir4 = subtract rdir3 offset
+    in (Rd {origin = rorigin, direction = rdir4}, g)

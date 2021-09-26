@@ -74,13 +74,13 @@ world = HList [
 
 -- camera related
 
-mkPixelRay :: RandomGen g => (Int, Int) -> g -> Camera -> Ray
+mkPixelRay :: RandomGen g => (Int, Int) -> g -> Camera -> (Ray, g)
 mkPixelRay (j,i) gen cm =
     let (udouble, g1) = rand gen
-        (vdouble, _) = rand g1
+        (vdouble, g2) = rand g1
         u = (udouble + (int2Double i)) / (int2Double (imageWidth - 1))
         v = (vdouble + (int2Double j)) / (int2Double (imageHeight - 1))
-    in getRay cm u v
+    in getRay g2 cm u v
 
 -- rendering ppm related
 printPPMHeader :: IO ()
@@ -94,8 +94,8 @@ printPPMHeader = do
 mkPixelColor :: RandomGen g => (Int, Int) -> g -> Camera -> Vector
 mkPixelColor a g cm = 
     let -- (g1, g2) = split g
-        ray = mkPixelRay a g cm
-    in rayColor ray world bounceDepth g
+        (ray, g2) = mkPixelRay a g cm
+    in rayColor ray world bounceDepth g2
 
 foldPixelColors :: RandomGen g => (Int, Int) -> g -> Camera -> Vector
 foldPixelColors a gen cm =
