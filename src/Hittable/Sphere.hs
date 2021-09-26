@@ -49,10 +49,12 @@ instance Hittable Sphere where
                                  hnorm = divideS (subtract hpoint sc) sr
                                  hr = HRec {dist = nroot, point = hpoint,
                                             pnormal = hnorm,
-                                            matPtr = sm}
+                                            matPtr = sm,
+                                            isFront = False}
                              in (setFaceNormal hr ry hnorm, True)
                    else let hpoint = at ry root
                             hnorm = divideS (subtract hpoint sc) sr
                             hr = HRec {dist = root, point = hpoint,
-                                       pnormal = hnorm, matPtr = sm}
+                                       pnormal = hnorm, matPtr = sm, 
+                                       isFront = False}
                         in (setFaceNormal hr ry hnorm, True)

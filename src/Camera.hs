@@ -51,9 +51,9 @@ mkCam lookFrom lookAt vup vfov aspect_ratio aperture focusDist =
 
 -- camera for listing 69
 lookF :: Vector
-lookF = VList [3.0, 3.0, 2.0]
+lookF = VList [13.0, 2.0, 3.0]
 lookT :: Vector
-lookT = VList [0.0, 0.0, -1.0]
+lookT = VList [0.0, 0.0, 0.0]
 vUp :: Vector
 vUp = VList [0.0, 1.0, 0.0]
 
@@ -64,9 +64,9 @@ mkCamera =
         lookT -- look to
         vUp -- vup
         20.0 -- vfov
-        (16.0/9.0) -- aspect ratio
-        2.0 -- aperture
-        (magnitude (subtract lookF lookT)) -- focus distance 
+        (3.0/2.0) -- aspect ratio
+        0.1 -- aperture
+        10.0 -- focus distance 
 
 getRay :: RandomGen g => g -> Camera -> Double -> Double -> (Ray, g)
 getRay gen Cam {corigin = cameraOrigin, horizontal = cameraH,

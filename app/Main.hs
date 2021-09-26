@@ -35,41 +35,81 @@ bounceDepth = 50
 
 -- world
 
-world :: HittableList
+mkRndMat :: RandomGen g => g -> Int -> Int -> Maybe HittableObj
+mkRndMat gen a b =
+    let (chooseMat, g1) = rand gen
+        (cxrand, g2) = rand g1
+        (czrand, g3) = rand g2
+        center = VList [
+            (int2Double a) + (0.9 * cxrand),
+            0.2,
+            (int2Double b) + (0.9 * czrand)
+            ]
+        cdiff = magnitude $! subtract center (VList [4.0, 0.2, 0.0])
 
-world = HList [
-    -- center
-    (HitSphere (SphereObj {sphereCenter = VList [0.0, 0.0, -1.0], 
-                           sphereRadius = 0.5,
-                           sphereMat = LambMat $ Lamb {lalbedo = VList [0.7, 0.3, 0.3]}
-                           })),
-    -- ground
-    (HitSphere (SphereObj {sphereCenter = VList [0.0, -100.5, -1.0], 
-                           sphereRadius = 100,
-                           sphereMat = LambMat $ Lamb {lalbedo = VList [0.8, 0.8, 0.0]}
-                           })),
-    -- left
-    (HitSphere (SphereObj {sphereCenter = VList [-1.0, 0.0, -1.0], 
-                           sphereRadius = 0.5,
-                           sphereMat = DielMat $ Diel {
-                               refIndices = [1.5]
-                               }
-                           })),
-    (HitSphere (SphereObj {sphereCenter = VList [-1.0, 0.0, -1.0], 
-                           sphereRadius = -0.4,
-                           sphereMat = DielMat $ Diel {
-                               refIndices = [1.5]
-                               }
-                           })),
-    -- right
-    (HitSphere (SphereObj {sphereCenter = VList [1.0, 0.0, -1.0],
-                           sphereRadius = 0.5,
-                           sphereMat = MetalMat $ Met {
-                               malbedo = VList [0.8, 0.6, 0.2],
-                               fuzz = 1.0
-                               }
-                           }))
-    ]
+    in if cdiff > 0.9
+       then if chooseMat < 0.8
+            then let (rv1, g4) = randV g3
+                     (rv2, _) = randV g4
+                     diffAlbedo = multiply rv1 rv2
+                     laMat = LambMat $! Lamb {lalbedo = diffAlbedo}
+                in Just $!HitSphere SphereObj {sphereCenter = center,
+                                      sphereRadius = 0.2,
+                                      sphereMat = laMat}
+            else if chooseMat < 0.9
+                 then let (rv1, g4) = randomVec (0.5, 1.0) g3
+                          (fz, _) = randomDouble g4 0.0 0.5
+                          metMat = MetalMat $! Met {malbedo = rv1, fuzz = fz}
+                      in Just $!HitSphere SphereObj {
+                                    sphereCenter = center,
+                                    sphereRadius = 0.2,
+                                    sphereMat = metMat
+                                    }
+                 else let dieMt = DielMat $! Diel {refIndices = [1.5]}
+                      in Just $! HitSphere SphereObj {
+                                    sphereCenter = center,
+                                    sphereRadius = 0.2,
+                                    sphereMat = dieMt
+                                }
+       else Nothing
+
+mkRndMats :: RandomGen g => g -> [(Int, Int)] -> [HittableObj]
+mkRndMats _ [] = []
+mkRndMats gen ((a, b):es) =  case mkRndMat gen a b of
+                                Just c -> c : mkRndMats gen es
+                                Nothing -> mkRndMats gen es
+
+world :: RandomGen g => g -> HittableList
+world gen = let as = reverse [(-11)..11]
+                bs = [(-11)..11]
+                coords = zip as bs
+                objs = mkRndMats gen coords
+                groundMat = LambMat $! Lamb {lalbedo = VList [0.5, 0.5, 0.5]}
+                ground = HitSphere SphereObj {sphereCenter = VList [0.0, -1000.0, 0.0],
+                                    sphereRadius = 1000.0,
+                                    sphereMat = groundMat}
+                dielM1 = DielMat $! Diel {refIndices = [1.5]}
+                lambM2 = LambMat $! Lamb {lalbedo = VList [0.4, 0.2, 0.1]}
+                metalM3 = MetalMat $! Met {
+                                        malbedo = VList [0.7, 0.6, 0.5],
+                                        fuzz = 0.0
+                                    }
+                dielObj = HitSphere SphereObj {
+                            sphereCenter = VList [0.0, 1.0, 0.0],
+                            sphereRadius = 1.0,
+                            sphereMat = dielM1 
+                        }
+                lambObj =HitSphere  SphereObj {
+                            sphereCenter = VList [-4.0, 1.0, 0.0],
+                            sphereRadius = 1.0,
+                            sphereMat = lambM2
+                        }
+                metObj = HitSphere SphereObj {
+                            sphereCenter = VList [4.0, 1.0, 0.0],
+                            sphereRadius = 1.0,
+                            sphereMat = metalM3
+                        }
+            in HList ([ground] ++ objs ++ [dielObj, lambObj, metObj])
 
 
 -- camera related
@@ -95,7 +135,7 @@ mkPixelColor :: RandomGen g => (Int, Int) -> g -> Camera -> Vector
 mkPixelColor a g cm = 
     let -- (g1, g2) = split g
         (ray, g2) = mkPixelRay a g cm
-    in rayColor ray world bounceDepth g2
+    in rayColor ray (world g2) bounceDepth g2
 
 foldPixelColors :: RandomGen g => (Int, Int) -> g -> Camera -> Vector
 foldPixelColors a gen cm =
