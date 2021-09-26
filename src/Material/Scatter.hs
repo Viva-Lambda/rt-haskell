@@ -22,6 +22,7 @@ instance Scatterer Material where
     scatter gen NoMat r h = (gen, zeroV3, r, False)
     scatter gen (LambMat la) r h  = scatter gen la r h
     scatter gen (MetalMat m) r h  = scatter gen m r h
+    scatter gen (DielMat m) r h  = scatter gen m r h
 
 
 instance Scatterer Lambertian where
@@ -44,3 +45,22 @@ instance Scatterer Metal where
             rdir = add refdir (multiplyS uvec b)
         in (g, a, Rd {origin = recp, direction = rdir}, (dot rdir recn) > 0)
 
+instance Scatterer Dielectric where
+    scatter gen (Diel {refIndices = rs}) inray hrec =
+        let atten = VList [1.0, 1.0, 1.0]
+            -- can change with respect to wavelength
+            ir = head rs
+            refratio = if isFront hrec
+                       then 1.0 / ir
+                       else ir
+            udir = toUnit $! direction inray
+            costheta = min (dot (multiplyS udir (-1.0)) (pnormal hrec)) 1.0
+            sintheta = sqrt (1.0 - costheta * costheta)
+            canNotRefract = refratio * sintheta > 1.0
+            (rval, g) = rand gen
+            schlickVal = schlickRef costheta refratio
+            rdir = if canNotRefract || (schlickVal > rval)
+                   then reflect udir (pnormal hrec)
+                   else refract udir (pnormal hrec) refratio
+            outray = Rd {origin = point hrec, direction = rdir}
+        in (g, atten, outray, True)

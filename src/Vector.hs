@@ -152,3 +152,12 @@ randomHemisphere gen norm =
 
 reflect :: Vector -> Vector -> Vector
 reflect v norm = subtract v (multiplyS (multiplyS norm (dot v norm) ) 2.0)
+
+refract :: Vector -> Vector -> Double -> Vector
+refract uv n etaiOverEta =
+    let costheta = min (dot (multiplyS uv (-1.0)) n) 1.0
+        outPerp = multiplyS (add uv (multiplyS n costheta)) etaiOverEta
+        absOut = sqrt $! abs (1.0 - lengthSquared outPerp)
+        outPar = multiplyS n (-1.0 * absOut)
+    in add outPerp outPar
+

@@ -51,9 +51,14 @@ world = HList [
     -- left
     (HitSphere (SphereObj {sphereCenter = VList [-1.0, 0.0, -1.0], 
                            sphereRadius = 0.5,
-                           sphereMat = MetalMat $ Met {
-                               malbedo = VList [0.8, 0.8, 0.8],
-                               fuzz = 0.3
+                           sphereMat = DielMat $ Diel {
+                               refIndices = [1.5]
+                               }
+                           })),
+    (HitSphere (SphereObj {sphereCenter = VList [-1.0, 0.0, -1.0], 
+                           sphereRadius = -0.4,
+                           sphereMat = DielMat $ Diel {
+                               refIndices = [1.5]
                                }
                            })),
     -- right
