@@ -1,9 +1,11 @@
+{-# LANGUAGE BangPatterns #-}
 -- module for sphere objects
 module Hittable.Sphere where
 
 import Vector
 import Hittable.Hittable
 import Hittable.HitRecord
+import Hittable.Aabb
 import Ray
 import Prelude hiding(subtract)
 import Material.Material
@@ -25,16 +27,17 @@ instance Show Sphere where
 
 
 instance Hittable Sphere where
-    hit (SphereObj {sphereCenter = sc,
+    hit !(SphereObj {sphereCenter = sc,
                     sphereRadius = sr,
-                    sphereMat = sm}) (Rd {origin = ro, 
-                                             direction = rd}) tmin tmax hrec =
+                    sphereMat = sm}) !(Rd {origin = ro, 
+                                           direction = rd,
+                                           rtime = rt}) !tmin !tmax !hrec =
         let oc = subtract ro sc
             a = lengthSquared rd
             hb = dot oc rd
             c = (lengthSquared oc) - (sr * sr)
             discriminant = hb * hb - a * c
-            ry = Rd {origin = ro, direction = rd}
+            ry = Rd {origin = ro, direction = rd, rtime = rt}
         in if discriminant < 0
            then (hrec, False)
            else let sqd = sqrt discriminant
@@ -58,3 +61,10 @@ instance Hittable Sphere where
                                        pnormal = hnorm, matPtr = sm, 
                                        isFront = False}
                         in (setFaceNormal hr ry hnorm, True)
+
+    boundingBox !(SphereObj {sphereCenter = sc, sphereRadius = sr,
+                            sphereMat = _}) !tmn !tmx !ab =
+        let cv1 = subtract sc (VList [sr, sr, sr])
+            cv2 = add sc (VList [sr, sr, sr])
+            aBound = AaBbox { aabbMin = cv1, aabbMax = cv2 }
+        in (aBound, True)

@@ -28,9 +28,11 @@ library
       Camera
       Color
       ColorIO
+      Hittable.Aabb
       Hittable.HitRecord
       Hittable.Hittable
       Hittable.HittableList
+      Hittable.MovingSphere
       Hittable.Sphere
       Lib
       Material.Material
@@ -38,6 +40,7 @@ library
       Pixel
       Random
       Ray
+      Scenes
       Utils
       Vector
   other-modules:

@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 -- input output of colors
 module ColorIO where
 
@@ -15,7 +16,7 @@ import Prelude hiding(subtract)
 
 
 rayColor :: RandomGen g => Ray -> HittableList -> Int -> g -> Vector
-rayColor ray world depth gen =
+rayColor !ray !world !depth !gen =
     if depth <= 0
     then zeroV3
     else let hrec = emptyRecord 3

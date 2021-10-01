@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 -- camera module
 module Camera where
 
@@ -17,11 +18,13 @@ data Camera = Cam {
     camU :: Vector,
     camV :: Vector,
     camW :: Vector,
-    lensRadius :: Double
+    lensRadius :: Double,
+    time0 :: Double,
+    time1 :: Double
     } deriving (Eq, Show)
 
-mkCam :: Vector -> Vector -> Vector -> Double -> Double -> Double -> Double -> Camera
-mkCam lookFrom lookAt vup vfov aspect_ratio aperture focusDist =
+mkCam :: Vector -> Vector -> Vector -> Double -> Double -> Double -> Double -> Double -> Double -> Camera
+mkCam !lookFrom !lookAt !vup !vfov !aspect_ratio !aperture !focusDist !t0 !t1 =
     let theta = degrees_to_radians vfov
         h = tan (theta / 2.0)
         viewPortH = 2.0 * h
@@ -46,8 +49,14 @@ mkCam lookFrom lookAt vup vfov aspect_ratio aperture focusDist =
         camU = cu,
         camW = cw,
         camV = cv,
-        lensRadius = aperture / 2.0
+        lensRadius = aperture / 2.0,
+        time0 = t0,
+        time1 = t1
         }
+
+mkCamTime :: Vector -> Vector -> Vector -> Double -> Double -> Double -> Double -> Camera
+mkCamTime lookFrom lookAt vup vfov aspect_ratio aperture focusDist =
+    mkCam lookFrom lookAt vup vfov aspect_ratio aperture focusDist 0.0 0.0
 
 -- camera for listing 69
 lookF :: Vector
@@ -59,7 +68,7 @@ vUp = VList [0.0, 1.0, 0.0]
 
 mkCamera :: Camera
 mkCamera =
-    mkCam
+    mkCamTime
         lookF -- look from
         lookT -- look to
         vUp -- vup
@@ -71,7 +80,8 @@ mkCamera =
 getRay :: RandomGen g => g -> Camera -> Double -> Double -> (Ray, g)
 getRay gen Cam {corigin = cameraOrigin, horizontal = cameraH,
             vertical = cameraV, lowerLeftCorner = llCorner,
-            camU = cu, camW = cw, camV = cv, lensRadius = lr
+            camU = cu, camW = cw, camV = cv, lensRadius = lr,
+            time0 = t0, time1 = t1
             } s t =
     let (uvec, g) = randomUnitDisk gen
         rd = multiplyS uvec lr
@@ -83,4 +93,5 @@ getRay gen Cam {corigin = cameraOrigin, horizontal = cameraH,
         rdir2 = add rdir1 (multiplyS cameraV t)
         rdir3 = subtract rdir2 cameraOrigin
         rdir4 = subtract rdir3 offset
-    in (Rd {origin = rorigin, direction = rdir4}, g)
+        (timeD, g2) = randomDouble g t0 t1
+    in (Rd {origin = rorigin, direction = rdir4, rtime = timeD}, g2)

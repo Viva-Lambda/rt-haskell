@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 -- material module
 module Material.Scatter where
 
@@ -26,27 +27,33 @@ instance Scatterer Material where
 
 
 instance Scatterer Lambertian where
-    scatter gen (Lamb {lalbedo = a}) inray hrec =
+    scatter !gen !(Lamb {lalbedo = a}) !inray !hrec =
         let recp = point hrec
             recn = pnormal hrec
             (uvec, g) = randomUnitVector gen
             sdir = add recn uvec
         in if nearZeroVec sdir
-           then (g, a,Rd {origin = recp, direction = recn}, True)
-           else (g, a, Rd {origin = recp, direction = sdir}, True)
+           then (g, a,Rd {origin = recp,
+                          direction = recn,
+                          rtime = rtime inray}, True)
+           else (g, a, Rd {origin = recp, 
+                           direction = sdir,
+                           rtime = rtime inray}, True)
 
 instance Scatterer Metal where
-    scatter gen (Met {malbedo = a, fuzz = b}) inray hrec =
+    scatter !gen !(Met {malbedo = a, fuzz = b}) !inray !hrec =
         let recp = point hrec
             recn = pnormal hrec
             indir = toUnit $! direction inray
             refdir = reflect indir recn
             (uvec, g) = randomUnitSphere gen
             rdir = add refdir (multiplyS uvec b)
-        in (g, a, Rd {origin = recp, direction = rdir}, (dot rdir recn) > 0)
+        in (g, a, Rd {origin = recp, 
+                      direction = rdir, 
+                      rtime = rtime inray}, (dot rdir recn) > 0)
 
 instance Scatterer Dielectric where
-    scatter gen (Diel {refIndices = rs}) inray hrec =
+    scatter !gen !(Diel {refIndices = rs}) !inray !hrec =
         let atten = VList [1.0, 1.0, 1.0]
             -- can change with respect to wavelength
             ir = head rs
@@ -62,5 +69,8 @@ instance Scatterer Dielectric where
             rdir = if canNotRefract || (schlickVal > rval)
                    then reflect udir (pnormal hrec)
                    else refract udir (pnormal hrec) refratio
-            outray = Rd {origin = point hrec, direction = rdir}
+            outray = Rd {origin = point hrec,
+                         direction = rdir,
+                         rtime = rtime inray
+                         }
         in (g, atten, outray, True)

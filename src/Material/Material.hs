@@ -8,6 +8,7 @@ data Material = LambMat Lambertian
               | MetalMat Metal
               | DielMat Dielectric
               | NoMat
+              deriving (Eq, Show)
 
 type Color = Vector
 
@@ -19,7 +20,7 @@ data Lambertian = Lamb {lalbedo :: Color} deriving (Eq, Show)
 data Metal = Met {malbedo :: Color, fuzz :: Double} deriving (Eq, Show)
 
 -- dielectric material
-data Dielectric = Diel {refIndices :: [Double]}
+data Dielectric = Diel {refIndices :: [Double]} deriving (Eq, Show)
 
 schlickRef :: Double -> Double -> Double
 schlickRef cosi ref_idx =
