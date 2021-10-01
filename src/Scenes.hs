@@ -40,8 +40,8 @@ mkRndMat !gen !a !b !isMoving =
             0.2,
             (int2Double b) + (0.9 * czrand)
             ]
-        cdiff = magnitude $! subtract center (VList [4.0, 0.2, 0.0])
-
+        diff = subtract center (VList [4.0, 0.2, 0.0])
+        cdiff = magnitude diff
     in if cdiff > 0.9
        then if chooseMat < 0.8
             then let (rv1, g4) = randV g3
@@ -77,6 +77,7 @@ mkRndMat !gen !a !b !isMoving =
                                     sphereMat = dieMt
                                 }
        else Nothing
+           -}
 
 mkRndMats :: RandomGen g => g -> Bool -> [(Int, Int)] -> [HittableObj]
 mkRndMats _ _ [] = []

@@ -105,7 +105,7 @@ printColor = do
         pixCoords = [(j,i) | j <- jjs, -- outer loop first
                              i <- iis];
         -- choose scene
-        (smpl, scne) = chooseScene g 1;
+        (smpl, scne) = chooseScene g 2;
         ps = renderScene pixCoords g scne;
         }
     -- print pixCoords

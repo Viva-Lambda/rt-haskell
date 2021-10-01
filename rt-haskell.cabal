@@ -29,6 +29,7 @@ library
       Color
       ColorIO
       Hittable.Aabb
+      Hittable.Bvh
       Hittable.HitRecord
       Hittable.Hittable
       Hittable.HittableList
