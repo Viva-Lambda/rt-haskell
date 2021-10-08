@@ -6,6 +6,7 @@ import Hittable.HittableList
 import Hittable.HittableObj
 import Hittable.Sphere
 import Hittable.MovingSphere
+import Texture.SolidColor
 import System.Random
 import Random
 import Vector
@@ -48,7 +49,7 @@ mkRndMat !gen !a !b !isMoving =
             then let (rv1, g4) = randV g3
                      (rv2, g5) = randV g4
                      diffAlbedo = multiply rv1 rv2
-                     laMat = LambMat $! Lamb {lalbedo = diffAlbedo}
+                     laMat = LambMat $! Lamb {lalbedo = SolidV diffAlbedo}
                 in if isMoving
                    then let (rv3, _) = randomDouble g5 0.0 0.5
                         in Just $! MvHitSphere MovSphereObj {
@@ -90,13 +91,13 @@ world !gen !isM = let as = [0..7]
                       bs = [0..7]
                       coords = [(a - 3, b - 3) | a <- as, b <- bs]
                       objs = mkRndMats gen isM coords
-                      groundMat = LambMat $! Lamb {lalbedo = VList [0.5, 0.5, 0.5]}
+                      groundMat = LambMat $! Lamb {lalbedo = SolidV $ VList [0.5, 0.5, 0.5]}
                       ground = HitSphere SphereObj {
                                     sphereCenter = VList [0.0, -1000.0, 0.0],
                                     sphereRadius = 1000.0,
                                     sphereMat = groundMat}
                       dielM1 = DielMat $! Diel {refIndices = [1.5]}
-                      lambM2 = LambMat $! Lamb {lalbedo = VList [0.4, 0.2, 0.1]}
+                      lambM2 = LambMat $! Lamb {lalbedo =SolidV $ VList [0.4, 0.2, 0.1]}
                       metalM3 = MetalMat $! Met {
                                         malbedo = VList [0.7, 0.6, 0.5],
                                         fuzz = 0.0
@@ -139,14 +140,14 @@ diffuseSphere =
                             sphereCenter = VList [-4.0, 1.0, 0.0],
                             sphereRadius = 1.0,
                             sphereMat = LambMat $! Lamb {
-                                    lalbedo = VList [0.4, 0.2, 0.1]
+                                    lalbedo = SolidV $ VList [0.4, 0.2, 0.1]
                                     }
                         },
             HitSphere $ SphereObj {
                             sphereCenter = VList [0.0, -1000.0, 0.0],
                             sphereRadius = 1000.0,
                             sphereMat =  LambMat $! Lamb {
-                                    lalbedo = VList [0.5, 0.5, 0.5]
+                                    lalbedo = SolidV $ VList [0.5, 0.5, 0.5]
                                     }
                         }
             ]

@@ -16,14 +16,17 @@ data Material = LambMat Lambertian
 
 type Color = Vector
 
-data Lambertian = Lamb {lalbedo :: Color} deriving (Eq, Show)
+-- data Lambertian = Lamb {lalbedo :: Color} deriving (Eq, Show)
 
-{-
 -- lambertian material
 
+data Lambertian = Lamb {lalbedo :: SolidColor} deriving (Eq, Show)
+
+{-
 data Lambertian a where
     LambC :: Color -> Lambertian SolidColor
     LambT :: Texture a => a -> Lambertian a
+
 -}
 
 -- metal material

@@ -8,6 +8,7 @@ import System.Random
 import Random
 import Hittable.HitRecord
 import Material.Material
+import Texture.Texture
 
 
 type Attenuation = Vector
@@ -32,11 +33,15 @@ instance Scatterer Lambertian where
             recn = pnormal hrec
             (uvec, g) = randomUnitVector gen
             sdir = add recn uvec
+            hu = hUV_u hrec
+            hv = hUV_v hrec
         in if nearZeroVec sdir
-           then (g, a,Rd {origin = recp,
+           then (g, color a hu hv recp, 
+                Rd {origin = recp,
                           direction = recn,
                           rtime = rtime inray}, True)
-           else (g, a, Rd {origin = recp, 
+           else (g, color a hu hv recp, 
+                 Rd {origin = recp, 
                            direction = sdir,
                            rtime = rtime inray}, True)
 
