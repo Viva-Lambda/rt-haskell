@@ -22,8 +22,8 @@ rayColor !ray !world !depth !gen =
     else let hrec = emptyRecord 3
              (hithrec, isHit) = hit world ray 0.001 infty hrec
              HRec{point = recp,
-                   pnormal = recnorm,
-                   dist=_, matPtr = m} = hithrec
+                  pnormal = recnorm,
+                  matPtr = m} = hithrec
          in if isHit
             then let sout = scatter gen m ray hithrec
                      (g, natten, outray, isScattering) = sout

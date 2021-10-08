@@ -74,14 +74,14 @@ instance Hittable MovingSphere where
                         then (hrec, False)
                         else let hpoint = at ry nroot
                                  hnorm = divideS (subtract hpoint sc) sr
-                                 hr = HRec {dist = nroot, point = hpoint,
+                                 hr = HRec {hdist = nroot, point = hpoint,
                                             pnormal = hnorm,
                                             matPtr = sm,
                                             isFront = False}
                              in (setFaceNormal hr ry hnorm, True)
                    else let hpoint = at ry root
                             hnorm = divideS (subtract hpoint sc) sr
-                            hr = HRec {dist = root, point = hpoint,
+                            hr = HRec {hdist = root, point = hpoint,
                                        pnormal = hnorm, matPtr = sm, 
                                        isFront = False}
                         in (setFaceNormal hr ry hnorm, True)

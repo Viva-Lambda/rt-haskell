@@ -3,6 +3,7 @@
 module Hittable.HittableList where
 
 import Hittable.Hittable
+import Hittable.HittableObj
 import Hittable.Sphere
 import Hittable.MovingSphere
 import Hittable.Aabb
@@ -12,17 +13,8 @@ import Material.Material
 import Data.List
 import Data.Function
 
-data HittableObj = HitSphere !Sphere 
-                 | MvHitSphere !MovingSphere
-                    deriving (Show, Eq)
 
 data HittableList = HList [HittableObj] deriving (Show, Eq)
-
-instance Hittable HittableObj where
-    hit !(HitSphere s) !ry !tmin !tmax !hrec = hit s ry tmin tmax hrec
-    hit !(MvHitSphere s) !ry !tmin !tmax !hrec = hit s ry tmin tmax hrec
-    boundingBox (MvHitSphere s) time0 time1 ab = boundingBox s time0 time1 ab
-    boundingBox (HitSphere s) time0 time1 ab = boundingBox s time0 time1 ab
 
 
 instance Hittable HittableList where
@@ -34,11 +26,11 @@ instance Hittable HittableList where
         where hits _ [] _ = []
               hits mx (t:ts) hr =
                 let (nhrec, isHit) = hit t ry tmin mx hr
-                    nhdist = dist nhrec
+                    nhdist = hdist nhrec
                 in if isHit
                    then (nhrec, isHit) : hits nhdist ts nhrec
                    else hits mx ts hr
-              hrecDist (a, _) = dist a
+              hrecDist (a, _) = hdist a
 
     boundingBox !(HList hs) !time0 !time1 !ab =
         if null hs

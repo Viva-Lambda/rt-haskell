@@ -3,6 +3,7 @@
 module Scenes where
 
 import Hittable.HittableList
+import Hittable.HittableObj
 import Hittable.Sphere
 import Hittable.MovingSphere
 import System.Random
@@ -43,7 +44,7 @@ mkRndMat !gen !a !b !isMoving =
         diff = subtract center (VList [4.0, 0.2, 0.0])
         cdiff = magnitude diff
     in if cdiff > 0.9
-       then if chooseMat < 0.8
+       then if (chooseMat > 0.3) && (chooseMat < 0.8)
             then let (rv1, g4) = randV g3
                      (rv2, g5) = randV g4
                      diffAlbedo = multiply rv1 rv2
@@ -77,7 +78,6 @@ mkRndMat !gen !a !b !isMoving =
                                     sphereMat = dieMt
                                 }
        else Nothing
-           -}
 
 mkRndMats :: RandomGen g => g -> Bool -> [(Int, Int)] -> [HittableObj]
 mkRndMats _ _ [] = []
@@ -91,7 +91,8 @@ world !gen !isM = let as = [0..7]
                       coords = [(a - 3, b - 3) | a <- as, b <- bs]
                       objs = mkRndMats gen isM coords
                       groundMat = LambMat $! Lamb {lalbedo = VList [0.5, 0.5, 0.5]}
-                      ground = HitSphere SphereObj {sphereCenter = VList [0.0, -1000.0, 0.0],
+                      ground = HitSphere SphereObj {
+                                    sphereCenter = VList [0.0, -1000.0, 0.0],
                                     sphereRadius = 1000.0,
                                     sphereMat = groundMat}
                       dielM1 = DielMat $! Diel {refIndices = [1.5]}

@@ -3,6 +3,7 @@
 module Hittable.Sphere where
 
 import Vector
+import Utils
 import Hittable.Hittable
 import Hittable.HitRecord
 import Hittable.Aabb
@@ -14,6 +15,12 @@ import Material.Material
 data Sphere  = SphereObj {sphereCenter :: Vector,
                           sphereRadius :: Double, 
                           sphereMat :: Material}
+
+getSphereUV :: Vector -> (Double, Double)
+getSphereUV (VList [x, y, z]) = 
+    let theta = acos (-y)
+        phi = (atan2 (-z) x) + m_pi
+    in (phi / (2*m_pi), theta / m_pi)
 
 instance Eq Sphere where
     (SphereObj {sphereCenter = a,
@@ -50,15 +57,20 @@ instance Hittable Sphere where
                         then (hrec, False)
                         else let hpoint = at ry nroot
                                  hnorm = divideS (subtract hpoint sc) sr
-                                 hr = HRec {dist = nroot, point = hpoint,
+                                 (hu, hv) = getSphereUV hnorm
+                                 hr = HRec {hdist = nroot, point = hpoint,
                                             pnormal = hnorm,
                                             matPtr = sm,
+                                            hUV_u = hu,
+                                            hUV_v = hv,
                                             isFront = False}
                              in (setFaceNormal hr ry hnorm, True)
                    else let hpoint = at ry root
                             hnorm = divideS (subtract hpoint sc) sr
-                            hr = HRec {dist = root, point = hpoint,
-                                       pnormal = hnorm, matPtr = sm, 
+                            (hu, hv) = getSphereUV hnorm
+                            hr = HRec {hdist = root, point = hpoint,
+                                       pnormal = hnorm, matPtr = sm,
+                                       hUV_u = hu, hUV_v = hv,
                                        isFront = False}
                         in (setFaceNormal hr ry hnorm, True)
 
