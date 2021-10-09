@@ -63,7 +63,9 @@ I think, I have a problem with random function not kicking in during the
 rendering of the final scenes of oneweekend. Not sure why though, any ideas
 would be appreciated
 
-- Checkered texture from branch 14-
+- Checkered texture from branch 14-texture
+
+![checker-image-01](./images/checker.png)
 
 ## Some Notes on Performance
 
