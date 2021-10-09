@@ -33,6 +33,7 @@ library
       Hittable.HitRecord
       Hittable.Hittable
       Hittable.HittableList
+      Hittable.HittableObj
       Hittable.MovingSphere
       Hittable.Sphere
       Lib
@@ -42,6 +43,10 @@ library
       Random
       Ray
       Scenes
+      Texture.Checker
+      Texture.SolidColor
+      Texture.Texture
+      Texture.TextureObj
       Utils
       Vector
   other-modules:

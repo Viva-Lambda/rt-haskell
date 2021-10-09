@@ -49,11 +49,13 @@ instance Scatterer Metal where
     scatter !gen !(Met {malbedo = a, fuzz = b}) !inray !hrec =
         let recp = point hrec
             recn = pnormal hrec
+            hu = hUV_u hrec
+            hv = hUV_v hrec
             indir = toUnit $! direction inray
             refdir = reflect indir recn
             (uvec, g) = randomUnitSphere gen
             rdir = add refdir (multiplyS uvec b)
-        in (g, a, Rd {origin = recp, 
+        in (g, color a hu hv recp, Rd {origin = recp, 
                       direction = rdir, 
                       rtime = rtime inray}, (dot rdir recn) > 0)
 

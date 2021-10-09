@@ -7,6 +7,8 @@ import Hittable.HittableObj
 import Hittable.Sphere
 import Hittable.MovingSphere
 import Texture.SolidColor
+import Texture.Checker
+import Texture.TextureObj
 import System.Random
 import Random
 import Vector
@@ -49,7 +51,7 @@ mkRndMat !gen !a !b !isMoving =
             then let (rv1, g4) = randV g3
                      (rv2, g5) = randV g4
                      diffAlbedo = multiply rv1 rv2
-                     laMat = LambMat $! Lamb {lalbedo = SolidV diffAlbedo}
+                     laMat = LambMat $! Lamb {lalbedo = SolidTexture $! SolidV diffAlbedo}
                 in if isMoving
                    then let (rv3, _) = randomDouble g5 0.0 0.5
                         in Just $! MvHitSphere MovSphereObj {
@@ -66,7 +68,7 @@ mkRndMat !gen !a !b !isMoving =
             else if chooseMat >= 0.8 && chooseMat < 0.9
                  then let (rv1, g4) = randomVec (0.5, 1.0) g3
                           (fz, _) = randomDouble g4 0.0 0.5
-                          metMat = MetalMat $! Met {malbedo = rv1, fuzz = fz}
+                          metMat = MetalMat $! Met {malbedo = SolidTexture $!(SolidV rv1), fuzz = fz}
                       in Just $! HitSphere SphereObj {
                                     sphereCenter = center,
                                     sphereRadius = 0.2,
@@ -91,19 +93,19 @@ world !gen !isM = let as = [0..7]
                       bs = [0..7]
                       coords = [(a - 3, b - 3) | a <- as, b <- bs]
                       objs = mkRndMats gen isM coords
-                      groundMat = LambMat $! Lamb {lalbedo = SolidV $ VList [0.5, 0.5, 0.5]}
+                      groundMat = LambMat $! Lamb {lalbedo = SolidTexture $! SolidV ( VList [0.5, 0.5, 0.5])}
                       ground = HitSphere SphereObj {
                                     sphereCenter = VList [0.0, -1000.0, 0.0],
                                     sphereRadius = 1000.0,
                                     sphereMat = groundMat}
                       dielM1 = DielMat $! Diel {refIndices = [1.5]}
-                      lambM2 = LambMat $! Lamb {lalbedo =SolidV $ VList [0.4, 0.2, 0.1]}
+                      lambM2 = LambMat $! Lamb {lalbedo = SolidTexture $! SolidV ( VList [0.4, 0.2, 0.1])}
                       metalM3 = MetalMat $! Met {
-                                        malbedo = VList [0.7, 0.6, 0.5],
+                                        malbedo = SolidTexture $! SolidV ( VList [0.7, 0.6, 0.5] ),
                                         fuzz = 0.0
                                     }
                       dielObj = HitSphere $! SphereObj {
-                            sphereCenter = VList [0.0, 1.0, 0.0],
+                            sphereCenter =VList [0.0, 1.0, 0.0],
                             sphereRadius = 1.0,
                             sphereMat = dielM1 
                         }
@@ -113,7 +115,7 @@ world !gen !isM = let as = [0..7]
                             sphereMat = lambM2
                         }
                       metObj = HitSphere $! SphereObj {
-                            sphereCenter = VList [4.0, 1.0, 0.0],
+                            sphereCenter =  VList [4.0, 1.0, 0.0],
                             sphereRadius = 1.0,
                             sphereMat = metalM3
                         }
@@ -140,14 +142,14 @@ diffuseSphere =
                             sphereCenter = VList [-4.0, 1.0, 0.0],
                             sphereRadius = 1.0,
                             sphereMat = LambMat $! Lamb {
-                                    lalbedo = SolidV $ VList [0.4, 0.2, 0.1]
+                                    lalbedo =SolidTexture $! SolidV ( VList [0.4, 0.2, 0.1])
                                     }
                         },
             HitSphere $ SphereObj {
                             sphereCenter = VList [0.0, -1000.0, 0.0],
                             sphereRadius = 1000.0,
                             sphereMat =  LambMat $! Lamb {
-                                    lalbedo = SolidV $ VList [0.5, 0.5, 0.5]
+                                    lalbedo =SolidTexture $! SolidV ( VList [0.5, 0.5, 0.5])
                                     }
                         }
             ]
@@ -194,6 +196,41 @@ randomOneWeekendFinalSceneStatic g = randomOneWeekendFinalScene g False
 randomOneWeekendFinalSceneMove ::RandomGen g => g -> Scene
 randomOneWeekendFinalSceneMove g = randomOneWeekendFinalScene g True
 
+-- two spheres for checkered texture
+
+twoCheckeredSpheres :: Scene
+twoCheckeredSpheres =
+    let s1 = SolidV $! VList [0.2, 0.3, 0.1]
+        s2 = SolidV $! VList [0.9, 0.9, 0.8]
+        tobj = CheckerTexture $! CheckT s1 s2
+        lmb = LambMat $! Lamb {lalbedo = tobj}
+        sp1 = SphereObj {sphereCenter = VList [0.0, -10.0, 0.0],
+                         sphereRadius = 10,
+                         sphereMat = lmb}
+        sp2 = SphereObj {sphereCenter = VList [0.0, 10.0, 0.0],
+                         sphereRadius = 10,
+                         sphereMat = lmb}
+        hs = HList [HitSphere sp1, HitSphere sp2]
+        imw = 400
+        aratio = 16.0 / 9.0
+        imh = double2Int $! (int2Double imw) / aratio
+    in SceneVals {
+        img_width = imw,
+        aspect_ratio = aratio,
+        img_height = imh,
+        nb_samples = 50,
+        bounce_depth = 20,
+        cam_look_from = VList [13.0, 2.0, 3.0],
+        cam_look_to = VList [0.0, 0.0, 0.0],
+        cam_vfov = 20.0,
+        cam_vup = VList [0.0, 1.0, 0.0],
+        cam_focus_distance = 10.0,
+        cam_aperture = 0.0,
+        scene_obj = hs
+    }
+
+
+
 
 chooseScene :: RandomGen g => g -> Int -> (Int, Scene)
 chooseScene g choice =
@@ -201,5 +238,6 @@ chooseScene g choice =
         0 -> (nb_samples diffuseSphere, diffuseSphere)
         1 -> (nb_samples $ randomOneWeekendFinalSceneStatic g, randomOneWeekendFinalSceneStatic g)
         2 -> (nb_samples $ randomOneWeekendFinalSceneMove g, randomOneWeekendFinalSceneMove g)
+        3 -> (nb_samples twoCheckeredSpheres, twoCheckeredSpheres)
         _ -> (nb_samples diffuseSphere, diffuseSphere)
 

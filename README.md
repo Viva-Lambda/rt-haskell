@@ -43,6 +43,27 @@ repository.
 
 ![metal-image-02](./images/fuzzmetal.png)
 
+- Dielectric from branch 10-dielectric
+
+![dielectric-01](./images/diel01.png)
+
+- Camera focus from branch 11-camera
+
+![focus-image-02](./images/focus.png)
+
+- A version of final scene from branch 12-oneweekend
+
+![oneweekend-final-image-01](./images/final-oneweekend-diffuse.png)
+
+- Another version of final scene branch 12-oneweekend
+
+![oneweekend-final-image-02](./images/final-oneweekend-metallic.png)
+
+I think, I have a problem with random function not kicking in during the
+rendering of the final scenes of oneweekend. Not sure why though, any ideas
+would be appreciated
+
+- Checkered texture from branch 14-
 
 ## Some Notes on Performance
 

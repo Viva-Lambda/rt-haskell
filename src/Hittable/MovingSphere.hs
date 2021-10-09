@@ -33,22 +33,22 @@ getMSphereCenter !(MovSphereObj {msphereCenter1 = a,
 instance Eq MovingSphere where
     a == b =
         let MovSphereObj {msphereCenter1 = c, msphereCenter2 = d,
-                          msphereRadius = e, msphereMat = f} = a
+                          msphereRadius = e, msphereMat = _} = a
             MovSphereObj {msphereCenter1 = g, msphereCenter2 = h,
-                          msphereRadius = i, msphereMat = j} = b
-        in (c == g) && (d == h) && (e == i) && (f == j)
+                          msphereRadius = i, msphereMat = _} = b
+        in (c == g) && (d == h) && (e == i) -- && (f == j)
 
 instance Show MovingSphere where
     show (MovSphereObj {msphereCenter1 = a,
                         msphereCenter2 = b,
                         msphereRadius = c,
-                        msphereMat = d}) =
+                        msphereMat = _}) =
         let m1 = "Moving Shpere with "
             m2 = m1 ++ "center1 " ++ show a
             m3 = m2 ++ " center2 " ++ show b
             m4 = m3 ++ " radius " ++ show c
-            m5 = m4 ++ " material " ++ show d
-        in m5
+            -- m5 = m4 ++ " material " ++ show d
+        in m4
 
 
 instance Hittable MovingSphere where

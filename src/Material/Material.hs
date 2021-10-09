@@ -5,14 +5,12 @@ module Material.Material where
 
 import Vector
 import Ray
-import Texture.Texture
-import Texture.SolidColor
+import Texture.TextureObj
 
 data Material = LambMat Lambertian
                 | MetalMat Metal 
                 | DielMat Dielectric
                 | NoMat
-                deriving (Eq, Show)
 
 type Color = Vector
 
@@ -20,7 +18,7 @@ type Color = Vector
 
 -- lambertian material
 
-data Lambertian = Lamb {lalbedo :: SolidColor} deriving (Eq, Show)
+data Lambertian = Lamb {lalbedo :: TextureObj}
 
 {-
 data Lambertian a where
@@ -30,7 +28,7 @@ data Lambertian a where
 -}
 
 -- metal material
-data Metal = Met {malbedo :: Color, fuzz :: Double } deriving (Eq, Show)
+data Metal = Met {malbedo :: TextureObj, fuzz :: Double }
 
 {-
 data Metal a b where
@@ -39,7 +37,7 @@ data Metal a b where
 -}
 
 -- dielectric material
-data Dielectric = Diel {refIndices :: [Double]} deriving (Eq, Show)
+data Dielectric = Diel {refIndices :: [Double]}
 
 schlickRef :: Double -> Double -> Double
 schlickRef cosi ref_idx =
