@@ -9,7 +9,7 @@ randomDouble :: RandomGen g => g -> Double -> Double -> (Double, g)
 randomDouble !generator !low !high = if low > high
                                      then ranD high low
                                      else ranD low high
-    where ranD lval hval = randomR (low, high) generator
+    where ranD lval hval = randomR (lval, hval) generator
 
 randomInt :: RandomGen g => g -> Int -> Int -> (Int, g)
 randomInt gen low high = 
@@ -30,9 +30,17 @@ randomGens !gen !size = foldGens [] gen size
                                     
 
 randomDoubles !generator !low !high = if low > high
-                                      then rand high low
-                                      else rand low high
-    where rand lval hval = randomRs (low, high) generator
+                                      then ranD high low
+                                      else ranD low high
+    where ranD lval hval = randomRs (lval, hval) generator
+
+
+randomRPtr :: (Ord a, Random a, RandomGen g) => g -> a -> a -> ([a], Int)
+
+randomRPtr gen !low !high = if low > high
+                            then randPtr high low
+                            else randPtr low high
+    where randPtr lv hv = (randomRs (lv, hv) gen, 0)
 
                            
 
