@@ -9,6 +9,7 @@ import Hittable.MovingSphere
 import Texture.SolidColor
 import Texture.Checker
 import Texture.TextureObj
+import Texture.Noise
 import System.Random
 import Random
 import Vector
@@ -154,7 +155,7 @@ diffuseSphere =
                         }
             ]
     in SceneVals {
-         img_width = imw,
+        img_width = imw,
         aspect_ratio = aratio,
         img_height = imh,
         nb_samples = 50,
@@ -229,6 +230,38 @@ twoCheckeredSpheres =
         scene_obj = hs
     }
 
+-- two perlin spheres
+
+twoPerlinSpheres :: RandomGen g => g -> Scene
+twoPerlinSpheres g =
+    let ptex = NoiseTexture $! mkPerlinNoise g 4.0
+        lmb = LambMat $! Lamb {lalbedo = ptex}
+        sp1 = SphereObj {sphereCenter = VList [0.0, -1000.0, 0.0],
+                         sphereRadius = 1000,
+                         sphereMat = lmb}
+        sp2 = SphereObj {sphereCenter = VList [0.0, 2.0, 0.0],
+                         sphereRadius = 2,
+                         sphereMat = lmb}
+        hs = HList [HitSphere sp1, HitSphere sp2]
+        imw = 320
+        aratio = 16.0 / 9.0
+        imh = double2Int $! (int2Double imw) / aratio
+    in SceneVals {
+        img_width = imw,
+        aspect_ratio = aratio,
+        img_height = imh,
+        nb_samples = 10,
+        bounce_depth = 10,
+        cam_look_from = VList [13.0, 2.0, 3.0],
+        cam_look_to = VList [0.0, 0.0, 0.0],
+        cam_vfov = 20.0,
+        cam_vup = VList [0.0, 1.0, 0.0],
+        cam_focus_distance = 10.0,
+        cam_aperture = 0.1,
+        scene_obj = hs
+    }
+
+
 
 
 
@@ -239,5 +272,6 @@ chooseScene g choice =
         1 -> (nb_samples $ randomOneWeekendFinalSceneStatic g, randomOneWeekendFinalSceneStatic g)
         2 -> (nb_samples $ randomOneWeekendFinalSceneMove g, randomOneWeekendFinalSceneMove g)
         3 -> (nb_samples twoCheckeredSpheres, twoCheckeredSpheres)
+        4 -> (nb_samples $ twoPerlinSpheres g, twoPerlinSpheres g)
         _ -> (nb_samples diffuseSphere, diffuseSphere)
 

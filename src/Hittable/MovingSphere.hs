@@ -52,6 +52,7 @@ instance Show MovingSphere where
 
 
 instance Hittable MovingSphere where
+    {-# INLINE hit #-}
     hit !s !(Rd {origin = ro, rtime = t0, direction = rd}) !tmin !tmax !hrec =
         let sr = msphereRadius s
             sm = msphereMat s

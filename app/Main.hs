@@ -76,7 +76,7 @@ renderScene !cs !g scn =
 
           foldColor rng coord nsmp cmra sobjs bd =
             let rngs = randomGens rng nsmp
-                pcols = [mkColor coord gn cmra sobjs bd | gn <- rngs] 
+                pcols = [mkColor coord gn cmra sobjs bd | gn <- rngs]
             in foldl1 add pcols
 
           mkColor coord rng cmr sobjs bdepth =
@@ -105,7 +105,7 @@ printColor = do
         pixCoords = [(j,i) | j <- jjs, -- outer loop first
                              i <- iis];
         -- choose scene
-        (smpl, scne) = chooseScene g 3;
+        (smpl, scne) = chooseScene g 4;
         ps = renderScene pixCoords g scne;
         }
     -- print pixCoords

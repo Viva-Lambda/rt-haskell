@@ -18,6 +18,7 @@ data HittableList = HList [HittableObj] deriving (Show, Eq)
 
 
 instance Hittable HittableList where
+    {-# INLINE hit #-}
     hit !(HList (h:hs)) !ry !tmin !tmax !hrec =
         let hitobjs = hits tmax (h:hs) hrec -- [(hrec, Bool)]
         in if null hitobjs

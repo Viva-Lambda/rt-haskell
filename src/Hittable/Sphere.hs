@@ -34,6 +34,7 @@ instance Show Sphere where
 
 
 instance Hittable Sphere where
+    {-# INLINE hit #-}
     hit !(SphereObj {sphereCenter = sc,
                     sphereRadius = sr,
                     sphereMat = sm}) !(Rd {origin = ro, 

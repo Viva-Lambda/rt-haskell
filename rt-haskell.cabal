@@ -44,6 +44,7 @@ library
       Ray
       Scenes
       Texture.Checker
+      Texture.Noise
       Texture.SolidColor
       Texture.Texture
       Texture.TextureObj
@@ -66,7 +67,7 @@ executable rt-haskell.out
       Paths_rt_haskell
   hs-source-dirs:
       app
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall -v2 -Werror -O2 -prof -fprof-auto -funbox-strict-fields
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N -Wall -Werror -O2 -prof -fprof-auto -funbox-strict-fields
   build-depends:
       base >=4.8.2.0
     , containers >=0.5.6.2

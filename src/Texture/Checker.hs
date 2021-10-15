@@ -9,6 +9,7 @@ import Texture.Texture
 data Checker where
     CheckT :: forall a b. (Eq a, Eq b, Texture a, Texture b) => a -> b -> Checker
 
+
 instance Texture Checker where
     color (CheckT a b) hu hv hp = 
         let xv = vget hp 0

@@ -3,12 +3,18 @@
 module Random where
 
 import System.Random
+import GHC.Float
 
 randomDouble :: RandomGen g => g -> Double -> Double -> (Double, g)
 randomDouble !generator !low !high = if low > high
                                      then rand high low
                                      else rand low high
     where rand lval hval = randomR (low, high) generator
+
+randomInt :: RandomGen g => g -> Int -> Int -> (Int, g)
+randomInt gen low high = 
+    let (d, g2) = randomDouble gen (int2Double low) (int2Double high)
+    in (double2Int d, g2)
 
 randomDoubles :: RandomGen g => g -> Double -> Double -> [Double]
 
