@@ -7,9 +7,9 @@ import GHC.Float
 
 randomDouble :: RandomGen g => g -> Double -> Double -> (Double, g)
 randomDouble !generator !low !high = if low > high
-                                     then rand high low
-                                     else rand low high
-    where rand lval hval = randomR (low, high) generator
+                                     then ranD high low
+                                     else ranD low high
+    where ranD lval hval = randomR (low, high) generator
 
 randomInt :: RandomGen g => g -> Int -> Int -> (Int, g)
 randomInt gen low high = 
@@ -26,7 +26,7 @@ randomGens !gen !size = foldGens [] gen size
                                else if (length es) > size
                                     then take size es
                                     else let (g1, g2) = split g
-                                         in foldGens (g1:g2:es) g1 size
+                                         in foldGens (g1:g2:es) g2 size
                                     
 
 randomDoubles !generator !low !high = if low > high

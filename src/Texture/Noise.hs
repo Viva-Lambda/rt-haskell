@@ -23,10 +23,6 @@ data Perlin = PNoise {
         perm_z :: [Int]
     } -- PNoise [Vector] [Int] [Int] [Int]
 
-genPermute :: RandomGen g => ([Int] -> g -> [Int]) -> g -> Int -> [Int]
-genPermute permuteFn gen pointNb = let points = [0..(pointNb - 1)]
-                                   in permuteFn points gen
-
 swapEl :: Int -> Int -> [Int] -> [Int]
 swapEl !i !j !iis = let eli = iis !! i 
                         elj = iis !! j
@@ -62,28 +58,6 @@ emptyMPairV3 :: MultiPair Vector
 emptyMPairV3 = emptyMPairV 3
 mkMPair :: a -> a -> a -> a -> a -> a -> a -> a -> MultiPair a
 mkMPair a1 a2 a3 a4 a5 a6 a7 a8 = (((a1, a2), (a3, a4)),((a5, a6), (a7, a8)))
-
-randMPairV :: RandomGen g => g -> (Double, Double) -> Int -> (g, MultiPair Vector)
-randMPairV gen (mn, mx) size =
-    let (v1, g1)=randomVecGen (mn, mx) gen size
-        (v2, g2)=randomVecGen (mn, mx) g1 size
-        (v3, g3)=randomVecGen (mn, mx) g2 size
-        (v4, g4)=randomVecGen (mn, mx) g3 size
-        (v5, g5)=randomVecGen (mn, mx) g4 size
-        (v6, g6)=randomVecGen (mn, mx) g5 size
-        (v7, g7)=randomVecGen (mn, mx) g6 size
-        (v8, g8)=randomVecGen (mn, mx) g7 size
-    in (g8, mkMPair v1 v2 v3 v4 v5 v6 v7 v8)
-
-
-randMPairVec :: RandomGen g => g -> Int -> (g, MultiPair Vector )
-randMPairVec g size = randMPairV g (0.0, 1.0) size
-
-randMPairV3 :: RandomGen g => g -> (Double, Double) -> (g, MultiPair Vector )
-randMPairV3 g a = randMPairV g a 3
-
-randMPairVec3 :: RandomGen g => g -> (g, MultiPair Vector )
-randMPairVec3 g = randMPairV3 g (0.0, 1.0)
 
 getMPairV :: Int -> Int -> Int -> MultiPair Vector -> Vector
 getMPairV i j k a =
@@ -164,14 +138,10 @@ perlinInnerNoise :: Perlin -> Triplet Int -> Triplet Int -> MultiPair Vector -> 
 perlinInnerNoise !prln !(i,j,k) !(di, dj, dk) !mpv =
     let PNoise {prandVec = vs, perm_x = xs, perm_y = ys,
                 perm_z = zs} = prln
-        x_index = (i + di) .&. 255
-        y_index = (j + dj) .&. 255
-        z_index = (k + dk) .&. 255
-        xval = xs !! x_index
-        yval = ys !! y_index
-        zval = zs !! z_index
-        rindex = xor (xor xval yval) zval
-        rvec = vs !! rindex
+        xval = xs !! ( (i + di) .&. 255)
+        yval = ys !! ( (j + dj) .&. 255 )
+        zval = zs !! ( (k + dk) .&. 255)
+        rvec = vs !! ( xor (xor xval yval) zval )
     in replaceMPairV i j k rvec mpv
 
 
