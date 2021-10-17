@@ -33,7 +33,7 @@ swapEl !i !j !iis = let eli = iis !! i
 
 
 perlinInnerPermute :: RandomGen g => g -> Int -> [Int] -> ([Int], g)
-perlinInnerPermute !g !i !xs =
+perlinInnerPermute g !i !xs =
     let (target, g2) = randomInt g 0 i
     in (swapEl target i xs, g2)
 
@@ -160,7 +160,7 @@ perlinNoise !prln !(VList [px, py, pz]) =
         u = px - (int2Double i)
         v = py - (int2Double j)
         w = pz - (int2Double k)
-        intTrips = [(di,dj,dk) | di <- [0..2], dj <- [0..2], dk <- [0..2]]
+        intTrips = [(di,dj,dk) | di <- [0,1], dj <- [0,1], dk <- [0,1]]
         nbDims = vsize (head vs)
         cvec = emptyMPairV vlen
         -- foldfn (a -> b -> a) :: (MultiPair Vector -> Triplet Int -> MultiPair Vector)
@@ -182,11 +182,14 @@ perlinTurbulance !prln !point !depth =
 
 mkPerlin :: RandomGen g => g -> Int -> Int -> Perlin
 mkPerlin g nb_points vecSize =
+    let points = [0..(nb_points - 1)]
         -- foldFn :: (a -> b -> a) :: ([] -> _ -> [i])
-    let (vs, (rvals, nptr)) = randomVecGens (-1.0, 1.0) g vecSize nb_points
+        foldfn acc _ = let (v, g1) = acc
+                           (fv, g2) = randomVecGen (-1.0, 1.0) g1 vecSize
+                       in (v ++ [fv], g2)
+        (vs, g1) = foldl' foldfn ([], g) points
         unitvs = map toUnit vs
-        points = [0..(nb_points - 1)]
-        (x_ps, ng) = perlinPermute g points
+        (x_ps, ng) = perlinPermute g1 points
         (y_ps, nng) = perlinPermute ng points
         (z_ps, _) = perlinPermute nng points
     in PNoise {perm_x = x_ps, perm_y = y_ps, perm_z = z_ps, prandVec = unitvs}
