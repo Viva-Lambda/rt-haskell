@@ -85,9 +85,9 @@ mkRndMat gen !a !b !isMoving =
 
 mkRndMats :: RandomGen g => g -> Bool -> [(Int, Int)] -> [HittableObj]
 mkRndMats _ _ [] = []
-mkRndMats gen !d !((a, b):es) = case mkRndMat gen a b d of
-                                     (Just c, g) -> c : mkRndMats g d es
-                                     (Nothing, g) -> mkRndMats g d es
+mkRndMats gen !isMov !((a, b):es) = case mkRndMat gen a b isMov of
+                                     (Just c, g) -> c : mkRndMats g isMov es
+                                     (Nothing, g) -> mkRndMats g isMov es
 
 world :: RandomGen g => g -> Bool -> HittableList
 world gen !isM = let as = [0..7]

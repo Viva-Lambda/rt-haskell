@@ -63,6 +63,14 @@ repository.
 
 ![oneweekend-final-image-03](./images/oneweekendfinal.png)
 
+- Final one weekend final branch 14-texture
+
+![oneweekend-final-image-04](./images/oneweekend.png)
+
+- Motion blur branch 14-texture
+
+![motion-blur-image-01](./images/motionblur.png)
+
 - Checkered texture from branch 14-texture
 
 ![checker-image-01](./images/checker.png)

@@ -26,11 +26,6 @@ imageHeight = double2Int $! (int2Double imageWidth) / aspectRatio
 aspectRatio :: Double
 aspectRatio = 16.0 / 9.0
 
-sample_per_pixel :: Int
-sample_per_pixel = 80
-
-bounceDepth :: Int
-bounceDepth = 30
 
 -- world
 
@@ -46,10 +41,10 @@ mkPixelRay !(j,i) gen !cm =
     in getRay g2 cm u v
 
 -- rendering ppm related
-printPPMHeader :: IO ()
-printPPMHeader = do
+printPPMHeader :: Int -> Int -> IO ()
+printPPMHeader imw imh = do
     putStrLn "P3"
-    putStrLn $ show imageWidth ++ " " ++ show imageHeight
+    putStrLn $ show imw ++ " " ++ show imh
     putStrLn "255"
 
 -- make pixel colors from pixel coordinates
@@ -97,18 +92,23 @@ printPixels !(p:ps) nbsmp = do
 printColor :: IO ()
 printColor = do
     tstart <- getCurrentTime
-    _ <- printPPMHeader
     g <- newStdGen
     let {
-        jjs = reverse [0..(imageHeight-1)]; 
-        iis = [0..(imageWidth-1)];
+        -- choose scene = 
+        -- 0: diffuse, 1: oneweekend final
+        -- 2: oneweekend final motion blur
+        (smpl, scne) = chooseScene g 4;
+        imw = img_width scne;
+        imh = img_height scne;
+        jjs = reverse [0..(imh-1)]; 
+        iis = [0..(imw-1)];
         pixCoords = [(j,i) | j <- jjs, -- outer loop first
                              i <- iis];
-        -- choose scene
-        (smpl, scne) = chooseScene g 2;
+
         ps = renderScene pixCoords g scne;
         }
     -- print pixCoords
+    _ <- printPPMHeader imw imh
     _ <- printPixels ps smpl
     tend <- getCurrentTime
     let {diff = diffUTCTime tend tstart;
