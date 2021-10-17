@@ -37,8 +37,11 @@ executables:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+      #- -fllvm -optlo-O3 -optl-ffast-math
+      #- -fexcess-precision 
+      #- -funfolding-use-threshold1000
     - -Wall
-    - -v2
+      #- -v2
     - -Werror
     - -O2
     - -prof

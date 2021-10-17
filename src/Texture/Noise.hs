@@ -32,18 +32,18 @@ swapEl !i !j !iis = let eli = iis !! i
                     in lft ++ [elj] ++ mid ++ [eli] ++ right
 
 
-perlinInnerPermute :: RandomGen g => g -> Int -> [Int] -> [Int]
+perlinInnerPermute :: RandomGen g => g -> Int -> [Int] -> ([Int], g)
 perlinInnerPermute !g !i !xs =
-    let (target, _) = randomInt g 0 i
-    in swapEl target i xs
+    let (target, g2) = randomInt g 0 i
+    in (swapEl target i xs, g2)
 
-perlinPermute :: RandomGen g => [g] -> [Int] -> [Int]
-perlinPermute gens points =
+perlinPermute :: RandomGen g => g -> [Int] -> ([Int], g)
+perlinPermute gen points =
     let ns = reverse points
-        rvals = [(gv, i) | gv <- gens, i <- ns]
-        -- foldFn :: (a -> b -> a) :: (nmap -> (i1, i2) -> nmap)
-        foldFn acc indx = let (g, idx) = indx in perlinInnerPermute g idx acc
-    in foldl' foldFn ns rvals
+        -- foldFn :: (a -> b -> a) :: (nmap -> i1 -> nmap)
+        foldFn acc indx = let (lst, ng) = acc
+                          in perlinInnerPermute ng indx lst
+    in foldl' foldFn (ns, gen) ns
 
 
 type Triplet a = (a, a, a)
@@ -59,8 +59,8 @@ emptyMPairV3 = emptyMPairV 3
 mkMPair :: a -> a -> a -> a -> a -> a -> a -> a -> MultiPair a
 mkMPair a1 a2 a3 a4 a5 a6 a7 a8 = (((a1, a2), (a3, a4)),((a5, a6), (a7, a8)))
 
-getMPairV :: Int -> Int -> Int -> MultiPair Vector -> Vector
-getMPairV i j k a =
+getMPair :: Int -> Int -> Int -> MultiPair a -> a
+getMPair i j k a =
     if i == 1
     then let i1 = snd a
          in if j == 1
@@ -83,11 +83,11 @@ getMPairV i j k a =
                     then snd j0
                     else fst j0
 
-getMPairVTrip :: Triplet Int -> MultiPair Vector -> Vector
-getMPairVTrip (i, j, k) = getMPairV i j k
+getMPairTrip :: Triplet Int -> MultiPair a -> a
+getMPairTrip (i, j, k) = getMPair i j k
 
-replaceMPairV :: Int -> Int -> Int -> Vector -> MultiPair Vector -> MultiPair Vector
-replaceMPairV !i !j !k !v !mpv =
+replaceMPair :: Int -> Int -> Int -> a -> MultiPair a -> MultiPair a
+replaceMPair !i !j !k !v !mpv =
     let (((b, c), (d, e)),((f, g), (h, l))) = mpv
     in if i == 1
        then if j == 1
@@ -108,20 +108,20 @@ replaceMPairV !i !j !k !v !mpv =
 
 perlinInnerInterp :: Triplet Double -> Triplet Double -> Triplet Int -> Vector -> Double
 perlinInnerInterp !(uu, vv, ww) !(u, v, w) !(i, j, k) !cijk =
-    let ijk_uvw a b = a * b + (1 - a) * (1 - b)
+    let f a b = a * b + (1 - a) * (1 - b)
         ifl = int2Double i
         jfl = int2Double j
         kfl = int2Double k
         weight = VList [u - ifl, v - jfl, w - kfl]
         wdot = dot weight cijk
-        jvv = ijk_uvw jfl vv
-        iuu = ijk_uvw ifl uu
-        kww = ijk_uvw kfl ww
+        jvv = f jfl vv
+        iuu = f ifl uu
+        kww = f kfl ww
     in jvv * iuu * kww * wdot
 
 perlinInterp :: MultiPair Vector -> Triplet Double -> Double
 perlinInterp c uvw =
-    let intTrips = [(i,j,k) | i <- [0..2], j <- [0..2], k <- [0..2]]
+    let intTrips = [(i,j,k) | i <- [0, 1], j <- [0, 1], k <- [0, 1]]
         fuvw a = a * a * (3 - 2 * a)
         (u, v, w) = uvw
         uu = fuvw u
@@ -129,20 +129,22 @@ perlinInterp c uvw =
         ww = fuvw w
         acc = 0.0
         -- foldfn (a -> b -> a) :: (Double -> Triplet Int -> Double)
-        foldfn a trips = let v = getMPairVTrip trips c
+        foldfn a trips = let v = getMPairTrip trips c
                          in a + (perlinInnerInterp (uu, vv, ww) uvw trips v)
-    in foldl' foldfn acc intTrips
+    in sum [
+        perlinInnerInterp (uu, vv, ww) uvw t (getMPairTrip t c) | t <- intTrips
+        ]
 
 perlinInnerNoise :: Perlin -> Triplet Int -> Triplet Int -> MultiPair Vector -> MultiPair Vector
 
 perlinInnerNoise !prln !(i,j,k) !(di, dj, dk) !mpv =
     let PNoise {prandVec = vs, perm_x = xs, perm_y = ys,
                 perm_z = zs} = prln
-        xval = xs !! ( (i + di) .&. 255)
+        xval = xs !! ( (i + di) .&. 255 )
         yval = ys !! ( (j + dj) .&. 255 )
-        zval = zs !! ( (k + dk) .&. 255)
+        zval = zs !! ( (k + dk) .&. 255 )
         rvec = vs !! ( xor (xor xval yval) zval )
-    in replaceMPairV i j k rvec mpv
+    in replaceMPair i j k rvec mpv
 
 
 perlinNoise :: Perlin -> Vector -> Double
@@ -168,28 +170,25 @@ perlinNoise !prln !(VList [px, py, pz]) =
 
 perlinTurbulance :: Perlin -> Vector -> Int -> Double
 perlinTurbulance !prln !point !depth =
-    let acc = 0.0
-        tpoint = point
-        weight = 1.0
-        -- foldfn (a -> b -> a) :: ((Double, Vector, Double) -> Int -> (Double, Vector, Double))
+    let -- foldfn (a -> b -> a) :: ((Double, Vector, Double) -> Int -> (Double, Vector, Double))
         foldfn accs d = let (a, tmp, w) = accs
                             noiseVal = perlinNoise prln tmp 
                             naval = noiseVal * w + a
                             nweight = w * 0.5
                             ntmp = multiplyS tmp 2
                         in (naval, ntmp, nweight)
-        (nAcc, ntemp, nweight) = foldl' foldfn (acc, tpoint, weight) [0..depth]
+        (nAcc, ntemp, nweight) = foldl' foldfn (0.0, point, 1.0) [0..depth]
     in abs nAcc
 
 mkPerlin :: RandomGen g => g -> Int -> Int -> Perlin
 mkPerlin g nb_points vecSize =
-    let gens = randomGens g nb_points
-        (vs, gs) = unzip [(randomVecGen (-1.0, 1.0) gen vecSize) | gen <- gens]
+        -- foldFn :: (a -> b -> a) :: ([] -> _ -> [i])
+    let (vs, (rvals, nptr)) = randomVecGens (-1.0, 1.0) g vecSize nb_points
         unitvs = map toUnit vs
         points = [0..(nb_points - 1)]
-        x_ps = perlinPermute gs points
-        y_ps = perlinPermute gs points
-        z_ps = perlinPermute gs points
+        (x_ps, ng) = perlinPermute g points
+        (y_ps, nng) = perlinPermute ng points
+        (z_ps, _) = perlinPermute nng points
     in PNoise {perm_x = x_ps, perm_y = y_ps, perm_z = z_ps, prandVec = unitvs}
 
 mkPerlinV3 :: RandomGen g => g -> Int -> Perlin

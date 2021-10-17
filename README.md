@@ -59,9 +59,9 @@ repository.
 
 ![oneweekend-final-image-02](./images/final-oneweekend-metallic.png)
 
-I think, I have a problem with random function not kicking in during the
-rendering of the final scenes of oneweekend. Not sure why though, any ideas
-would be appreciated
+- Fixed version of final scene. The fix happens around branch 14-texture
+
+![oneweekend-final-image-03](./images/oneweekendfinal.png)
 
 - Checkered texture from branch 14-texture
 

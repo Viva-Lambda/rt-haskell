@@ -27,10 +27,10 @@ aspectRatio :: Double
 aspectRatio = 16.0 / 9.0
 
 sample_per_pixel :: Int
-sample_per_pixel = 50
+sample_per_pixel = 80
 
 bounceDepth :: Int
-bounceDepth = 20
+bounceDepth = 30
 
 -- world
 
@@ -38,9 +38,9 @@ bounceDepth = 20
 -- camera related
 
 mkPixelRay :: RandomGen g => (Int, Int) -> g -> Camera -> (Ray, g)
-mkPixelRay !(j,i) !gen !cm =
-    let (udouble, g1) = rand gen
-        (vdouble, g2) = rand g1
+mkPixelRay !(j,i) gen !cm =
+    let (udouble, g1) = randval gen
+        (vdouble, g2) = randval g1
         u = (udouble + (int2Double i)) / (int2Double (imageWidth - 1))
         v = (vdouble + (int2Double j)) / (int2Double (imageHeight - 1))
     in getRay g2 cm u v
@@ -105,7 +105,7 @@ printColor = do
         pixCoords = [(j,i) | j <- jjs, -- outer loop first
                              i <- iis];
         -- choose scene
-        (smpl, scne) = chooseScene g 4;
+        (smpl, scne) = chooseScene g 2;
         ps = renderScene pixCoords g scne;
         }
     -- print pixCoords

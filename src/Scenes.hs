@@ -35,11 +35,11 @@ data Scene = SceneVals {
     }
 
 
-mkRndMat :: RandomGen g => g -> Int -> Int -> Bool -> Maybe HittableObj
-mkRndMat !gen !a !b !isMoving =
-    let (chooseMat, g1) = rand gen
-        (cxrand, g2) = rand g1
-        (czrand, g3) = rand g2
+mkRndMat :: RandomGen g => g -> Int -> Int -> Bool -> (Maybe HittableObj, g)
+mkRndMat gen !a !b !isMoving =
+    let (chooseMat, g1) = randval gen
+        (cxrand, g2) = randval g1
+        (czrand, g3) = randval g2
         center = VList [
             (int2Double a) + (0.9 * cxrand),
             0.2,
@@ -54,68 +54,68 @@ mkRndMat !gen !a !b !isMoving =
                      diffAlbedo = multiply rv1 rv2
                      laMat = LambMat $! Lamb {lalbedo = SolidTexture $! SolidV diffAlbedo}
                 in if isMoving
-                   then let (rv3, _) = randomDouble g5 0.0 0.5
-                        in Just $! MvHitSphere MovSphereObj {
+                   then let (rv3, g6) = randomDouble g5 0.0 0.5
+                        in (Just $! MvHitSphere MovSphereObj {
                             msphereCenter1 = center,
                             msphereCenter2 = add center (VList [0.0, rv3, 0.0]),
                             msphereRadius = 0.2,
                             msphereMat = laMat,
                             mTime0 = 0.0,
                             mTime1 = 1.0
-                            }
-                   else Just $! HitSphere SphereObj {sphereCenter = center,
+                            }, g6)
+                   else (Just $! HitSphere SphereObj {sphereCenter = center,
                                                      sphereRadius = 0.2,
-                                                     sphereMat = laMat}
+                                                     sphereMat = laMat}, g5)
             else if chooseMat >= 0.8 && chooseMat < 0.9
                  then let (rv1, g4) = randomVec (0.5, 1.0) g3
-                          (fz, _) = randomDouble g4 0.0 0.5
+                          (fz, g5) = randomDouble g4 0.0 0.5
                           metMat = MetalMat $! Met {malbedo = SolidTexture $!(SolidV rv1), fuzz = fz}
-                      in Just $! HitSphere SphereObj {
+                      in (Just $! HitSphere SphereObj {
                                     sphereCenter = center,
                                     sphereRadius = 0.2,
                                     sphereMat = metMat
-                                    }
+                                    }, g5)
                  else let dieMt = DielMat $! Diel {refIndices = [1.5]}
-                      in Just $! HitSphere SphereObj {
+                      in (Just $! HitSphere SphereObj {
                                     sphereCenter = center,
                                     sphereRadius = 0.2,
                                     sphereMat = dieMt
-                                }
-       else Nothing
+                                }, g3)
+       else (Nothing, gen)
 
 mkRndMats :: RandomGen g => g -> Bool -> [(Int, Int)] -> [HittableObj]
 mkRndMats _ _ [] = []
-mkRndMats !gen !d !((a, b):es) =  case mkRndMat gen a b d of
-                                      Just c -> c : mkRndMats gen d es
-                                      Nothing -> mkRndMats gen d es
+mkRndMats gen !d !((a, b):es) = case mkRndMat gen a b d of
+                                     (Just c, g) -> c : mkRndMats g d es
+                                     (Nothing, g) -> mkRndMats g d es
 
 world :: RandomGen g => g -> Bool -> HittableList
-world !gen !isM = let as = [0..7]
-                      bs = [0..7]
-                      coords = [(a - 3, b - 3) | a <- as, b <- bs]
-                      objs = mkRndMats gen isM coords
-                      groundMat = LambMat $! Lamb {lalbedo = SolidTexture $! SolidV ( VList [0.5, 0.5, 0.5])}
-                      ground = HitSphere SphereObj {
+world gen !isM = let as = [0..7]
+                     bs = [0..7]
+                     coords = [(a - 3, b - 3) | a <- as, b <- bs]
+                     objs = mkRndMats gen isM coords
+                     groundMat = LambMat $! Lamb {lalbedo = SolidTexture $! SolidV ( VList [0.5, 0.5, 0.5])}
+                     ground = HitSphere SphereObj {
                                     sphereCenter = VList [0.0, -1000.0, 0.0],
                                     sphereRadius = 1000.0,
                                     sphereMat = groundMat}
-                      dielM1 = DielMat $! Diel {refIndices = [1.5]}
-                      lambM2 = LambMat $! Lamb {lalbedo = SolidTexture $! SolidV ( VList [0.4, 0.2, 0.1])}
-                      metalM3 = MetalMat $! Met {
+                     dielM1 = DielMat $! Diel {refIndices = [1.5]}
+                     lambM2 = LambMat $! Lamb {lalbedo = SolidTexture $! SolidV ( VList [0.4, 0.2, 0.1])}
+                     metalM3 = MetalMat $! Met {
                                         malbedo = SolidTexture $! SolidV ( VList [0.7, 0.6, 0.5] ),
                                         fuzz = 0.0
                                     }
-                      dielObj = HitSphere $! SphereObj {
+                     dielObj = HitSphere $! SphereObj {
                             sphereCenter =VList [0.0, 1.0, 0.0],
                             sphereRadius = 1.0,
                             sphereMat = dielM1 
                         }
-                      lambObj = HitSphere $! SphereObj {
+                     lambObj = HitSphere $! SphereObj {
                             sphereCenter = VList [-4.0, 1.0, 0.0],
                             sphereRadius = 1.0,
                             sphereMat = lambM2
                         }
-                      metObj = HitSphere $! SphereObj {
+                     metObj = HitSphere $! SphereObj {
                             sphereCenter =  VList [4.0, 1.0, 0.0],
                             sphereRadius = 1.0,
                             sphereMat = metalM3
@@ -250,14 +250,14 @@ twoPerlinSpheres g =
         img_width = imw,
         aspect_ratio = aratio,
         img_height = imh,
-        nb_samples = 10,
-        bounce_depth = 10,
+        nb_samples = 50,
+        bounce_depth = 30,
         cam_look_from = VList [13.0, 2.0, 3.0],
         cam_look_to = VList [0.0, 0.0, 0.0],
         cam_vfov = 20.0,
         cam_vup = VList [0.0, 1.0, 0.0],
         cam_focus_distance = 10.0,
-        cam_aperture = 0.1,
+        cam_aperture = 0.0,
         scene_obj = hs
     }
 

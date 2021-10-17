@@ -12,7 +12,7 @@ randomDouble !generator !low !high = if low > high
     where ranD lval hval = randomR (lval, hval) generator
 
 randomInt :: RandomGen g => g -> Int -> Int -> (Int, g)
-randomInt gen low high = 
+randomInt gen low high =
     let (d, g2) = randomDouble gen (int2Double low) (int2Double high)
     in (double2Int d, g2)
 
@@ -42,7 +42,11 @@ randomRPtr gen !low !high = if low > high
                             else randPtr low high
     where randPtr lv hv = (randomRs (lv, hv) gen, 0)
 
+getRandVal :: Random a => Int -> ([a], Int) -> ([a], [a], Int)
+getRandVal nbRandEls (rvals, ptr) = 
+    let nrvs = take nbRandEls (drop ptr rvals)
+    in (nrvs, rvals, ptr + nbRandEls)
                            
 
-rand :: RandomGen g => g -> (Double, g)
-rand g = randomDouble g 0.0 1.0
+randval :: RandomGen g => g -> (Double, g)
+randval g = randomDouble g 0.0 1.0

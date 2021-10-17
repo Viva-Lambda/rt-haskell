@@ -71,7 +71,7 @@ instance Scatterer Dielectric where
             costheta = min (dot (multiplyS udir (-1.0)) (pnormal hrec)) 1.0
             sintheta = sqrt (1.0 - costheta * costheta)
             canNotRefract = refratio * sintheta > 1.0
-            (rval, g) = rand gen
+            (rval, g) = randval gen
             schlickVal = schlickRef costheta refratio
             rdir = if canNotRefract || (schlickVal > rval)
                    then reflect udir (pnormal hrec)

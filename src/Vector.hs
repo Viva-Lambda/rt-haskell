@@ -7,7 +7,9 @@ import Random
 import Prelude hiding(subtract)
 import Debug.Trace
 
-data Vector = VList ![Double]
+import Data.Foldable
+
+data Vector = VList [Double]
             deriving (Eq, Show)
 
 zeroV :: Int -> Vector
@@ -128,8 +130,29 @@ randomVecGen !(mn, mx) !gen !size =
         (vdoubles, gs) = unzip [randomDouble g mn mx | g <- gens ]
     in (VList vdoubles, last gs)
 
+randomVecGen2 :: RandomGen g => (Double, Double) -> g -> Int -> (Vector, ([Double], Int))
+randomVecGen2 !(mn, mx) gen !size =
+    let (rvals, ptr) = randomRPtr gen mn mx
+        (vecRandomValues, _, nptr) = getRandVal size (rvals, ptr)
+    in (VList vecRandomValues, (rvals, nptr))
+
 randomVec :: RandomGen g => (Double, Double) -> g -> (Vector, g)
 randomVec !a !g = randomVecGen a g 3
+
+randomVec2 :: RandomGen g => (Double, Double) -> g -> (Vector, ([Double], Int))
+randomVec2 a g = randomVecGen2 a g 3
+
+-- generate random vectors
+randomVecGens :: RandomGen g => (Double, Double) -> g -> Int -> Int -> ([Vector], ([Double], Int))
+randomVecGens (mn, mx) gen size nb =
+    let (rVec, (rvals, ptr)) = randomVecGen2 (mn, mx) gen size
+        -- foldfn :: (a -> b -> a) :: ([], rv, ptr) -> i -> ([Vs], a, ptr) 
+        foldf acc _ = let (lst, rvals, ptr) = acc
+                          (nvals, _, nptr) = getRandVal size (rvals, ptr)
+                       in (lst ++ [VList nvals], rvals, nptr)
+        (vs, _, nptr) = foldl' foldf ([rVec], rvals, ptr) [0..(nb-1)]
+    in (vs, (rvals, nptr))
+
 
 randV :: RandomGen g => g -> (Vector, g)
 randV !g = randomVec (0.0, 1.0) g
