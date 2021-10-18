@@ -3,7 +3,7 @@ module Color where
 
 import GHC.Float hiding(clamp)
 import Vector
-import Utils
+import Utility.Utils
 
 -- print vector
 vecToInt :: Vector -> [Int]

@@ -10,6 +10,7 @@ import Texture.SolidColor
 import Texture.Checker
 import Texture.TextureObj
 import Texture.Noise
+import Texture.Image
 import System.Random
 import Random
 import Vector
@@ -133,12 +134,40 @@ worldMoving g = world g True
 
 -- book scenes
 
+-- default values
+imageWidth :: Int
+imageWidth = 320
+
+aspectRatio :: Double
+aspectRatio = 16.0 / 9.0
+
+imageHeight :: Int
+imageHeight = double2Int $! (int2Double imageWidth) / aspectRatio
+
+nbSamples :: Int
+nbSamples = 50
+
+bounceDepth :: Int
+bounceDepth = 20
+
+camLookFrom :: Vector
+camLookFrom = VList [13.0, 2.0, 3.0]
+
+camLookTo :: Vector
+camLookTo = VList [0.0, 0.0, 0.0]
+
+camVFov :: Double
+camVFov = 20.0
+
+camVUp :: Vector
+camVUp = VList [0.0, 1.0, 0.0]
+
+camFocDistance :: Double
+camFocDistance = 10.0
+
 diffuseSphere :: Scene
 diffuseSphere =
-    let imw = 400
-        aratio = 16.0 / 9.0
-        imh = double2Int $! (int2Double imw) / aratio
-        sobj = HList [
+    let sobj = HList [
             HitSphere $! SphereObj {
                             sphereCenter = VList [-4.0, 1.0, 0.0],
                             sphereRadius = 1.0,
@@ -155,38 +184,34 @@ diffuseSphere =
                         }
             ]
     in SceneVals {
-        img_width = imw,
-        aspect_ratio = aratio,
-        img_height = imh,
-        nb_samples = 50,
-        bounce_depth = 20,
-        cam_look_from = VList [13.0, 2.0, 3.0],
-        cam_look_to = VList [0.0, 0.0, 0.0],
-        cam_vfov = 20.0,
-        cam_vup = VList [0.0, 1.0, 0.0],
-        cam_focus_distance = 10.0,
+        img_width = imageWidth,
+        aspect_ratio = aspectRatio,
+        img_height = imageHeight,
+        nb_samples = nbSamples,
+        bounce_depth = bounceDepth,
+        cam_look_from = camLookFrom,
+        cam_look_to = camLookTo,
+        cam_vfov = camVFov,
+        cam_vup = camVUp,
+        cam_focus_distance = camFocDistance,
         cam_aperture = 0.1,
         scene_obj = sobj
-
          }
 
 randomOneWeekendFinalScene :: RandomGen g => g -> Bool -> Scene
 randomOneWeekendFinalScene g b =
     let hl = world g b
-        imw = 400
-        aratio = 16.0 / 9.0
-        imh = double2Int $! (int2Double imw) / aratio
     in SceneVals {
-        img_width = imw,
-        aspect_ratio = aratio,
-        img_height = imh,
-        nb_samples = 50,
-        bounce_depth = 20,
-        cam_look_from = VList [13.0, 2.0, 3.0],
-        cam_look_to = VList [0.0, 0.0, 0.0],
-        cam_vfov = 20.0,
-        cam_vup = VList [0.0, 1.0, 0.0],
-        cam_focus_distance = 10.0,
+        img_width = imageWidth,
+        aspect_ratio = aspectRatio,
+        img_height = imageHeight,
+        nb_samples = nbSamples,
+        bounce_depth = bounceDepth,
+        cam_look_from = camLookFrom,
+        cam_look_to = camLookTo,
+        cam_vfov = camVFov,
+        cam_vup = camVUp,
+        cam_focus_distance = camFocDistance,
         cam_aperture = 0.1,
         scene_obj = hl
     }
@@ -212,20 +237,17 @@ twoCheckeredSpheres =
                          sphereRadius = 10,
                          sphereMat = lmb}
         hs = HList [HitSphere sp1, HitSphere sp2]
-        imw = 400
-        aratio = 16.0 / 9.0
-        imh = double2Int $! (int2Double imw) / aratio
     in SceneVals {
-        img_width = imw,
-        aspect_ratio = aratio,
-        img_height = imh,
-        nb_samples = 50,
-        bounce_depth = 20,
-        cam_look_from = VList [13.0, 2.0, 3.0],
-        cam_look_to = VList [0.0, 0.0, 0.0],
-        cam_vfov = 20.0,
-        cam_vup = VList [0.0, 1.0, 0.0],
-        cam_focus_distance = 10.0,
+        img_width = imageWidth,
+        aspect_ratio = aspectRatio,
+        img_height = imageHeight,
+        nb_samples = nbSamples,
+        bounce_depth = bounceDepth,
+        cam_look_from = camLookFrom,
+        cam_look_to = camLookTo,
+        cam_vfov = camVFov,
+        cam_vup = camVUp,
+        cam_focus_distance = camFocDistance,
         cam_aperture = 0.0,
         scene_obj = hs
     }
@@ -243,35 +265,56 @@ twoPerlinSpheres g =
                          sphereRadius = 2,
                          sphereMat = lmb}
         hs = HList [HitSphere sp1, HitSphere sp2]
-        imw = 320
-        aratio = 16.0 / 9.0
-        imh = double2Int $! (int2Double imw) / aratio
     in SceneVals {
-        img_width = imw,
-        aspect_ratio = aratio,
-        img_height = imh,
-        nb_samples = 30,
-        bounce_depth = 20,
-        cam_look_from = VList [13.0, 2.0, 3.0],
-        cam_look_to = VList [0.0, 0.0, 0.0],
-        cam_vfov = 20.0,
-        cam_vup = VList [0.0, 1.0, 0.0],
-        cam_focus_distance = 10.0,
+        img_width = imageWidth,
+        aspect_ratio = aspectRatio,
+        img_height = imageHeight,
+        nb_samples = nbSamples,
+        bounce_depth = bounceDepth,
+        cam_look_from = camLookFrom,
+        cam_look_to = camLookTo,
+        cam_vfov = camVFov,
+        cam_vup = camVUp,
+        cam_focus_distance = camFocDistance,
+        cam_aperture = 0.0,
+        scene_obj = hs
+    }
+
+-- image texture
+imgEarth :: String -> Scene
+imgEarth str =
+    let -- ptex = ImageTexture $! fromPic2ImageT (jpegDecode str)
+        ptex = SolidTexture $ SolidV ( VList [0.2, 0.3, 0.1] )
+        lmb = LambMat $! Lamb {lalbedo = ptex}
+        sp2 = SphereObj {sphereCenter = VList [0.0, 0.0, 0.0],
+                         sphereRadius = 2,
+                         sphereMat = lmb}
+        hs = HList [HitSphere sp2]
+    in SceneVals {
+        img_width = imageWidth,
+        aspect_ratio = aspectRatio,
+        img_height = imageHeight,
+        nb_samples = nbSamples,
+        bounce_depth = bounceDepth,
+        cam_look_from = camLookFrom,
+        cam_look_to = camLookTo,
+        cam_vfov = camVFov,
+        cam_vup = camVUp,
+        cam_focus_distance = camFocDistance,
         cam_aperture = 0.0,
         scene_obj = hs
     }
 
 
 
-
-
-chooseScene :: RandomGen g => g -> Int -> (Int, Scene)
-chooseScene g choice =
+chooseScene :: RandomGen g => g -> String -> Int -> (Int, Scene)
+chooseScene g s choice =
     case choice of
         0 -> (nb_samples diffuseSphere, diffuseSphere)
-        1 -> (nb_samples $ randomOneWeekendFinalSceneStatic g, randomOneWeekendFinalSceneStatic g)
-        2 -> (nb_samples $ randomOneWeekendFinalSceneMove g, randomOneWeekendFinalSceneMove g)
-        3 -> (nb_samples twoCheckeredSpheres, twoCheckeredSpheres)
-        4 -> (nb_samples $ twoPerlinSpheres g, twoPerlinSpheres g)
-        _ -> (nb_samples diffuseSphere, diffuseSphere)
+        1 -> let sc = randomOneWeekendFinalSceneStatic g in (nb_samples sc, sc) 
+        2 -> let sc = randomOneWeekendFinalSceneMove g in (nb_samples sc, sc)
+        3 -> let sc = twoCheckeredSpheres in (nb_samples sc, sc)
+        4 -> let sc = twoPerlinSpheres g in (nb_samples sc, sc)
+        5 -> let sc = imgEarth s in (nb_samples sc, sc)
+        _ -> let sc = diffuseSphere in (nb_samples sc, sc)
 

@@ -1,5 +1,5 @@
 -- utility function
-module Utils where
+module Utility.Utils where
 
 import Vector
 

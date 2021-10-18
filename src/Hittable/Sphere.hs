@@ -3,7 +3,7 @@
 module Hittable.Sphere where
 
 import Vector
-import Utils
+import Utility.Utils
 import Hittable.Hittable
 import Hittable.HitRecord
 import Hittable.Aabb

@@ -4,7 +4,7 @@ module Camera where
 
 import Vector
 import Ray
-import Utils
+import Utility.Utils
 import Prelude hiding (subtract)
 import System.Random
 import Random
