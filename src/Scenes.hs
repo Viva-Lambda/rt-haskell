@@ -6,11 +6,14 @@ import Hittable.HittableList
 import Hittable.HittableObj
 import Hittable.Sphere
 import Hittable.MovingSphere
+import Hittable.AaRect
 import Texture.SolidColor
 import Texture.Checker
 import Texture.TextureObj
 import Texture.Noise
 import Texture.Image
+import Data.Bitmap.Base
+import Data.Bitmap.Simple
 import System.Random
 import Random
 import Vector
@@ -32,7 +35,8 @@ data Scene = SceneVals {
     cam_vfov :: Double,
     cam_aperture :: Double,
     cam_focus_distance :: Double,
-    scene_obj :: HittableList
+    scene_obj :: HittableList,
+    back_ground :: Vector
     }
 
 
@@ -195,7 +199,8 @@ diffuseSphere =
         cam_vup = camVUp,
         cam_focus_distance = camFocDistance,
         cam_aperture = 0.1,
-        scene_obj = sobj
+        scene_obj = sobj,
+        back_ground = VList [0.7, 0.8, 1.0]
          }
 
 randomOneWeekendFinalScene :: RandomGen g => g -> Bool -> Scene
@@ -213,7 +218,8 @@ randomOneWeekendFinalScene g b =
         cam_vup = camVUp,
         cam_focus_distance = camFocDistance,
         cam_aperture = 0.1,
-        scene_obj = hl
+        scene_obj = hl,
+        back_ground = VList [0.7, 0.8, 1.0]
     }
 
 randomOneWeekendFinalSceneStatic ::RandomGen g => g -> Scene
@@ -249,7 +255,8 @@ twoCheckeredSpheres =
         cam_vup = camVUp,
         cam_focus_distance = camFocDistance,
         cam_aperture = 0.0,
-        scene_obj = hs
+        scene_obj = hs,
+        back_ground = VList [0.7, 0.8, 1.0]
     }
 
 -- two perlin spheres
@@ -277,14 +284,19 @@ twoPerlinSpheres g =
         cam_vup = camVUp,
         cam_focus_distance = camFocDistance,
         cam_aperture = 0.0,
-        scene_obj = hs
+        scene_obj = hs,
+        back_ground = VList [0.7, 0.8, 1.0]
     }
 
 -- image texture
-imgEarth :: String -> Scene
-imgEarth str =
-    let -- ptex = ImageTexture $! fromPic2ImageT (jpegDecode str)
-        ptex = SolidTexture $ SolidV ( VList [0.2, 0.3, 0.1] )
+imgEarth :: Bitmap Word8 -> Scene
+imgEarth !bmp =
+    let
+        bbmp = bmp
+        -- bbmp = flipBitmap bmp
+        -- bbmp = mirrorBitmap bmp
+        ptex = ImageTexture $! bitmapToImageT bbmp
+        -- ptex = SolidTexture $ SolidV ( VList [0.2, 0.3, 0.1] )
         lmb = LambMat $! Lamb {lalbedo = ptex}
         sp2 = SphereObj {sphereCenter = VList [0.0, 0.0, 0.0],
                          sphereRadius = 2,
@@ -296,18 +308,53 @@ imgEarth str =
         img_height = imageHeight,
         nb_samples = nbSamples,
         bounce_depth = bounceDepth,
-        cam_look_from = camLookFrom,
+        cam_look_from = VList [0.0, 0.0, 12.0],
         cam_look_to = camLookTo,
         cam_vfov = camVFov,
         cam_vup = camVUp,
         cam_focus_distance = camFocDistance,
         cam_aperture = 0.0,
-        scene_obj = hs
+        scene_obj = hs,
+        back_ground = VList [0.7, 0.8, 1.0]
+    }
+
+-- simple light scene
+simpleLight :: RandomGen g => g -> Scene
+simpleLight g =
+    let ptex = NoiseTexture $! mkPerlinNoise g 4.0
+        lmb = LambMat $! Lamb {lalbedo = ptex}
+        sp1 = SphereObj {sphereCenter = VList [0.0, -1000.0, 0.0],
+                         sphereRadius = 1000,
+                         sphereMat = lmb}
+        sp2 = SphereObj {sphereCenter = VList [0.0, 2.0, 0.0],
+                         sphereRadius = 2,
+                         sphereMat = lmb}
+        lTex = SolidTexture $! SolidV ( VList [4.5, 4.5, 4.5])
+        lmat = LightMat $! DLight {emitTexture = lTex}
+        dlight = AaQuad $! mkXyRect 3.0 5.0 1.0 3.0 (-2.0) lmat
+        sp3 = SphereObj {sphereCenter = VList [0.0, 8.0, 0.0],
+                         sphereRadius = 2,
+                         sphereMat = lmat}
+        hs = HList [HitSphere sp1, HitSphere sp2, dlight, HitSphere sp3]
+    in SceneVals {
+        img_width = imageWidth,
+        aspect_ratio = aspectRatio,
+        img_height = imageHeight,
+        nb_samples = 200,
+        bounce_depth = 100,
+        cam_look_from = VList [26.0, 3.0, 6.0],
+        cam_look_to = VList [0.0, 2.0, 0.0],
+        cam_vfov = camVFov,
+        cam_vup = camVUp,
+        cam_focus_distance = camFocDistance,
+        cam_aperture = 0.0,
+        scene_obj = hs,
+        back_ground = VList [0.0, 0.0, 0.0]
     }
 
 
 
-chooseScene :: RandomGen g => g -> String -> Int -> (Int, Scene)
+chooseScene :: RandomGen g => g -> [Bitmap Word8] -> Int -> (Int, Scene)
 chooseScene g s choice =
     case choice of
         0 -> (nb_samples diffuseSphere, diffuseSphere)
@@ -315,6 +362,10 @@ chooseScene g s choice =
         2 -> let sc = randomOneWeekendFinalSceneMove g in (nb_samples sc, sc)
         3 -> let sc = twoCheckeredSpheres in (nb_samples sc, sc)
         4 -> let sc = twoPerlinSpheres g in (nb_samples sc, sc)
-        5 -> let sc = imgEarth s in (nb_samples sc, sc)
+        5 -> let sc = if null s
+                      then diffuseSphere
+                      else imgEarth (head s)
+             in (nb_samples sc, sc)
+        6 -> let sc = simpleLight g in (nb_samples sc, sc)
         _ -> let sc = diffuseSphere in (nb_samples sc, sc)
 

@@ -17,6 +17,7 @@ type SOutput = (Attenuation, ScatteredRay, Bool)
 
 class Scatterer a where
     scatter :: RandomGen g => g -> a -> Ray -> HitRecord -> (g, Attenuation, ScatteredRay, Bool)
+    emitted :: a -> Double -> Double -> Vector -> Vector
 
 -- scatter :: RandomGen g => g -> a -> Ray -> HitRecord -> Attenuation -> 
 -- ScatteredRay -> (Attenuation, ScatteredRay, Bool)
@@ -25,9 +26,16 @@ instance Scatterer Material where
     scatter gen (LambMat la) r h  = scatter gen la r h
     scatter gen (MetalMat m) r h  = scatter gen m r h
     scatter gen (DielMat m) r h  = scatter gen m r h
+    scatter gen (LightMat m) r h = scatter gen m r h
+    emitted (LightMat m) u v p = emitted m u v p
+    emitted (NoMat) u v p = zeroV3
+    emitted (LambMat _) u v p = zeroV3
+    emitted (MetalMat _) u v p = zeroV3
+    emitted (DielMat _) u v p = zeroV3
 
 
 instance Scatterer Lambertian where
+    emitted _ _ _ _ = zeroV3
     scatter !gen !(Lamb {lalbedo = a}) !inray !hrec =
         let recp = point hrec
             recn = pnormal hrec
@@ -46,6 +54,7 @@ instance Scatterer Lambertian where
                            rtime = rtime inray}, True)
 
 instance Scatterer Metal where
+    emitted _ _ _ _ = zeroV3
     scatter !gen !(Met {malbedo = a, fuzz = b}) !inray !hrec =
         let recp = point hrec
             recn = pnormal hrec
@@ -60,6 +69,7 @@ instance Scatterer Metal where
                       rtime = rtime inray}, (dot rdir recn) > 0)
 
 instance Scatterer Dielectric where
+    emitted _ _ _ _ = zeroV3
     scatter !gen !(Diel {refIndices = rs}) !inray !hrec =
         let atten = VList [1.0, 1.0, 1.0]
             -- can change with respect to wavelength
@@ -81,3 +91,7 @@ instance Scatterer Dielectric where
                          rtime = rtime inray
                          }
         in (g, atten, outray, True)
+
+instance Scatterer DiffuseLight where
+    scatter !gen !a !inray !hrec = (gen, zeroV3, inray, False)
+    emitted (DLight{emitTexture = a}) u v p = color a u v p

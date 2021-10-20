@@ -10,6 +10,7 @@ import Texture.TextureObj
 data Material = LambMat Lambertian
                 | MetalMat Metal 
                 | DielMat Dielectric
+                | LightMat DiffuseLight
                 | NoMat
 
 type Color = Vector
@@ -45,3 +46,6 @@ schlickRef cosi ref_idx =
         r1 = r0 * r0
         pw = (1.0 - cosi) ** 5
     in r1 + (1.0 - r1) * pw
+
+data DiffuseLight = DLight {emitTexture :: TextureObj}
+
