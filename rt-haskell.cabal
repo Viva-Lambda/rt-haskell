@@ -37,6 +37,8 @@ library
       Hittable.HittableObj
       Hittable.MovingSphere
       Hittable.Sphere
+      Hittable.Translate
+      Instance.Box
       Lib
       Material.Material
       Material.Scatter

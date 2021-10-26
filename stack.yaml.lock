@@ -11,4 +11,18 @@ packages:
       sha256: 14a1b01728c5584e87c9fa00746a66e28ffd89dd2c0eabd334c8463953496e1b
   original:
     hackage: random-1.1
+- completed:
+    hackage: stb-image-0.2.1@sha256:784700aa0a317f94215c0c992bbb61fa0a58284d040a7ed646b6b4c2c16273e7,1432
+    pantry-tree:
+      size: 389
+      sha256: afb20707ca5e29199b658fcde2337a9d12187400f6dea7308d3819d093d9a571
+  original:
+    hackage: stb-image-0.2.1
+- completed:
+    hackage: bitmap-0.0.2@sha256:4b0cd4e7d24ae2cdc23e76aefd45fcffa77c8bec922ecb600832e951cb507992,1622
+    pantry-tree:
+      size: 876
+      sha256: b1d4eb48f3817438454a74f32bf5c684a554b35d6f68b6dcffe63c02ac12f238
+  original:
+    hackage: bitmap-0.0.2
 snapshots: []

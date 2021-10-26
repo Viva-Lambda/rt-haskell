@@ -51,7 +51,7 @@ bitmapToImageT :: Image -> ImageT
 bitmapToImageT !b =
     let (w, h) = bitmapSize b
         channels = bitmapNChannels b
-        offsets = [(ww, hh) | ww <- [0..(w-1)], hh <- [0..(h-1)]]
+        offsets = [(ww, hh) | hh <- [0..(h-1)], ww <- [0..(w-1)] ]
         readerFn oset = let p = unsafeReadPixel b oset
                         in p
         -- foldfn :: (a -> b -> a) :: ([] -> [a] -> [a])

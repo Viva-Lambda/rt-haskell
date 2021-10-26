@@ -292,8 +292,8 @@ twoPerlinSpheres g =
 imgEarth :: Bitmap Word8 -> Scene
 imgEarth !bmp =
     let
-        -- bbmp = bmp
-        bbmp = flipBitmap bmp
+        bbmp = bmp
+        -- bbmp = flipBitmap bmp
         -- bbmp = mirrorBitmap bmp
         ptex = ImageTexture $! bitmapToImageT bbmp
         -- ptex = SolidTexture $ SolidV ( VList [0.2, 0.3, 0.1] )
