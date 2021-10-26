@@ -75,6 +75,14 @@ repository.
 
 ![checker-image-01](./images/checker.png)
 
+- Perlin Noise with Light from branch 14-texture
+
+![perlin-image-01](./images/light.png)
+
+- Earth image from branch 14-texture
+
+![earth-image-01](./images/earth.png)
+
 ## Some Notes on Performance
 
 The from branch 08-diffuse an onwards as the usage of random functions become
