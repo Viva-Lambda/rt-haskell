@@ -10,7 +10,7 @@ class Eq a => BinaryOps a where
     _add :: a -> a -> a
     _add !a !b = elementwiseOp "add" (+) a b
     _subtract :: a -> a -> a
-    _subtract !a !b = elementwiseOp "subtract" (+) a b
+    _subtract !a !b = elementwiseOp "subtract" (-) a b
     _multiply :: a -> a -> a
     _multiply !a !b = elementwiseOp "multiply" (*) a b
     _divide :: a -> a -> a

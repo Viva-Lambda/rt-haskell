@@ -75,20 +75,20 @@ addS :: Vector -> Double -> Vector
 addS = _addS
 
 subtract :: Vector -> Vector -> Vector
-subtract !v !e = vecArithmeticOp "subtract" (-) v e
--- subtract = _subtract
+-- subtract !v !e = vecArithmeticOp "subtract" (-) v e
+subtract = _subtract
 
 subtractS :: Vector -> Double -> Vector
-subtractS !v !s = let f = \d -> d - s in vecScalarOp f v
--- subtractS = _subtractS
+-- subtractS !v !s = let f = \d -> d - s in vecScalarOp f v
+subtractS = _subtractS
 
 multiply :: Vector -> Vector -> Vector
-multiply !v !e = vecArithmeticOp "multiply" (*) v e
--- multiply = _multiply
+-- multiply !v !e = vecArithmeticOp "multiply" (*) v e
+multiply = _multiply
 
 multiplyS :: Vector -> Double -> Vector
-multiplyS v s = let f = \d -> d * s in vecScalarOp f v
--- multiplyS = _multiplyS
+-- multiplyS v s = let f = \d -> d * s in vecScalarOp f v
+multiplyS = _multiplyS
 
 divide :: Vector -> Vector -> Vector
 divide !v !e =
@@ -99,12 +99,8 @@ divide !v !e =
        else vecArithmeticOp "divide" (/) v e
 
 divideS :: Vector -> Double -> Vector
-divideS v s =
-    if s == 0.0
-    then traceStack ("performing zero division: " ++ show v) (zeroV3)
-    else let f = \d -> d / s in vecScalarOp f v
 
--- divideS = _divideS
+divideS = _divideS
 
 dot :: Vector -> Vector -> Double
 dot !v !e = let mult = multiply v e
