@@ -20,7 +20,7 @@ instance BinaryOps Quaternion where
             }
         in Quat {qR = f qr, qX = f qx,
                  qY = f qy, qZ = f qz}
-    divide q1 q2 =
+    _divide q1 q2 =
         let {q1r = qR q1; q2r = qR q2; q1x = qX q1; q2x = qX q2;
              q1y = qY q1; q2y = qY q2; q1z = qZ q1; q2z = qZ q2;
              q2rC = q2r == 0; q2xC = q2x == 0; q2yC = q2y == 0;
@@ -81,11 +81,11 @@ hamiltonProduct q_a q_b =
 
 
 qConjugate :: Quaternion -> Quaternion
-qConjugate q = multiplyS q (-1.0)
+qConjugate q = _multiplyS q (-1.0)
 
 qDeterminant :: Quaternion -> Double
 qDeterminant q =
-    let Quat {qR = a2, qX = b2, qY = c2, qZ = d2} = multiply q q
+    let Quat {qR = a2, qX = b2, qY = c2, qZ = d2} = _multiply q q
     in a2 + b2 + c2 + d2
 
 qMagnitude :: Quaternion -> Double
@@ -95,7 +95,7 @@ toUnit :: Quaternion -> Quaternion
 toUnit q =
     let norm = qMagnitude q
         invmag = 1.0 / norm
-    in multiplyS q invmag
+    in _multiplyS q invmag
 
 qInverse :: Quaternion -> Quaternion
 qInverse q =

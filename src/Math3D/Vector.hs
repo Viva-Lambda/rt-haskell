@@ -10,6 +10,8 @@ import Debug.Trace
 import Data.Foldable
 import Utility.Utils
 
+import Math3D.CommonOps
+
 data Vector = VList [Double]
             deriving (Eq, Show)
 
@@ -51,16 +53,18 @@ vecArithmeticOp opname f !v !e =
          in VList $! zipWith f ds es
 
 vecScalarOp :: (Double -> Double) -> Vector -> Vector
-vecScalarOp f !v =
-    let 
-        (VList vs) = v
-    in VList $! map f vs 
+vecScalarOp f !v = let (VList vs) = v in VList $! map f vs 
 
 nearZeroVec :: Vector -> Bool
 nearZeroVec !v =
     let (VList vs) = v
         nzero = 1e-10
     in foldl1 (&&) $! map (< nzero) (map abs vs)
+
+instance BinaryOps Vector where
+    elementwiseOp str f a b = vecArithmeticOp str f a b
+    elementwiseScalarOp _ f a = vecScalarOp f a
+    _divide = divide
 
 
 add :: Vector -> Vector -> Vector
