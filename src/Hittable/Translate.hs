@@ -7,7 +7,7 @@ import Hittable.Hittable
 import Hittable.HitRecord
 import Hittable.Aabb
 import Math3D.Vector
--- import Math3D.CommonOps
+import Math3D.CommonOps
 import Math3D.Ray
 import Prelude hiding(subtract)
 

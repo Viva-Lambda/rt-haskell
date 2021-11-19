@@ -5,7 +5,7 @@ module ColorIO where
 import GHC.Float
 import Data.Foldable
 import Math3D.Vector
--- import Math3D.CommonOps
+import Math3D.CommonOps
 import Pixel
 import Scenes
 import Camera

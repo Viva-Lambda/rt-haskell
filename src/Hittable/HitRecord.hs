@@ -2,7 +2,7 @@
 module Hittable.HitRecord where
 
 import Math3D.Vector
--- import Math3D.CommonOps
+import Math3D.CommonOps
 import Math3D.Ray
 import Material.Material
 

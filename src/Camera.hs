@@ -3,7 +3,7 @@
 module Camera where
 
 import Math3D.Vector
--- import Math3D.CommonOps
+import Math3D.CommonOps
 import Math3D.Ray
 import Utility.Utils
 import Prelude hiding (subtract)

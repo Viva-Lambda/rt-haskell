@@ -64,43 +64,11 @@ nearZeroVec !v =
 instance BinaryOps Vector where
     elementwiseOp str f a b = vecArithmeticOp str f a b
     elementwiseScalarOp _ f a = vecScalarOp f a
-    _divide = divide
-
-
-add :: Vector -> Vector -> Vector
--- add !v !e = vecArithmeticOp "add" (+) v e
-add = _add
-addS :: Vector -> Double -> Vector
--- addS !v !s = let f = \d -> d + s in vecScalarOp f v
-addS = _addS
-
-subtract :: Vector -> Vector -> Vector
--- subtract !v !e = vecArithmeticOp "subtract" (-) v e
-subtract = _subtract
-
-subtractS :: Vector -> Double -> Vector
--- subtractS !v !s = let f = \d -> d - s in vecScalarOp f v
-subtractS = _subtractS
-
-multiply :: Vector -> Vector -> Vector
--- multiply !v !e = vecArithmeticOp "multiply" (*) v e
-multiply = _multiply
-
-multiplyS :: Vector -> Double -> Vector
--- multiplyS v s = let f = \d -> d * s in vecScalarOp f v
-multiplyS = _multiplyS
-
-divide :: Vector -> Vector -> Vector
-divide !v !e =
-    let 
-        (VList es) = e
-    in if 0.0 `elem` es
-       then error $ vecError e "contains zero in a division operation"
-       else vecArithmeticOp "divide" (/) v e
-
-divideS :: Vector -> Double -> Vector
-
-divideS = _divideS
+    divide v e =
+        let (VList es) = e
+        in if 0.0 `elem` es
+           then error $ vecError e "contains zero in a division operation"
+           else vecArithmeticOp "divide" (/) v e
 
 dot :: Vector -> Vector -> Double
 dot !v !e = let mult = multiply v e

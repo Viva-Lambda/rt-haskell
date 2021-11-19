@@ -1,6 +1,8 @@
 -- utility function
 module Utility.Utils where
 
+import Data.List
+
 infty :: Double
 infty = (read "Infinity") :: Double
 
@@ -17,3 +19,16 @@ clamp x min max = if x < min
                   else if x > max
                        then max
                        else x
+
+-- 
+eqReduce :: Eq a => [a] -> ((a -> Bool) -> [a] -> Bool) -> Bool
+eqReduce lst f = case lst of
+                    [] -> True
+                    (x:xs) -> f (== x) (x:xs)
+
+allEqual :: Eq a => [a] -> Bool
+allEqual lst = eqReduce lst all
+
+
+anyEqual :: Eq a => [a] -> Bool
+anyEqual lst = eqReduce lst any
