@@ -68,21 +68,27 @@ instance BinaryOps Vector where
 
 
 add :: Vector -> Vector -> Vector
-add !v !e = vecArithmeticOp "add" (+) v e
+-- add !v !e = vecArithmeticOp "add" (+) v e
+add = _add
 addS :: Vector -> Double -> Vector
-addS !v !s = let f = \d -> d + s in vecScalarOp f v
+-- addS !v !s = let f = \d -> d + s in vecScalarOp f v
+addS = _addS
 
 subtract :: Vector -> Vector -> Vector
 subtract !v !e = vecArithmeticOp "subtract" (-) v e
+-- subtract = _subtract
 
 subtractS :: Vector -> Double -> Vector
 subtractS !v !s = let f = \d -> d - s in vecScalarOp f v
+-- subtractS = _subtractS
 
 multiply :: Vector -> Vector -> Vector
 multiply !v !e = vecArithmeticOp "multiply" (*) v e
+-- multiply = _multiply
 
 multiplyS :: Vector -> Double -> Vector
 multiplyS v s = let f = \d -> d * s in vecScalarOp f v
+-- multiplyS = _multiplyS
 
 divide :: Vector -> Vector -> Vector
 divide !v !e =
@@ -97,6 +103,8 @@ divideS v s =
     if s == 0.0
     then traceStack ("performing zero division: " ++ show v) (zeroV3)
     else let f = \d -> d / s in vecScalarOp f v
+
+-- divideS = _divideS
 
 dot :: Vector -> Vector -> Double
 dot !v !e = let mult = multiply v e
