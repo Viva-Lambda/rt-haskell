@@ -16,9 +16,9 @@ import Data.Bitmap.Base
 import Data.Bitmap.Simple
 import System.Random
 import Random
-import Vector
+import Math3D.Vector
 import Camera
-import Ray
+import Math3D.Ray
 import Material.Material
 import GHC.Float
 import Prelude hiding(subtract)

@@ -1,8 +1,8 @@
 {-# LANGUAGE BangPatterns #-}
 -- ray module
-module Ray where
+module Math3D.Ray where
 
-import Vector
+import Math3D.Vector
 
 data Ray = Rd {
         origin :: Vector,

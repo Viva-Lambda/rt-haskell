@@ -2,7 +2,7 @@
 -- image texture
 module Texture.Image where
 
-import Vector
+import Math3D.Vector
 import Texture.Texture
 import Utility.Utils
 

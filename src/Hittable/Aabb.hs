@@ -1,8 +1,8 @@
 -- Aabb axis aligned bounding box
 module Hittable.Aabb where
 
-import Vector
-import Ray
+import Math3D.Vector
+import Math3D.Ray
 import Prelude hiding (subtract)
 
 data Aabb = AaBbox {aabbMin :: Vector, aabbMax :: Vector} deriving (Eq, Show)

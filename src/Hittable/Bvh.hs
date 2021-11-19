@@ -9,7 +9,7 @@ import Hittable.HittableObj
 import Hittable.HitRecord
 import Hittable.Aabb
 import Data.List
-import Vector
+import Math3D.Vector
 import System.Random
 import Random
 import GHC.Float

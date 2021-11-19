@@ -1,8 +1,8 @@
 -- hit record module
 module Hittable.HitRecord where
 
-import Vector
-import Ray
+import Math3D.Vector
+import Math3D.Ray
 import Material.Material
 
 

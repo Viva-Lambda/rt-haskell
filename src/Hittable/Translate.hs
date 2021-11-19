@@ -6,8 +6,8 @@ import Hittable.HittableObj
 import Hittable.Hittable
 import Hittable.HitRecord
 import Hittable.Aabb
-import Vector
-import Ray
+import Math3D.Vector
+import Math3D.Ray
 import Prelude hiding(subtract)
 
 data Translatable = Translate {offset :: Vector, tobject :: HittableObj}

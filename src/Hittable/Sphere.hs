@@ -2,12 +2,12 @@
 -- module for sphere objects
 module Hittable.Sphere where
 
-import Vector
+import Math3D.Vector
+import Math3D.Ray
 import Utility.Utils
 import Hittable.Hittable
 import Hittable.HitRecord
 import Hittable.Aabb
-import Ray
 import Prelude hiding(subtract)
 import Material.Material
 

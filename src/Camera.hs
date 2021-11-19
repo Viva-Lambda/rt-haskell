@@ -2,8 +2,8 @@
 -- camera module
 module Camera where
 
-import Vector
-import Ray
+import Math3D.Vector
+import Math3D.Ray
 import Utility.Utils
 import Prelude hiding (subtract)
 import System.Random

@@ -3,8 +3,8 @@
 -- material module
 module Material.Material where
 
-import Vector
-import Ray
+import Math3D.Vector
+import Math3D.Ray
 import Texture.TextureObj
 
 data Material = LambMat Lambertian

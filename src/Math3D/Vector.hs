@@ -1,6 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
 -- vector library
-module Vector where
+module Math3D.Vector where
 
 import System.Random
 import Random
@@ -8,6 +8,7 @@ import Prelude hiding(subtract)
 import Debug.Trace
 
 import Data.Foldable
+import Utility.Utils
 
 data Vector = VList [Double]
             deriving (Eq, Show)
@@ -195,3 +196,10 @@ refract !uv !n !etaiOverEta =
         outPar = multiplyS n (-1.0 * absOut)
     in add outPerp outPar
 
+clampV :: Vector -> Double -> Double -> Vector
+clampV v mn mx =
+    let (VList vs) = v
+        nvs = clampvals vs
+    in VList nvs
+    where clampvals [] = []
+          clampvals (e:es) = clamp e mn mx : clampvals es

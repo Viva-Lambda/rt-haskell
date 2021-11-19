@@ -2,9 +2,9 @@
 -- box instance for holding quads
 module Instance.Box where
 
-import Vector
+import Math3D.Vector
 import Hittable.AaRect
-import Ray
+import Math3D.Ray
 import Material.Material
 import Hittable.Hittable
 import Hittable.HitRecord

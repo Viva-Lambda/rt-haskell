@@ -1,12 +1,13 @@
 -- axis aligned rectangles
 module Hittable.AaRect where
 
-import Vector
+import Math3D.Vector
+import Math3D.Ray
 import Hittable.Hittable
 import Hittable.HitRecord
-import Ray
-import Material.Material
 import Hittable.Aabb
+
+import Material.Material
 
 data AlignmentAxis = AaX
                    | AaY
