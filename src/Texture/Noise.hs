@@ -3,6 +3,7 @@
 module Texture.Noise where
 
 import Math3D.Vector
+-- import Math3D.CommonOps
 import Random
 import System.Random
 import Texture.Texture

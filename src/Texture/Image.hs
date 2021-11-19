@@ -3,6 +3,7 @@
 module Texture.Image where
 
 import Math3D.Vector
+--import Math3D.CommonOps
 import Texture.Texture
 import Utility.Utils
 

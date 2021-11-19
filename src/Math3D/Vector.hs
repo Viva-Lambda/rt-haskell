@@ -62,6 +62,7 @@ nearZeroVec !v =
         nzero = 1e-10
     in foldl1 (&&) $! map (< nzero) (map abs vs)
 
+
 add :: Vector -> Vector -> Vector
 add !v !e = vecArithmeticOp "add" (+) v e
 addS :: Vector -> Double -> Vector

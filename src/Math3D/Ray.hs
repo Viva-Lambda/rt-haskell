@@ -3,6 +3,7 @@
 module Math3D.Ray where
 
 import Math3D.Vector
+-- import Math3D.CommonOps
 
 data Ray = Rd {
         origin :: Vector,

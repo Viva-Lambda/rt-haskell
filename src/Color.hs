@@ -3,6 +3,7 @@ module Color where
 
 import GHC.Float hiding(clamp)
 import Math3D.Vector
+-- import Math3D.CommonOps
 import Utility.Utils
 
 -- print vector
