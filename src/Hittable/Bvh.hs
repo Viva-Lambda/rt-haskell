@@ -8,12 +8,16 @@ import Hittable.HittableList
 import Hittable.HittableObj
 import Hittable.HitRecord
 import Hittable.Aabb
-import Data.List
+
 import Math3D.Vector
-import System.Random
+
+import Utility.HelperTypes
+
 import Random
 import GHC.Float
+import System.Random
 import Data.Ord
+import Data.List
 
 data Bvh a where
     BNode :: Hittable a => Bvh a -> Bvh a -> Aabb -> Bvh a
@@ -127,5 +131,6 @@ mkBvh objects gen start end time0 time1 =
 
 mkBvhFromHittableList :: RandomGen g => HittableList -> g -> Double -> Double -> Bvh HittableObj
 
-mkBvhFromHittableList
-    (HList hs) g time0 time1 = mkBvh hs g 0 (length hs) time0 time1
+mkBvhFromHittableList hobjs g time0 time1 =
+    let hs = toList $ objects hobjs
+    in mkBvh hs g 0 (length hs) time0 time1

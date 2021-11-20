@@ -26,6 +26,8 @@ import System.Random
 import GHC.Float
 import Random
 
+import Utility.HelperTypes
+
 
 twoPerlinSpheres :: RandomGen g => g -> Scene
 twoPerlinSpheres g =
@@ -37,7 +39,7 @@ twoPerlinSpheres g =
         sp2 = SphereObj {sphereCenter = VList [0.0, 2.0, 0.0],
                          sphereRadius = 2,
                          sphereMat = lmb}
-        hs = HList [HitSphere sp1, HitSphere sp2]
+        hs = HList {objects = NList (HitSphere sp1) [HitSphere sp2]}
     in SceneVals {
         img_width = imageWidth,
         aspect_ratio = aspectRatio,

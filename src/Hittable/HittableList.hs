@@ -10,17 +10,21 @@ import Hittable.Aabb
 import Hittable.HitRecord
 import Material.Material
 
+
+import Utility.HelperTypes
+
 import Data.List
 import Data.Function
 
 
-data HittableList = HList [HittableObj] deriving (Show, Eq)
+data HittableList = HList {objects :: NonEmptyList HittableObj}
 
 
 instance Hittable HittableList where
     {-# INLINE hit #-}
-    hit !(HList (h:hs)) !ry !tmin !tmax !hrec =
-        let hitobjs = hits tmax (h:hs) hrec -- [(hrec, Bool)]
+    hit !hobj !ry !tmin !tmax !hrec =
+        let hs = toList $ objects hobj
+            hitobjs = hits tmax hs hrec -- [(hrec, Bool)]
         in if null hitobjs
            then (hrec, False)
            else minimumBy (compare `on` hrecDist) hitobjs
@@ -33,12 +37,11 @@ instance Hittable HittableList where
                    else hits mx ts hr
               hrecDist (a, _) = hdist a
 
-    boundingBox !(HList hs) !time0 !time1 !ab =
-        if null hs
-        then (ab, False)
-        else let tempBox = zeroAabb3
-                 firstBox = True
-             in bbox firstBox time0 time1 tempBox hs ab
+    boundingBox !hobjs !time0 !time1 !ab =
+        let tempBox = zeroAabb3
+            hs = toList $! objects hobjs
+            firstBox = True
+        in bbox firstBox time0 time1 tempBox hs ab
         where bbox False t0 t1 tbox [] outBox = (outBox, True)
               bbox fbox t0 t1 tbox (htl:htls) outBox =
                 let (sbox, hasBox) = boundingBox htl t0 t1 tbox

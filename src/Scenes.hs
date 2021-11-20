@@ -27,6 +27,7 @@ import Scene.ImageScene
 import Scene.PerlinLight
 
 -- cornell box
+import Scene.CornellBox
 
 
 chooseScene :: RandomGen g => g -> [Bitmap Word8] -> Int -> (Int, Scene)
@@ -42,5 +43,6 @@ chooseScene g s choice =
                       else imgEarth (head s)
              in (nb_samples sc, sc)
         6 -> let sc = simpleLight g in (nb_samples sc, sc)
+        7 -> let sc = cornellBox g in (nb_samples sc, sc)
         _ -> let sc = diffuseSphere in (nb_samples sc, sc)
 

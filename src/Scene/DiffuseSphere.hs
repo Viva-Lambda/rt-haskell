@@ -20,24 +20,26 @@ import Texture.TextureObj
 -- material
 import Material.Material
 
+-- utility
+import Utility.HelperTypes
+
 diffuseSphere :: Scene
 diffuseSphere =
-    let sobj = HList [
+    let sobj = HList {objects = NList (
             HitSphere $! SphereObj {
                             sphereCenter = VList [-4.0, 1.0, 0.0],
                             sphereRadius = 1.0,
                             sphereMat = LambMat $! Lamb {
                                     lalbedo =SolidTexture $! SolidV ( VList [0.4, 0.2, 0.1])
                                     }
-                        },
+                        }) [
             HitSphere $ SphereObj {
                             sphereCenter = VList [0.0, -1000.0, 0.0],
                             sphereRadius = 1000.0,
                             sphereMat =  LambMat $! Lamb {
                                     lalbedo =SolidTexture $! SolidV ( VList [0.5, 0.5, 0.5])
                                     }
-                        }
-            ]
+                        } ]}
     in SceneVals {
         img_width = imageWidth,
         aspect_ratio = aspectRatio,

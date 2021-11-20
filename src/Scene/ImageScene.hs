@@ -27,6 +27,9 @@ import Math3D.CommonOps
 import Texture.TextureObj
 import Texture.Image
 
+-- utility
+import Utility.HelperTypes
+
 
 imgEarth :: Bitmap Word8 -> Scene
 
@@ -41,7 +44,7 @@ imgEarth !bmp =
         sp2 = SphereObj {sphereCenter = VList [0.0, 0.0, 0.0],
                          sphereRadius = 2,
                          sphereMat = lmb}
-        hs = HList [HitSphere sp2]
+        hs = HList {objects = NList (HitSphere sp2) []}
     in SceneVals {
         img_width = imageWidth,
         aspect_ratio = aspectRatio,

@@ -22,6 +22,7 @@ import Hittable.AaRect
 -- material
 import Material.Material
 
+import Utility.HelperTypes
 --
 import System.Random
 import Random
@@ -42,7 +43,9 @@ simpleLight g =
         sp3 = SphereObj {sphereCenter = VList [0.0, 8.0, 0.0],
                          sphereRadius = 2,
                          sphereMat = lmat}
-        hs = HList [HitSphere sp1, HitSphere sp2, dlight, HitSphere sp3]
+        hs = HList {
+            objects = NList (HitSphere sp1) [HitSphere sp2, dlight, HitSphere sp3]
+        }
     in SceneVals {
         img_width = imageWidth,
         aspect_ratio = aspectRatio,

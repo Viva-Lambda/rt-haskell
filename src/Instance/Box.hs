@@ -2,17 +2,24 @@
 -- box instance for holding quads
 module Instance.Box where
 
+-- math3d
 import Math3D.Vector
-import Hittable.AaRect
 import Math3D.Ray
-import Material.Material
+import Math3D.Transform
+
+import Hittable.AaRect
 import Hittable.Hittable
 import Hittable.HitRecord
 import Hittable.Aabb
+
 import Data.List
 import Data.Function
 
-data Box = HBox { minBox :: Vector, maxBox :: Vector, boxSides :: [AaRect] }
+import Material.Material
+import Utility.HelperTypes
+
+data Box = HBox { minBox :: Vector, maxBox :: Vector,
+                  boxMat :: Material, boxSides :: [AaRect] }
 
 mkBox :: Vector -> Vector -> Material -> Box
 mkBox mn mx mat =
@@ -31,7 +38,8 @@ mkBox mn mx mat =
         --
         s5 = mkYzRect mny mxy mnz mxz mnx mat
         s6 = mkYzRect mny mxy mnz mxz mxx mat
-    in HBox {minBox = mn, maxBox = mx, boxSides = [s1,s2,s3,s4,s5,s6]}
+    in HBox {minBox = mn, maxBox = mx, boxMat = mat,
+             boxSides = [s1,s2,s3,s4,s5,s6]}
 
 instance Eq Box where
     a == b = 
@@ -78,3 +86,19 @@ instance Hittable Box where
                                 then bbox False t0 t1 sbox htls sbox
                                 else let obox = ssBox outBox sbox
                                      in bbox False t0 t1 sbox htls obox
+
+
+instance Transformable Box where
+    transform b nlocs =
+        let bmat = boxMat b
+        in case nlocs of
+                (NList a [c]) -> mkBox a c bmat
+                _ -> error $ "transform is not possible " ++ show (lengthNL nlocs)
+
+instance Locatable Box where
+    --
+    localCoords a _ = NList (minBox a) [maxBox a]
+
+instance Translatable Box where
+
+instance Rotatable Box where

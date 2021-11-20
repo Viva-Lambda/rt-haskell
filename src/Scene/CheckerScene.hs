@@ -20,6 +20,9 @@ import Texture.Checker
 -- material
 import Material.Material
 
+-- utility
+import Utility.HelperTypes
+
 twoCheckeredSpheres :: Scene
 twoCheckeredSpheres =
     let s1 = SolidV $! VList [0.2, 0.3, 0.1]
@@ -32,7 +35,7 @@ twoCheckeredSpheres =
         sp2 = SphereObj {sphereCenter = VList [0.0, 10.0, 0.0],
                          sphereRadius = 10,
                          sphereMat = lmb}
-        hs = HList [HitSphere sp1, HitSphere sp2]
+        hs = HList {objects = NList (HitSphere sp1) [HitSphere sp2]}
     in SceneVals {
         img_width = imageWidth,
         aspect_ratio = aspectRatio,

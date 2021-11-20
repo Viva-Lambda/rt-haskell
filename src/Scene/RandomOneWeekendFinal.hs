@@ -34,6 +34,9 @@ import Random
 import Math3D.Vector
 import Math3D.CommonOps
 
+-- utility
+import Utility.HelperTypes
+
 
 mkRndMat :: RandomGen g => g -> Int -> Int -> Bool -> (Maybe HittableObj, g)
 mkRndMat gen !a !b !isMoving =
@@ -122,7 +125,9 @@ world gen !isM = let as = [0..7]
                         }
                   in if null objs
                      then error $ unwords (map show objs)
-                     else HList ( objs ++ [ground] ++ [dielObj, lambObj, metObj])
+                     else HList {
+                         objects = NList ground (objs ++ [dielObj, lambObj, metObj])
+                     }
 
 
 worldStat :: RandomGen g => g -> HittableList
