@@ -19,6 +19,9 @@ import System.Random
 import Random
 import Prelude hiding(subtract)
 
+-- scene
+import Scene.Scene
+
 
 rayColor :: RandomGen g => Ray -> HittableList -> Vector -> Int -> g -> (Vector, g)
 rayColor !ray !world !background !depth !gen =

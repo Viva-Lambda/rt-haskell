@@ -8,8 +8,11 @@ import System.Random
 import Prelude hiding(subtract)
 import Data.Time.Clock
 import System.IO
-import Scenes
 import Codec.Image.STB
+
+import Scene.Scene
+
+import Scenes
 
 -- world
 
