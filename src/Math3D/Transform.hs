@@ -21,45 +21,53 @@ class Transformable a where
     transform :: a -> NonEmptyList Vector -> a
 
 locate :: Vector -> Origin -> OrthoNormalBase -> Vector
-locate avec origin onb = add origin (localVec onb avec)
+locate avec origin onb = 
+    let lvec = localVec onb avec
+        lorg = add origin lvec
+    in lorg
 
-class Locatable a where
+class Transformable a => Locatable a where
     localCoords :: a -> Double -> NonEmptyList Vector
     
-    located :: Transformable a => a -> LocatingParams -> a
+    located :: a -> LocatingParams -> a
     located a (origin, onb, time) =
-        let locs = [ locate v origin onb | v <- (toList $ localCoords a time) ]
+        let func v = locate v origin onb
+            locs = map func $ toList (localCoords a time)
         in transform a (NList (head locs) (tail locs))
 
 
-class Translatable a where
-    translate :: (Locatable a, Transformable a) => a -> Offset -> LocatingParams -> a
+class (Show a, Locatable a, Transformable a) => Translatable a where
+    translate :: a -> Offset -> LocatingParams -> a
     translate a offset (origin, onb, time) =
-        let locs = [ locate v origin onb | v <- (toList $ localCoords a time) ]
-            nlocs = [ add v offset | v <- locs ]
+        let fnc vec = add vec offset
+            locs = toList (localCoords a time)
+            nlocs = map fnc locs
         in transform a (NList (head nlocs) (tail nlocs))
 
 
-class Rotatable a where
-    rotate :: (Locatable a, Transformable a) => a -> LocatingParams -> Quaternion -> a
+class (Locatable a, Transformable a, Show a) => Rotatable a where
+    rotate :: a -> LocatingParams -> Quaternion -> a
     {-
     Rotate a point with a quaternion, from:
     Vince, J. (2011) Quaternions for Computer Graphics. London: Springer London.
     q p q^{ -1 }
     -}
     rotate a (origin, onb, time) quat =
-        let locs = [ locate v origin onb | v <- (toList $ localCoords a time) ]
+        let -- locs = [ locate v origin onb | v <- (toList $ localCoords a time) ]
+            locs = toList $ localCoords a time
             rotatePoint point =
                 let pquat = fromSVec2Quaternion 0.0 point
                     qinv = qInverse quat
-                in hamiltonProduct (hamiltonProduct quat pquat) qinv
+                in hamiltonProduct qinv (hamiltonProduct pquat quat) 
             nlocs = map qVector $! map rotatePoint locs
         in transform a (NList (head nlocs) (tail nlocs))
 
-    rotateByAxisAngle :: (Locatable a, Transformable a) => a -> LocatingParams -> AxisAngle -> a
+    rotateByAxisAngle :: a -> LocatingParams -> AxisAngle -> a
     rotateByAxisAngle a loc (axis, angle) =
         let q = fromAngleAxis2Quaternion angle axis
-        in rotate a loc q
+            rq = rotate a loc q
+        -- in error $ show rq ++ " " ++ show a
+        in rq
 
 
 class Scalable a where

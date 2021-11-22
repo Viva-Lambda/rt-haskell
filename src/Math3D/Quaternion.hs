@@ -33,9 +33,10 @@ instance BinaryOps Quaternion where
 
 
 qVector :: Quaternion -> Vector
+qVector q = VList [qX q, qY q, qZ q]
+
 qScalar :: Quaternion -> Double
 qScalar q = qR q
-qVector q = VList [qX q, qY q, qZ q]
 
 fromSVec2Quaternion :: Double -> Vector -> Quaternion
 fromSVec2Quaternion s v =

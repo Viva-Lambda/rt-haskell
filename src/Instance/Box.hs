@@ -97,7 +97,11 @@ instance Transformable Box where
 
 instance Locatable Box where
     --
-    localCoords a _ = NList (minBox a) [maxBox a]
+    localCoords a _ = 
+        let ma = minBox a 
+            mb = maxBox a
+            mcross = cross3d ma mb
+        in NList ma [mb]
 
 instance Translatable Box where
 

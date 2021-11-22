@@ -1,5 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
 module Main where
+-- stack install --profile --local-bin-path ./bin/
 
 import ColorIO
 import Pixel
@@ -71,7 +72,7 @@ printColor = do
     tstart <- getCurrentTime
     g <- newStdGen
     imD <- loadImage "./earthmap.jpg"
-    (smpl, (imw, imh), ps) <- traceScene g imD 0
+    (smpl, (imw, imh), ps) <- traceScene g imD 7
     -- print pixCoords
     _ <- printPPMHeader imw imh
     _ <- printPixels ps smpl

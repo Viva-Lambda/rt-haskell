@@ -72,21 +72,22 @@ cornellBox gen =
         loc = getCameraLocatingParams gen sceneC
         b1 = mkBox (zeroV3) (VList [165.0, 330.0, 165.0]) whiteMat
         b1rot = rotateByAxisAngle b1 loc (VList [0.0, 1.0, 0.0], 15)
-        b1trans = translate b1rot (VList [265.0, 0.0, 295.0]) loc
+        b1trans = translate b1 (VList [265.0, 0.0, 295.0]) loc
         b2 = mkBox (zeroV3) (VList [165.0, 165.0, 165.0]) whiteMat
-        b2rot = rotateByAxisAngle b2 loc (VList [0.0, 1.0, 0.0], -18)
-        b2trans = translate b2rot (VList [130.0, 0.0, 65.0]) loc
+        b2rot = rotateByAxisAngle b2 loc (VList [0.0, 1.0, 0.0], 345)
+        b2trans = translate b2 (VList [130.0, 0.0, 65.0]) loc
 
-        hs = HList {objects = NList (HitBox b1rot) [HitBox b2rot, 
+        hs = HList {objects = NList (HitBox b1trans) [HitBox b2trans,
                                                       yzGreenWall, yzRedWall,
                                                       xzWhiteWall1, xzWhiteWall2,
                                                       xyWhiteWall, lightR]}
+    -- in error $ "\nN: " ++ show b2 ++ "\nR: " ++ show b2rot ++ "\nT: " ++ show b2trans
     in SceneVals {
         img_width = imageWidth,
         aspect_ratio = aspectRatio,
         img_height = imageHeight,
-        nb_samples = 10,
-        bounce_depth = 5,
+        nb_samples = 200,
+        bounce_depth = 30,
         cam_look_from = cfrom,
         cam_look_to = cto,
         cam_vfov = cvfov,
