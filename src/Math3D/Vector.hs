@@ -13,7 +13,13 @@ import Utility.Utils
 import Math3D.CommonOps
 
 data Vector = VList [Double]
-            deriving (Eq, Show)
+            deriving (Eq)
+
+instance Show Vector where
+    show (VList a) =
+        let msg1 = "<Vector " ++ "size " ++ show (length a) 
+            msg2 = msg1 ++ " data " ++ (unwords $ map show a) ++ " >"
+        in msg2
 
 zeroV :: Int -> Vector
 zeroV !size = VList $ replicate size 0.0
@@ -37,7 +43,8 @@ sizeError :: Vector -> Vector -> String -> String
 sizeError !v !s m =
     let msg = "vector sizes: " ++ (show $! vsize v) ++ " and " ++ (show $! vsize s)
         msg2 = msg ++ " are incorrect for operation " ++ m
-    in msg2
+        msg3 = msg2 ++ " v1: " ++ show v ++ " v2 " ++ show s
+    in msg3
 
 vecError :: Vector -> String -> String
 vecError !v m =
@@ -47,7 +54,7 @@ vecError !v m =
 vecArithmeticOp :: String -> (Double -> Double -> Double) -> Vector -> Vector -> Vector
 vecArithmeticOp opname f !v !e =
     if (vsize v) /= (vsize e)
-    then error $ sizeError v e opname
+    then traceStack (sizeError v e opname) zeroV3
     else let (VList ds) = v
              (VList es) = e 
          in VList $! zipWith f ds es

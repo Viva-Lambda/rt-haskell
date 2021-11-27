@@ -70,12 +70,13 @@ cornellBox gen =
         -- boxes
         -- get locating parameters
         loc = getCameraLocatingParams gen sceneC
+        (_, _, time) = loc
         b1 = mkBox (zeroV3) (VList [165.0, 330.0, 165.0]) whiteMat
-        b1rot = rotateByAxisAngle b1 loc (VList [0.0, 1.0, 0.0], 15)
-        b1trans = translate b1 (VList [265.0, 0.0, 295.0]) loc
+        b1rot = rotateYByAngle b1 45.0 time
+        b1trans = translate b1rot (VList [265.0, 0.0, 295.0]) time
         b2 = mkBox (zeroV3) (VList [165.0, 165.0, 165.0]) whiteMat
-        b2rot = rotateByAxisAngle b2 loc (VList [0.0, 1.0, 0.0], 345)
-        b2trans = translate b2 (VList [130.0, 0.0, 65.0]) loc
+        b2rot = rotateYByAngle b2 (-18.0) time
+        b2trans = translate b2rot (VList [130.0, 0.0, 65.0]) time
 
         hs = HList {objects = NList (HitBox b1trans) [HitBox b2trans,
                                                       yzGreenWall, yzRedWall,
@@ -86,8 +87,8 @@ cornellBox gen =
         img_width = imageWidth,
         aspect_ratio = aspectRatio,
         img_height = imageHeight,
-        nb_samples = 200,
-        bounce_depth = 30,
+        nb_samples = 100,
+        bounce_depth = 20,
         cam_look_from = cfrom,
         cam_look_to = cto,
         cam_vfov = cvfov,

@@ -2,49 +2,62 @@
 -- Basic Matrix implementation
 module Math3D.Matrix where
 
-import qualified Math3D.Vector as Vec
+import Math3D.Vector hiding(sizeError)
 import Math3D.CommonOps
 import GHC.Float
 import Data.List
 import Data.Foldable
+import Debug.Trace
 
-data Matrix = MList {mdata :: [Double], mstride :: Int} deriving (Eq, Show)
+import Utility.Utils
+
+data Matrix = MList {mdata :: [Double], mstride :: Int} deriving (Eq)
+
+instance Show Matrix where
+    show m = 
+        let msg1 = "<Matix " ++ show (mRowNb m) ++ "x" ++ show (mColNb m)
+        in msg1 ++ " >"
 
 mzero :: Int -> Int -> Matrix
 mzero rowNb colNb = MList {mdata = replicate (rowNb * colNb) 0.0, 
                            mstride = colNb}
 
-matFromVector :: [Vec.Vector] -> Matrix
+matFromVector :: [Vector] -> Matrix
 matFromVector [] = MList {mdata = [], mstride = 0}
 matFromVector (v:vs) = 
     -- let myStrList = lines myStr -- \n
     -- in [splitOn ',' myStr | myStr <- myStrList]
-    let sizes = [(Vec.vsize v_) == (Vec.vsize v) | v_ <- vs]
+    let sizes = [(vsize v_) == (vsize v) | v_ <- vs]
         allSameLength = foldl1 (==) sizes
     in if not allSameLength
-       then error "All vectors must have same length"
+       then traceStack "All vectors must have same length" (mzero 1 1)
        else -- foldfn :: (a -> b -> a)
-           let foldfn ac v = let Vec.VList a = v
+           let foldfn ac v = let VList a = v
                              in ac ++ a
-               md = foldl foldfn [] vs
-           in MList {mdata = md, mstride = Vec.vsize v}
+               md = foldl foldfn [] (v:vs)
+           in MList {mdata = md, mstride = vsize v}
+
+
+mrows :: Matrix -> [Vector]
+mrows m =
+    let d = mdata m
+        s = mstride m
+        rowNb = mRowNb m
+    in [VList $ takeBetween (s*i) (s*i + s-1) d | i <- [0..(rowNb - 1)]]
+
+
+mcols :: Matrix -> [Vector]
+mcols m = 
+    let rows = mrows m
+        getcol i = [vget row i | row <-rows]
+    in [VList $ getcol i | i <- [0..((mColNb m)-1)]]
+
 
 msize :: Matrix -> Int
 msize !m = length (mdata m)
 
-mtake :: Matrix -> Int -> Double
-mtake mat index = 
-    let vs = mdata mat
-    in if (msize mat) <= index || index < 0
-       then error $ "IndexError: uncorrect index size: " ++ show index
-       else vs !! index
-
-
 mget :: Matrix -> Int -> Int -> Double
-mget mat col row =
-    let colnb = mstride mat
-        loc = row * colnb + col
-    in mtake mat loc
+mget mat col row = vget (mgetRow mat row) col
 
 mRowNb :: Matrix -> Int
 mRowNb mat = 
@@ -55,29 +68,30 @@ mRowNb mat =
 mColNb :: Matrix -> Int
 mColNb mat = mstride mat
 
-mgetColumn :: Matrix -> Int -> Vec.Vector
+mgetColumn :: Matrix -> Int -> Vector
 mgetColumn mat index = 
     if index >= (mstride mat)
-    then error "given column index is larger than stride"
-    else let md = mdata mat
-             colnb = mColNb mat
-         in Vec.VList [mtake mat (i * colnb + index) | i <- [0..(mRowNb mat)]]
+    then let msg1 = "given column index is larger than stride " ++ show (mstride mat)
+             msg2 = msg1 ++ " index " ++ show index 
+         in traceStack msg2 zeroV3
+    else (mcols mat) !! index
 
-mgetRow :: Matrix -> Int -> Vec.Vector
+mgetRow :: Matrix -> Int -> Vector
 mgetRow mat index = 
     if index >= (mRowNb mat)
-    then error "given row index is larger than number of rows of matrix"
-    else let md = mdata mat
-             colnb = mColNb mat
-         in Vec.VList [mtake mat (i + colnb * index) | i <- [0..(mColNb mat)]]
+    then let msg1 = "given row index is larger than number of rows of matrix"
+             msg2 = " index " ++ show index
+             msg3 = " row number " ++ show (mRowNb mat)
+         in traceStack (msg1 ++ msg2 ++ msg3) zeroV3
+    else (mrows mat) !! index
 
-msetRow :: Matrix -> Int -> Vec.Vector -> Matrix
+msetRow :: Matrix -> Int -> Vector -> Matrix
 msetRow mat index v =
     if index >= (mRowNb mat)
-    then error "given row index is larger than number of rows of matrix"
+    then traceStack "given row index is larger than number of rows of matrix" (mzero 1 1)
     else let md = mdata mat
              colnb = mColNb mat
-             Vec.VList vs = v
+             VList vs = v
              loc = index * colnb
              rowend = loc + colnb
              (before, rdata) = splitAt loc md
@@ -120,40 +134,23 @@ instance BinaryOps Matrix where
            then error $ matError e "contains zero in a division operation"
            else matArithmeticOp "divide" (/) v e
 
-saxpy :: Double -> Vec.Vector -> Vec.Vector -> Vec.Vector
-saxpy s x y = if (Vec.vsize x) /= (Vec.vsize y)
-              then error $! Vec.sizeError x y "saxpy"
-              else let Vec.VList xs = x
-                       Vec.VList ys = y
-                   in Vec.VList [x_ * s + y_ | x_ <- xs, y_ <- ys]
-
-innerOuterProduct :: Int -> Vec.Vector -> Vec.Vector -> Matrix -> Matrix
-innerOuterProduct i x y out =
-    let a_i = mgetRow out i
-        x_i = Vec.vget x i
-        sxpy = saxpy x_i y a_i
-    in msetRow out i sxpy
-
-outerProduct :: Vec.Vector -> Vec.Vector -> Matrix -> Matrix
-outerProduct x y out =
-    let foldfn accOut i = innerOuterProduct i x y accOut
-    in foldl' foldfn out [0..(mRowNb out)]
-
-
-innerMatmul :: Int -> Matrix -> Matrix -> Matrix -> Matrix
-innerMatmul !k !a !b !out =
-    let a_k = mgetColumn a k
-        b_k = mgetRow b k
-    in outerProduct a_k b_k out
-
+-- get XbyY times YbyZ -> XbyZ
 matmul :: Matrix -> Matrix -> Matrix
 matmul !a !b =
-    let outColNb = mColNb b
-        clNb = mRowNb b
-        colNb = mColNb a
-        rowNb = mRowNb a
-        outmat = mzero rowNb outColNb
-    in if clNb /= colNb
-       then error "column sizes don't match for matrices"
-       else let foldfn accOut i = innerMatmul i a b accOut
-            in foldl' foldfn outmat [0..colNb]
+    let aColNb = mColNb a
+        aRowNb = mRowNb a
+        bColNb = mColNb b
+        bRowNb = mRowNb b
+    in if aColNb /= bRowNb
+       then let msg1 = "SizeError :: argument matrices have incompatible size "
+                msg2 = msg1 ++ (show aRowNb)
+                msg3 = msg2 ++ "x" ++ (show aColNb)
+                msg4 = msg3 ++ " and " ++ (show bRowNb) ++ "x" ++ (show bColNb)
+            in traceStack msg4 (mzero 1 1)
+       else -- real multiplication work begins
+            let bcols = mcols b
+                arows = mrows a
+                fn arow = [dot arow bcol | bcol <- bcols]
+                nmatData = concat $ map fn arows
+            in MList {mdata = nmatData, mstride = bColNb}
+            
