@@ -36,15 +36,32 @@ library
       Hittable.HittableList
       Hittable.HittableObj
       Hittable.MovingSphere
+      Hittable.Rotatable
       Hittable.Sphere
+      Hittable.Translatable
       Hittable.Translate
       Instance.Box
       Lib
       Material.Material
       Material.Scatter
+      Math3D.CommonOps
+      Math3D.EulerAngles
+      Math3D.Matrix
+      Math3D.Onb
+      Math3D.Quaternion
+      Math3D.Ray
+      Math3D.Transform
+      Math3D.Vector
       Pixel
       Random
-      Ray
+      Scene.CheckerScene
+      Scene.CornellBox
+      Scene.DiffuseSphere
+      Scene.ImageScene
+      Scene.PerlinLight
+      Scene.PerlinSphere
+      Scene.RandomOneWeekendFinal
+      Scene.Scene
       Scenes
       Texture.Checker
       Texture.Image
@@ -52,8 +69,8 @@ library
       Texture.SolidColor
       Texture.Texture
       Texture.TextureObj
+      Utility.HelperTypes
       Utility.Utils
-      Vector
   other-modules:
       Paths_rt_haskell
   hs-source-dirs:

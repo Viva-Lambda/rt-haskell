@@ -11,7 +11,6 @@ import Random
 -- math
 import Math3D.Vector
 import Math3D.Ray
-import Math3D.Transform
 
 -- texture
 import Texture.SolidColor
@@ -22,6 +21,8 @@ import Hittable.HittableList
 import Hittable.HittableObj
 import Hittable.Hittable
 import Hittable.AaRect
+import Hittable.Rotatable
+import Hittable.Translatable
 
 -- instance
 import Instance.Box
@@ -72,13 +73,13 @@ cornellBox gen =
         loc = getCameraLocatingParams gen sceneC
         (_, _, time) = loc
         b1 = mkBox (zeroV3) (VList [165.0, 330.0, 165.0]) whiteMat
-        b1rot = rotateYByAngle b1 45.0 time
-        b1trans = translate b1rot (VList [265.0, 0.0, 295.0]) time
+        b1rot = mkRotatable b1 45.0 RY
+        b1trans = Translate b1rot (VList [265.0, 0.0, 295.0])
         b2 = mkBox (zeroV3) (VList [165.0, 165.0, 165.0]) whiteMat
-        b2rot = rotateYByAngle b2 (-18.0) time
-        b2trans = translate b2rot (VList [130.0, 0.0, 65.0]) time
+        b2rot = mkRotatable b2 (-18.0) RY
+        b2trans = Translate b2rot (VList [130.0, 0.0, 65.0])
 
-        hs = HList {objects = NList (HitBox b1trans) [HitBox b2trans,
+        hs = HList {objects = NList (HTranslate b1trans) [HTranslate b2trans,
                                                       yzGreenWall, yzRedWall,
                                                       xzWhiteWall1, xzWhiteWall2,
                                                       xyWhiteWall, lightR]}
@@ -87,8 +88,8 @@ cornellBox gen =
         img_width = imageWidth,
         aspect_ratio = aspectRatio,
         img_height = imageHeight,
-        nb_samples = 100,
-        bounce_depth = 20,
+        nb_samples = 200,
+        bounce_depth = 50,
         cam_look_from = cfrom,
         cam_look_to = cto,
         cam_vfov = cvfov,

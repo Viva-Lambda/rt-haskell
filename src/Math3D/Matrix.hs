@@ -19,12 +19,12 @@ instance Show Matrix where
         in msg1 ++ " >"
 
 mzero :: Int -> Int -> Matrix
-mzero rowNb colNb = MList {mdata = replicate (rowNb * colNb) 0.0, 
+mzero !rowNb !colNb = MList {mdata = replicate (rowNb * colNb) 0.0, 
                            mstride = colNb}
 
 matFromVector :: [Vector] -> Matrix
 matFromVector [] = MList {mdata = [], mstride = 0}
-matFromVector (v:vs) = 
+matFromVector !(v:vs) = 
     -- let myStrList = lines myStr -- \n
     -- in [splitOn ',' myStr | myStr <- myStrList]
     let sizes = [(vsize v_) == (vsize v) | v_ <- vs]
@@ -39,7 +39,7 @@ matFromVector (v:vs) =
 
 
 mrows :: Matrix -> [Vector]
-mrows m =
+mrows !m =
     let d = mdata m
         s = mstride m
         rowNb = mRowNb m
@@ -47,7 +47,7 @@ mrows m =
 
 
 mcols :: Matrix -> [Vector]
-mcols m = 
+mcols !m = 
     let rows = mrows m
         getcol i = [vget row i | row <-rows]
     in [VList $ getcol i | i <- [0..((mColNb m)-1)]]
@@ -57,7 +57,7 @@ msize :: Matrix -> Int
 msize !m = length (mdata m)
 
 mget :: Matrix -> Int -> Int -> Double
-mget mat col row = vget (mgetRow mat row) col
+mget !mat col row = vget (mgetRow mat row) col
 
 mRowNb :: Matrix -> Int
 mRowNb mat = 

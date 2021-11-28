@@ -1,7 +1,8 @@
 {-# LANGUAGE BangPatterns #-}
 module Main where
 -- stack install --profile --local-bin-path ./bin/
--- options +RTS (enables statistics) -p -N2 (two threads)
+-- options +RTS (enables statistics) -N2 (two threads) -p 
+-- the order of options is important
 
 import ColorIO
 import Pixel

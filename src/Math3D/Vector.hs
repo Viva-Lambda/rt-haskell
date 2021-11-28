@@ -21,11 +21,26 @@ instance Show Vector where
             msg2 = msg1 ++ " data " ++ (unwords $ map show a) ++ " >"
         in msg2
 
+singularV :: Int -> Double -> Vector
+singularV !size v = VList $ replicate size v
+
 zeroV :: Int -> Vector
-zeroV !size = VList $ replicate size 0.0
+zeroV !size = singularV size 0.0
 
 zeroV3 :: Vector
 zeroV3 = zeroV 3
+
+inftyV :: Int -> Vector
+inftyV !size = singularV size infty
+
+inftyV3 :: Vector
+inftyV3 = inftyV 3
+
+negInftyV :: Int -> Vector
+negInftyV !size = singularV size (-infty)
+
+negInftyV3 ::Vector
+negInftyV3 = negInftyV 3
 
 vsize :: Vector -> Int
 vsize !(VList v) = length v
