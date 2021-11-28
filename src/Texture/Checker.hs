@@ -3,7 +3,7 @@
 -- Checkered texture
 module Texture.Checker where
 
-import Vector
+import Math3D.Vector
 import Texture.Texture
 
 data Checker where

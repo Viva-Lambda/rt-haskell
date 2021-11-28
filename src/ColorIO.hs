@@ -4,11 +4,12 @@ module ColorIO where
 
 import GHC.Float
 import Data.Foldable
-import Vector
+import Math3D.Vector
+import Math3D.CommonOps
 import Pixel
 import Scenes
 import Camera
-import Ray
+import Math3D.Ray
 import Hittable.HittableList
 import Hittable.Hittable
 import Hittable.HitRecord
@@ -17,6 +18,9 @@ import Utility.Utils
 import System.Random
 import Random
 import Prelude hiding(subtract)
+
+-- scene
+import Scene.Scene
 
 
 rayColor :: RandomGen g => Ray -> HittableList -> Vector -> Int -> g -> (Vector, g)

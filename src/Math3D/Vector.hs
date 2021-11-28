@@ -1,6 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
 -- vector library
-module Vector where
+module Math3D.Vector where
 
 import System.Random
 import Random
@@ -8,15 +8,39 @@ import Prelude hiding(subtract)
 import Debug.Trace
 
 import Data.Foldable
+import Utility.Utils
+
+import Math3D.CommonOps
 
 data Vector = VList [Double]
-            deriving (Eq, Show)
+            deriving (Eq)
+
+instance Show Vector where
+    show (VList a) =
+        let msg1 = "<Vector " ++ "size " ++ show (length a) 
+            msg2 = msg1 ++ " data " ++ (unwords $ map show a) ++ " >"
+        in msg2
+
+singularV :: Int -> Double -> Vector
+singularV !size v = VList $ replicate size v
 
 zeroV :: Int -> Vector
-zeroV !size = VList $ replicate size 0.0
+zeroV !size = singularV size 0.0
 
 zeroV3 :: Vector
 zeroV3 = zeroV 3
+
+inftyV :: Int -> Vector
+inftyV !size = singularV size infty
+
+inftyV3 :: Vector
+inftyV3 = inftyV 3
+
+negInftyV :: Int -> Vector
+negInftyV !size = singularV size (-infty)
+
+negInftyV3 ::Vector
+negInftyV3 = negInftyV 3
 
 vsize :: Vector -> Int
 vsize !(VList v) = length v
@@ -34,7 +58,8 @@ sizeError :: Vector -> Vector -> String -> String
 sizeError !v !s m =
     let msg = "vector sizes: " ++ (show $! vsize v) ++ " and " ++ (show $! vsize s)
         msg2 = msg ++ " are incorrect for operation " ++ m
-    in msg2
+        msg3 = msg2 ++ " v1: " ++ show v ++ " v2 " ++ show s
+    in msg3
 
 vecError :: Vector -> String -> String
 vecError !v m =
@@ -44,16 +69,13 @@ vecError !v m =
 vecArithmeticOp :: String -> (Double -> Double -> Double) -> Vector -> Vector -> Vector
 vecArithmeticOp opname f !v !e =
     if (vsize v) /= (vsize e)
-    then error $ sizeError v e opname
+    then traceStack (sizeError v e opname) zeroV3
     else let (VList ds) = v
              (VList es) = e 
          in VList $! zipWith f ds es
 
 vecScalarOp :: (Double -> Double) -> Vector -> Vector
-vecScalarOp f !v =
-    let 
-        (VList vs) = v
-    in VList $! map f vs 
+vecScalarOp f !v = let (VList vs) = v in VList $! map f vs 
 
 nearZeroVec :: Vector -> Bool
 nearZeroVec !v =
@@ -61,36 +83,14 @@ nearZeroVec !v =
         nzero = 1e-10
     in foldl1 (&&) $! map (< nzero) (map abs vs)
 
-add :: Vector -> Vector -> Vector
-add !v !e = vecArithmeticOp "add" (+) v e
-addS :: Vector -> Double -> Vector
-addS !v !s = let f = \d -> d + s in vecScalarOp f v
-
-subtract :: Vector -> Vector -> Vector
-subtract !v !e = vecArithmeticOp "subtract" (-) v e
-
-subtractS :: Vector -> Double -> Vector
-subtractS !v !s = let f = \d -> d - s in vecScalarOp f v
-
-multiply :: Vector -> Vector -> Vector
-multiply !v !e = vecArithmeticOp "multiply" (*) v e
-
-multiplyS :: Vector -> Double -> Vector
-multiplyS v s = let f = \d -> d * s in vecScalarOp f v
-
-divide :: Vector -> Vector -> Vector
-divide !v !e =
-    let 
-        (VList es) = e
-    in if 0.0 `elem` es
-       then error $ vecError e "contains zero in a division operation"
-       else vecArithmeticOp "divide" (/) v e
-
-divideS :: Vector -> Double -> Vector
-divideS v s =
-    if s == 0.0
-    then traceStack ("performing zero division: " ++ show v) (zeroV3)
-    else let f = \d -> d / s in vecScalarOp f v
+instance BinaryOps Vector where
+    elementwiseOp str f a b = vecArithmeticOp str f a b
+    elementwiseScalarOp _ f a = vecScalarOp f a
+    divide v e =
+        let (VList es) = e
+        in if 0.0 `elem` es
+           then error $ vecError e "contains zero in a division operation"
+           else vecArithmeticOp "divide" (/) v e
 
 dot :: Vector -> Vector -> Double
 dot !v !e = let mult = multiply v e
@@ -195,3 +195,10 @@ refract !uv !n !etaiOverEta =
         outPar = multiplyS n (-1.0 * absOut)
     in add outPerp outPar
 
+clampV :: Vector -> Double -> Double -> Vector
+clampV v mn mx =
+    let (VList vs) = v
+        nvs = clampvals vs
+    in VList nvs
+    where clampvals [] = []
+          clampvals (e:es) = clamp e mn mx : clampvals es

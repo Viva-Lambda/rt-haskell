@@ -1,5 +1,8 @@
 {-# LANGUAGE BangPatterns #-}
 module Main where
+-- stack install --profile --local-bin-path ./bin/
+-- options +RTS (enables statistics) -N2 (two threads) -p 
+-- the order of options is important
 
 import ColorIO
 import Pixel
@@ -8,8 +11,11 @@ import System.Random
 import Prelude hiding(subtract)
 import Data.Time.Clock
 import System.IO
-import Scenes
 import Codec.Image.STB
+
+import Scene.Scene
+
+import Scenes
 
 -- world
 
@@ -68,7 +74,7 @@ printColor = do
     tstart <- getCurrentTime
     g <- newStdGen
     imD <- loadImage "./earthmap.jpg"
-    (smpl, (imw, imh), ps) <- traceScene g imD 5
+    (smpl, (imw, imh), ps) <- traceScene g imD 7
     -- print pixCoords
     _ <- printPPMHeader imw imh
     _ <- printPixels ps smpl

@@ -2,7 +2,7 @@
 -- module grouping texture adts
 module Texture.TextureObj where
 
-import Vector
+import Math3D.Vector
 import Texture.SolidColor
 import Texture.Checker
 import Texture.Noise

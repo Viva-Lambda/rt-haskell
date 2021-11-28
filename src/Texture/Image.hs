@@ -2,7 +2,8 @@
 -- image texture
 module Texture.Image where
 
-import Vector
+import Math3D.Vector
+import Math3D.CommonOps
 import Texture.Texture
 import Utility.Utils
 
@@ -51,7 +52,7 @@ bitmapToImageT :: Image -> ImageT
 bitmapToImageT !b =
     let (w, h) = bitmapSize b
         channels = bitmapNChannels b
-        offsets = [(ww, hh) | ww <- [0..(w-1)], hh <- [0..(h-1)]]
+        offsets = [(ww, hh) | hh <- [0..(h-1)], ww <- [0..(w-1)] ]
         readerFn oset = let p = unsafeReadPixel b oset
                         in p
         -- foldfn :: (a -> b -> a) :: ([] -> [a] -> [a])

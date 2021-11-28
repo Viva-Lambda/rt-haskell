@@ -1,12 +1,17 @@
 -- axis aligned rectangles
 module Hittable.AaRect where
 
-import Vector
+import Math3D.Vector
+import Math3D.Ray
+
+--
 import Hittable.Hittable
 import Hittable.HitRecord
-import Ray
-import Material.Material
 import Hittable.Aabb
+
+import Material.Material
+
+import Utility.Utils
 
 data AlignmentAxis = AaX
                    | AaY
@@ -34,6 +39,59 @@ data AaRect = Quad {
     quadAlignedAxisB1 :: Double,
     quadAlignedAxisB2 :: Double
     }
+
+corners :: AaRect -> (Vector, Vector, Vector, Vector)
+corners a =
+    let (Quad {quadMat = _,
+                quadNormal = _,
+                quadDistance = k,
+                quadInfo = qi,
+                quadAlignedAxisA1 = a1,
+                quadAlignedAxisA2 = a2,
+                quadAlignedAxisB1 = b1,
+                quadAlignedAxisB2 = b2
+                }) = a
+    in case notAligned qi of
+           AaZ -> (VList [a1, b1, k], VList [a1, b2, k],
+                   VList [a2, b2, k], VList [a2, b1, k])
+           AaY -> (VList [a1, k, b1], VList [a1, k, b2],
+                   VList [a2, k, b2], VList [a2, k, b1])
+           AaX -> (VList [k, a1, b1], VList [k, a1, b2],
+                   VList [k, a2, b2], VList [k, a2, b1])
+
+
+cornerNormal :: AaRect -> (Vector, Vector, Vector, Vector, Vector)
+cornerNormal a = let (p1, p2, p3, p4) = corners a in (p1, p2, p3, p4, quadNormal a)
+
+
+fromCornersNormal :: (Vector, Vector, Vector, Vector, Vector) -> AaRect
+fromCornersNormal (p1, p2, p3, p4, n) =
+    let getX v = vget v 0
+        getY v = vget v 1
+        getZ v = vget v 2
+        xvals = map getX [p1, p2, p3, p4]
+        yvals = map getY [p1, p2, p3, p4]
+        zvals = map getZ [p1, p2, p3, p4]
+        -- find distance
+        k = if allEqual xvals
+            then head xvals
+            else if allEqual yvals
+                 then head yvals
+                 else head zvals
+        -- filter out distance from x,y,z vals
+        nxvals = takeWhile (/= k) xvals
+        nyvals = takeWhile (/= k) yvals
+        nzvals = takeWhile (/= k) zvals
+        -- get a and b values 
+        (alst, blst) = if null nxvals
+                       then (nyvals, nzvals)
+                       else if null nyvals
+                            then (nxvals, nzvals)
+                            else (nxvals, nyvals)
+        -- get min max for values
+        (amin, amax) = (minimum alst, maximum alst)
+        (bmin, bmax) = (minimum blst, maximum blst)
+    in mkAaRect amin amax bmin bmax k NoMat n
 
 type AAxisValue = Double
 type AADistance = Double

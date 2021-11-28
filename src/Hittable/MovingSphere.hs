@@ -2,8 +2,9 @@
 -- moving sphere module
 module Hittable.MovingSphere where
 
-import Ray
-import Vector
+import Math3D.Ray
+import Math3D.Vector
+import Math3D.CommonOps
 import Hittable.Hittable
 import Hittable.HitRecord
 import Hittable.Aabb

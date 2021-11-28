@@ -8,19 +8,23 @@ import Hittable.HittableList
 import Hittable.HittableObj
 import Hittable.HitRecord
 import Hittable.Aabb
-import Data.List
-import Vector
-import System.Random
+
+import Math3D.Vector
+
+import Utility.HelperTypes
+
 import Random
 import GHC.Float
+import System.Random
 import Data.Ord
+import Data.List
 
-data Bvh a where
-    BNode :: Hittable a => Bvh a -> Bvh a -> Aabb -> Bvh a
-    BLeaf :: Hittable a => a -> Aabb -> Bvh a
+data Bvh where
+    BNode :: Bvh -> Bvh -> Aabb -> Bvh
+    BLeaf :: Hittable a => a -> Aabb -> Bvh
              
 
-instance (Hittable a) => Hittable (Bvh a) where
+instance Hittable Bvh where
     -- hit :: bvh -> Ray -> Double -> Double -> HitRecord -> (HitRecord, Bool)
     hit (BNode a b box) ray tmin tmax hrec =
         let boxHit = aabbHit box ray tmin tmax
@@ -47,7 +51,7 @@ instance (Hittable a) => Hittable (Bvh a) where
     boundingBox (BLeaf _ a) t0 t1 obox = (a, True)
 
 
-mkBvh :: (Hittable a, RandomGen g) => [a] -> g -> Int -> Int -> Double -> Double -> Bvh a
+mkBvh :: (Hittable a, RandomGen g) => [a] -> g -> Int -> Int -> Double -> Double -> Bvh
 
 mkBvh objects gen start end time0 time1 =
     let (axisd, g1) = randomDouble gen 0.0 2.0
@@ -125,7 +129,8 @@ mkBvh objects gen start end time0 time1 =
           box_y_compare f s = boxCompare f s 1
           box_z_compare f s = boxCompare f s 2
 
-mkBvhFromHittableList :: RandomGen g => HittableList -> g -> Double -> Double -> Bvh HittableObj
+mkBvhFromHittableList :: RandomGen g => HittableList -> g -> Double -> Double -> Bvh
 
-mkBvhFromHittableList
-    (HList hs) g time0 time1 = mkBvh hs g 0 (length hs) time0 time1
+mkBvhFromHittableList hobjs g time0 time1 =
+    let hs = toList $ objects hobjs
+    in mkBvh hs g 0 (length hs) time0 time1

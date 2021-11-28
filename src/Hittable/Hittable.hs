@@ -1,7 +1,7 @@
 -- module for hittable type
 module Hittable.Hittable where
 
-import Ray
+import Math3D.Ray
 import Hittable.HitRecord
 import Hittable.Aabb
 

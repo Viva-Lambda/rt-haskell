@@ -1,7 +1,7 @@
 -- module solid color
 module Texture.SolidColor where
 
-import Vector
+import Math3D.Vector
 import Texture.Texture
 
 data SolidColor = SolidV Vector

@@ -2,8 +2,13 @@
 -- camera module
 module Camera where
 
-import Vector
-import Ray
+-- math
+import Math3D.Vector
+import Math3D.CommonOps
+import Math3D.Ray
+import Math3D.Transform
+import Math3D.Onb
+
 import Utility.Utils
 import Prelude hiding (subtract)
 import System.Random
@@ -57,6 +62,23 @@ mkCam !lookFrom !lookAt !vup !vfov !aspect_ratio !aperture !focusDist !t0 !t1 =
 mkCamTime :: Vector -> Vector -> Vector -> Double -> Double -> Double -> Double -> Camera
 mkCamTime lookFrom lookAt vup vfov aspect_ratio aperture focusDist =
     mkCam lookFrom lookAt vup vfov aspect_ratio aperture focusDist 0.0 0.0
+
+--
+getCameraOnb :: Camera -> OrthoNormalBase
+getCameraOnb c =
+    let w = camW c
+        v = camV c
+        u = camU c
+    in onb3 w v u
+
+getCameraTime :: RandomGen g => g -> Camera -> Double
+getCameraTime gen c =
+    let t0 = time0 c
+        t1 = time1 c
+    in fst $ randomDouble gen t0 t1
+
+getCameraLocatingParams :: RandomGen g => g -> Camera -> LocatingParams
+getCameraLocatingParams g c = (corigin c, getCameraOnb c, getCameraTime g c)
 
 -- camera for listing 69
 lookF :: Vector

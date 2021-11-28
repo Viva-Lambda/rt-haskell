@@ -2,8 +2,9 @@
 -- material module
 module Material.Scatter where
 
-import Ray
-import Vector
+import Math3D.Ray
+import Math3D.Vector
+import Math3D.CommonOps
 import System.Random
 import Random
 import Hittable.HitRecord
