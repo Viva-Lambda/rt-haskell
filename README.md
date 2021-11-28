@@ -83,6 +83,10 @@ repository.
 
 ![earth-image-01](./images/earth.png)
 
+- Cornell box image from branch 15-instances
+
+![cornell-box-01](./images/cornell.png)
+
 ## Some Notes on Performance
 
 The from branch 08-diffuse an onwards as the usage of random functions become
@@ -99,5 +103,6 @@ Here is a list of planned features:
 
 - Loading assets with obj files
 - Spectral rendering switch
-- BVH acceleration structure
-- Multithreaded rendering
+- BVH acceleration structure: done but not tested.
+- Multithreaded rendering: This is as easy as passing -N3 as option now, since
+  most of the code is composed of pure functions.
