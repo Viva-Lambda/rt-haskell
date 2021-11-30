@@ -27,8 +27,8 @@ twoCheckeredSpheres :: Scene
 twoCheckeredSpheres =
     let s1 = SolidV $! VList [0.2, 0.3, 0.1]
         s2 = SolidV $! VList [0.9, 0.9, 0.8]
-        tobj = CheckerTexture $! CheckT s1 s2
-        lmb = LambMat $! Lamb {lalbedo = tobj}
+        tobj = TextureCons $! CheckT s1 s2
+        lmb = LambMat $! LambT tobj
         sp1 = SphereObj {sphereCenter = VList [0.0, -10.0, 0.0],
                          sphereRadius = 10,
                          sphereMat = lmb}

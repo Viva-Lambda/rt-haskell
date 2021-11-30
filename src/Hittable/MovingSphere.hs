@@ -2,13 +2,20 @@
 -- moving sphere module
 module Hittable.MovingSphere where
 
+-- math
 import Math3D.Ray
 import Math3D.Vector
 import Math3D.CommonOps
+
+-- hittable
 import Hittable.Hittable
 import Hittable.HitRecord
 import Hittable.Aabb
+
+-- material
 import Material.Material
+
+import Utility.Utils
 import Prelude hiding (subtract)
 
 data MovingSphere = MovSphereObj {msphereCenter1 :: Vector,
@@ -29,6 +36,13 @@ getMSphereCenter !(MovSphereObj {msphereCenter1 = a,
         centerDiff = subtract b a
         mc = multiplyS centerDiff tratio
     in add a mc
+
+
+getSphereUV :: Vector -> (Double, Double)
+getSphereUV (VList [x, y, z]) = 
+    let theta = acos (-y)
+        phi = (atan2 (-z) x) + m_pi
+    in (phi / (2*m_pi), theta / m_pi)
 
 
 instance Eq MovingSphere where
@@ -76,15 +90,20 @@ instance Hittable MovingSphere where
                         then (hrec, False)
                         else let hpoint = at ry nroot
                                  hnorm = divideS (subtract hpoint sc) sr
+                                 (hu, hv) = getSphereUV hnorm
                                  hr = HRec {hdist = nroot, point = hpoint,
                                             pnormal = hnorm,
                                             matPtr = sm,
+                                            hUV_u = hu,
+                                            hUV_v = hv,
                                             isFront = False}
                              in (setFaceNormal hr ry hnorm, True)
                    else let hpoint = at ry root
                             hnorm = divideS (subtract hpoint sc) sr
+                            (hu, hv) = getSphereUV hnorm
                             hr = HRec {hdist = root, point = hpoint,
-                                       pnormal = hnorm, matPtr = sm, 
+                                       pnormal = hnorm, matPtr = sm,
+                                       hUV_u = hu, hUV_v = hv,
                                        isFront = False}
                         in (setFaceNormal hr ry hnorm, True)
 

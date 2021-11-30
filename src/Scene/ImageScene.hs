@@ -38,9 +38,9 @@ imgEarth !bmp =
         bbmp = bmp
         -- bbmp = flipBitmap bmp
         -- bbmp = mirrorBitmap bmp
-        ptex = ImageTexture $! bitmapToImageT bbmp
+        ptex = TextureCons $! bitmapToImageT bbmp
         -- ptex = SolidTexture $ SolidV ( VList [0.2, 0.3, 0.1] )
-        lmb = LambMat $! Lamb {lalbedo = ptex}
+        lmb = LambMat $! LambT ptex 
         sp2 = SphereObj {sphereCenter = VList [0.0, 0.0, 0.0],
                          sphereRadius = 2,
                          sphereMat = lmb}

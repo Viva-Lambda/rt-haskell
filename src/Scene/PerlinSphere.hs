@@ -31,8 +31,8 @@ import Utility.HelperTypes
 
 twoPerlinSpheres :: RandomGen g => g -> Scene
 twoPerlinSpheres g =
-    let ptex = NoiseTexture $! mkPerlinNoise g 4.0
-        lmb = LambMat $! Lamb {lalbedo = ptex}
+    let ptex = TextureCons $! mkPerlinNoise g 4.0
+        lmb = LambMat $! LambT ptex
         sp1 = SphereObj {sphereCenter = VList [0.0, -1000.0, 0.0],
                          sphereRadius = 1000,
                          sphereMat = lmb}

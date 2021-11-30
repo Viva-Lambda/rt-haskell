@@ -7,10 +7,13 @@ import Math3D.Vector
 import Math3D.Ray
 import Texture.TextureObj
 
+-- materials
+
 data Material = LambMat Lambertian
                 | MetalMat Metal 
                 | DielMat Dielectric
                 | LightMat DiffuseLight
+                | IsotMat Isotropic
                 | NoMat
 
 type Color = Vector
@@ -18,27 +21,23 @@ type Color = Vector
 -- data Lambertian = Lamb {lalbedo :: Color} deriving (Eq, Show)
 
 -- lambertian material
+-- data Lambertian = Lamb {lalbedo :: TextureObj}
 
-data Lambertian = Lamb {lalbedo :: TextureObj}
+data Lambertian where
+    LambC :: Color -> Lambertian
+    LambT :: TextureObj -> Lambertian
 
-{-
-data Lambertian a where
-    LambC :: Color -> Lambertian SolidColor
-    LambT :: Texture a => a -> Lambertian a
-
--}
 
 -- metal material
-data Metal = Met {malbedo :: TextureObj, fuzz :: Double }
+-- data Metal = Met {malbedo :: TextureObj, fuzz :: Double }
 
-{-
-data Metal a b where
-    MetC :: Color -> Double -> Metal SolidColor Double
-    MetT :: Texture a => a -> Double -> Metal a Double
--}
+data Metal where
+    MetC :: Color -> Double -> Metal
+    MetT :: TextureObj -> Double -> Metal
 
 -- dielectric material
-data Dielectric = Diel {refIndices :: [Double]}
+data Dielectric where
+    DielRefIndices :: [Double] -> Dielectric
 
 schlickRef :: Double -> Double -> Double
 schlickRef cosi ref_idx =
@@ -47,5 +46,13 @@ schlickRef cosi ref_idx =
         pw = (1.0 - cosi) ** 5
     in r1 + (1.0 - r1) * pw
 
-data DiffuseLight = DLight {emitTexture :: TextureObj}
+data DiffuseLight where 
+    DLightEmitTextureCons :: TextureObj -> DiffuseLight
+    DLightColorCons :: Color -> DiffuseLight
+    
 
+-- isotropic material
+
+data Isotropic where
+    IsotTexture :: TextureObj -> Isotropic
+    IsotColor :: Color -> Isotropic

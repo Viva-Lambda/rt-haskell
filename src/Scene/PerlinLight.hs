@@ -29,16 +29,15 @@ import Random
 
 simpleLight :: RandomGen g => g -> Scene
 simpleLight g =
-    let ptex = NoiseTexture $! mkPerlinNoise g 4.0
-        lmb = LambMat $! Lamb {lalbedo = ptex}
+    let ptex = TextureCons $! mkPerlinNoise g 4.0
+        lmb = LambMat $! LambT ptex
         sp1 = SphereObj {sphereCenter = VList [0.0, -1000.0, 0.0],
                          sphereRadius = 1000,
                          sphereMat = lmb}
         sp2 = SphereObj {sphereCenter = VList [0.0, 2.0, 0.0],
                          sphereRadius = 2,
                          sphereMat = lmb}
-        lTex = SolidTexture $! SolidV ( VList [4.5, 4.5, 4.5])
-        lmat = LightMat $! DLight {emitTexture = lTex}
+        lmat = LightMat $! DLightColorCons ( VList [4.5, 4.5, 4.5])
         dlight = AaQuad $! mkXyRect 3.0 5.0 1.0 3.0 (-2.0) lmat
         sp3 = SphereObj {sphereCenter = VList [0.0, 8.0, 0.0],
                          sphereRadius = 2,

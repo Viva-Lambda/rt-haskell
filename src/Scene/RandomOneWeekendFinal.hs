@@ -55,7 +55,7 @@ mkRndMat gen !a !b !isMoving =
             then let (rv1, g4) = randV g3
                      (rv2, g5) = randV g4
                      diffAlbedo = multiply rv1 rv2
-                     laMat = LambMat $! Lamb {lalbedo = SolidTexture $! SolidV diffAlbedo}
+                     laMat = LambMat $! LambC diffAlbedo
                 in if isMoving
                    then let (rv3, g6) = randomDouble g5 0.0 0.5
                         in (Just $! MvHitSphere MovSphereObj {
@@ -72,13 +72,13 @@ mkRndMat gen !a !b !isMoving =
             else if chooseMat >= 0.8 && chooseMat < 0.9
                  then let (rv1, g4) = randomVec (0.5, 1.0) g3
                           (fz, g5) = randomDouble g4 0.0 0.5
-                          metMat = MetalMat $! Met {malbedo = SolidTexture $!(SolidV rv1), fuzz = fz}
+                          metMat = MetalMat $! MetC rv1 fz
                       in (Just $! HitSphere SphereObj {
                                     sphereCenter = center,
                                     sphereRadius = 0.2,
                                     sphereMat = metMat
                                     }, g5)
-                 else let dieMt = DielMat $! Diel {refIndices = [1.5]}
+                 else let dieMt = DielMat $! DielRefIndices [1.5]
                       in (Just $! HitSphere SphereObj {
                                     sphereCenter = center,
                                     sphereRadius = 0.2,
@@ -97,17 +97,14 @@ world gen !isM = let as = [0..7]
                      bs = [0..7]
                      coords = [(a - 3, b - 3) | a <- as, b <- bs]
                      objs = mkRndMats gen isM coords
-                     groundMat = LambMat $! Lamb {lalbedo = SolidTexture $! SolidV ( VList [0.5, 0.5, 0.5])}
+                     groundMat = LambMat $! LambC ( VList [0.5, 0.5, 0.5])
                      ground = HitSphere SphereObj {
                                     sphereCenter = VList [0.0, -1000.0, 0.0],
                                     sphereRadius = 1000.0,
                                     sphereMat = groundMat}
-                     dielM1 = DielMat $! Diel {refIndices = [1.5]}
-                     lambM2 = LambMat $! Lamb {lalbedo = SolidTexture $! SolidV ( VList [0.4, 0.2, 0.1])}
-                     metalM3 = MetalMat $! Met {
-                                        malbedo = SolidTexture $! SolidV ( VList [0.7, 0.6, 0.5] ),
-                                        fuzz = 0.0
-                                    }
+                     dielM1 = DielMat $! DielRefIndices [1.5]
+                     lambM2 = LambMat $! LambC (VList [0.4, 0.2, 0.1])
+                     metalM3 = MetalMat $! MetC ( VList [0.7, 0.6, 0.5] ) 0.0
                      dielObj = HitSphere $! SphereObj {
                             sphereCenter =VList [0.0, 1.0, 0.0],
                             sphereRadius = 1.0,

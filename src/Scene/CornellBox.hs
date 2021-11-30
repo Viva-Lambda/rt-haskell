@@ -42,18 +42,10 @@ cornellBox gen =
         -- set up camera
         sceneC = mkCamTime cfrom cto camVUp cvfov aspectRatio 0.0 camFocDistance
 
-        whiteMat = LambMat $! Lamb {
-            lalbedo = SolidTexture $! SolidV ( VList [0.75, 0.75, 0.75])
-        }
-        redMat = LambMat $! Lamb {
-            lalbedo = SolidTexture $! SolidV ( VList [0.65, 0.05, 0.05])
-        }
-        greenMat = LambMat $! Lamb {
-            lalbedo = SolidTexture $! SolidV ( VList [0.12, 0.45, 0.15])
-        }
-        lightMat = LightMat $! DLight {
-            emitTexture = SolidTexture $! SolidV (VList [15.0, 15.0, 15.0])
-        }
+        whiteMat = LambMat $! LambC (VList [0.75, 0.75, 0.75])
+        redMat = LambMat $! LambC (VList [0.65, 0.05, 0.05])
+        greenMat = LambMat $! LambC (VList [0.12, 0.45, 0.15])
+        lightMat = LightMat $! DLightColorCons (VList [15.0, 15.0, 15.0])
         -- cornell walls
         c1 = 0.0
         c2 = 555.0
