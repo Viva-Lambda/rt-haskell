@@ -87,7 +87,9 @@ repository.
 
 ![cornell-box-01](./images/cornell.png)
 
-## Some Notes on Performance
+## Some Notes
+
+### RNGs and performance
 
 The from branch 08-diffuse an onwards as the usage of random functions become
 prominent the performance decreases considerably. However the inverse is also
@@ -95,6 +97,16 @@ true, if you can place your random generators efficiently, you can easily
 increase your performance. I simply concentrated on getting the images right.
 Do not be surprised if you find that some other arrangement of RNGs result in
 better performance.
+
+### Rotations
+
+We use a slightly more flexible approach to rotations than the original books.
+Basically the rotation is done using rotation matrices which are constructed
+from the angle and axis information provided during the setup of Rotatable
+type. Though it can be generalized into arbitrary axis, we are currently
+supporting only XYZ axes which are passed as RotationAxis type. Also our
+rotations are inversed with respect to the book. That which is in clockwise is
+counter clockwise in our case.
 
 ## Planned Features
 
