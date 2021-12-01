@@ -184,6 +184,30 @@ randomUnitDisk !gen =
        then randomUnitDisk g
        else (rvec, g)
 
+-- random cosine direction
+randomCosineDir :: RandomGen g => g -> (Vector, g)
+randomCosineDir g = 
+    let (r1, g1) = randval g
+        (r2, g2) = randval g1
+        z = sqrt (1.0 - r2)
+        phi = m_pi * 2 * r1
+        x = (cos phi) * (sqrt r2)
+        y = (sin phi) * (sqrt r2)
+    in (VList [x, y, z], g2)
+
+-- random to sphere
+random2Sphere :: RandomGen g => g -> Double -> Double -> (Vector, g)
+random2Sphere g radius sqrDist =
+    let (r1, g1) = randval g
+        (r2, g2) = randval g1
+        z = 1.0 + r2 * ((sqrt (1.0 - (radius * radius)/sqrDist))- 1)
+        phi = m_pi * 2 * r1
+        x = (cos phi) * (sqrt (1.0 - z * z))
+        y = (sin phi) * (sqrt (1.0 - z * z))
+    in (VList [x, y, z], g2)
+
+
+
 reflect :: Vector -> Vector -> Vector
 reflect !v !norm = subtract v (multiplyS (multiplyS norm (dot v norm) ) 2.0)
 

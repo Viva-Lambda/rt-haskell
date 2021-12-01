@@ -24,6 +24,7 @@ type SOutput = (Attenuation, ScatteredRay, Bool)
 class Scatterer a where
     scatter :: RandomGen g => g -> a -> Ray -> HitRecord -> (g, Attenuation, ScatteredRay, Bool)
     emitted :: a -> Double -> Double -> Vector -> Vector
+    scattering_pdf :: a -> Ray -> HitRecord -> Ray -> Double
 
 
 -- scatter :: RandomGen g => g -> a -> Ray -> HitRecord -> Attenuation -> 
@@ -43,6 +44,8 @@ instance Scatterer Material where
         case a of
             (LightMat m) -> emitted m u v p
             _ -> zeroV3
+
+    scattering_pdf a r hrec sr = 0.0
 
 
 instance Scatterer Lambertian where
