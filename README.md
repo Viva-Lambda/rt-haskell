@@ -87,6 +87,10 @@ repository.
 
 ![cornell-box-01](./images/cornell.png)
 
+- Cornell smoke boxes from branch 16-constant-density-mediums
+
+![cornell-box-02](./images/smoke.png)
+
 ## Some Notes
 
 ### RNGs and performance
