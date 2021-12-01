@@ -1,5 +1,5 @@
--- cornell box
-module Scene.CornellBox(cornellBox) where
+-- cornell smoke box
+module Scene.CornellSmoke(cornellSmoke) where
 
 -- scene default values
 import Scene.Scene
@@ -23,6 +23,7 @@ import Hittable.Hittable
 import Hittable.AaRect
 import Hittable.Rotatable
 import Hittable.Translatable
+import Hittable.ConstantMedium
 
 -- instance
 import Instance.Box
@@ -34,8 +35,8 @@ import Material.Material
 --
 import Utility.HelperTypes
 
-cornellBox :: RandomGen g => g -> Scene
-cornellBox gen =
+cornellSmoke :: RandomGen g => g -> Scene
+cornellSmoke gen =
     let cfrom = VList [278.0, 278.0, -800.0]
         cto = VList [278.0, 278.0, 0.0]
         cvfov = 40.0 
@@ -70,8 +71,10 @@ cornellBox gen =
         b2 = mkBox (zeroV3) (VList [165.0, 165.0, 165.0]) whiteMat
         b2rot = mkRotatable b2 (-18.0) RY
         b2trans = Translate b2rot (VList [130.0, 0.0, 65.0])
+        b1smoke = mkConstantMediumColor b1trans 0.01 (singularV 3 1.0) -- white
+        b2smoke = mkConstantMediumColor b2trans 0.01 (singularV 3 0.0) -- black
 
-        hs = HList {objects = NList (HittableCons b1trans) [HittableCons $ b2trans,
+        hs = HList {objects = NList (HittableCons b1smoke) [HittableCons $ b2smoke,
                                                       yzGreenWall, yzRedWall,
                                                       xzWhiteWall1, xzWhiteWall2,
                                                       xyWhiteWall, lightR]}

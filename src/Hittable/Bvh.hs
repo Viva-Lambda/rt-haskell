@@ -21,29 +21,51 @@ import Data.List
 
 data Bvh where
     BNode :: Bvh -> Bvh -> Aabb -> Bvh
-    BLeaf :: Hittable a => a -> Aabb -> Bvh
+    BLeaf :: (Show a, Eq a, Hittable a) => a -> Aabb -> Bvh
+
+instance Eq Bvh where
+    a == b = 
+        case a of
+            (BNode _ _ ab) -> 
+                case b of
+                    (BNode _ _ ab2) -> ab == ab2
+                    _ -> False
+            (BLeaf _ ab) ->
+                case b of
+                    (BLeaf _ ab2) -> ab == ab2
+                    _ -> False
+
+instance Show Bvh where
+    show a = case a of
+                (BNode a1 a2 _) ->
+                    let msg = "<BVH Node: Left: " ++ show a1
+                        msg2 = " Right: " ++ show a2 ++ ">"
+                    in msg ++ msg2
+                (BLeaf a1 _) -> "<BVH Leaf: " ++ show a1 ++ ">"
              
 
 instance Hittable Bvh where
-    -- hit :: bvh -> Ray -> Double -> Double -> HitRecord -> (HitRecord, Bool)
-    hit (BNode a b box) ray tmin tmax hrec =
-        let boxHit = aabbHit box ray tmin tmax
-        in if not boxHit
-           then (hrec, False)
-           else let (leftHrec, isLeftHit) = hit a ray tmin tmax hrec
-                    t_max = if isLeftHit
-                            then hdist leftHrec
-                            else tmax
-                    (rightHrec, isRightHit) = hit b ray tmin t_max hrec
-                in if isRightHit
-                   then (rightHrec, True)
-                   else if isLeftHit
-                        then (leftHrec, True)
-                        else (hrec, False)
-    hit (BLeaf a box) ray tmin tmax hrec = 
-        if not $! aabbHit box ray tmin tmax
-        then (hrec, False)
-        else hit a ray tmin tmax hrec
+    -- hit :: bvh -> randgen -> Ray -> Double -> Double -> HitRecord -> (HitRecord, Bool)
+    hit bvh g ray tmin tmax hrec =
+        case bvh of
+            (BNode a b box) ->
+                let boxHit = aabbHit box ray tmin tmax
+                in if not boxHit
+                   then (hrec, False, g)
+                   else let (leftHrec, isLeftHit, g1) = hit a g ray tmin tmax hrec
+                            t_max = if isLeftHit
+                                    then hdist leftHrec
+                                    else tmax
+                            (rightHrec, isRightHit, g2) = hit b g1 ray tmin t_max hrec
+                        in if isRightHit
+                           then (rightHrec, True, g2)
+                           else if isLeftHit
+                                then (leftHrec, True, g1)
+                                else (hrec, False, g)
+            (BLeaf a box) ->
+                if not $! aabbHit box ray tmin tmax
+                then (hrec, False, g)
+                else hit a g ray tmin tmax hrec
                                             
 
     -- boundingBox :: bvh -> Double -> Double -> Aabb -> (Aabb, Bool)
@@ -51,7 +73,7 @@ instance Hittable Bvh where
     boundingBox (BLeaf _ a) t0 t1 obox = (a, True)
 
 
-mkBvh :: (Hittable a, RandomGen g) => [a] -> g -> Int -> Int -> Double -> Double -> Bvh
+mkBvh :: (Show a, Eq a, Hittable a, RandomGen g) => [a] -> g -> Int -> Int -> Double -> Double -> Bvh
 
 mkBvh objects gen start end time0 time1 =
     let (axisd, g1) = randomDouble gen 0.0 2.0

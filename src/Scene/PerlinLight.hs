@@ -38,12 +38,12 @@ simpleLight g =
                          sphereRadius = 2,
                          sphereMat = lmb}
         lmat = LightMat $! DLightColorCons ( VList [4.5, 4.5, 4.5])
-        dlight = AaQuad $! mkXyRect 3.0 5.0 1.0 3.0 (-2.0) lmat
+        dlight = HittableCons $! mkXyRect 3.0 5.0 1.0 3.0 (-2.0) lmat
         sp3 = SphereObj {sphereCenter = VList [0.0, 8.0, 0.0],
                          sphereRadius = 2,
                          sphereMat = lmat}
         hs = HList {
-            objects = NList (HitSphere sp1) [HitSphere sp2, dlight, HitSphere sp3]
+            objects = NList (HittableCons sp1) [HittableCons sp2, dlight, HittableCons sp3]
         }
     in SceneVals {
         img_width = imageWidth,

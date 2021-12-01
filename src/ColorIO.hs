@@ -28,21 +28,21 @@ rayColor !ray !world !background !depth !gen =
     if depth <= 0
     then (zeroV3, gen)
     else let hrec = emptyRecord 3
-             (hithrec, isHit) = hit world ray 0.001 infty hrec
+             (hithrec, isHit, g1) = hit world gen ray 0.001 infty hrec
              HRec{point = recp,
                   pnormal = recnorm,
                   hUV_u = uu,
                   hUV_v = vv,
                   matPtr = m} = hithrec
          in if isHit
-            then let sout = scatter gen m ray hithrec
-                     (g, natten, outray, isScattering) = sout
+            then let sout = scatter g1 m ray hithrec
+                     (g2, natten, outray, isScattering) = sout
                      semit = emitted m uu vv recp
                  in if isScattering
-                    then let (ncolor, g2) = rayColor outray world background (depth-1) g
-                         in (multiply ncolor natten, g2)
-                    else (semit, g)
-            else (background, gen)
+                    then let (ncolor, g3) = rayColor outray world background (depth-1) g2
+                         in (multiply ncolor natten, g3)
+                    else (semit, g2)
+            else (background, g1)
 
 
 renderScene :: RandomGen g => [(Int, Int)] -> g -> Scene -> [Pixel]

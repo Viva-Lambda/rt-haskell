@@ -34,13 +34,13 @@ instance Eq Translatable where
                 _ -> False
 
 instance Hittable Translatable where
-    hit (Translate a offset) !(Rd {origin = ro, 
+    hit (Translate a offset) g !(Rd {origin = ro, 
                                    direction = rd,
                                    rtime = rt}) !tmin !tmax !hrec =
         let ry = Rd {origin = subtract ro offset, direction = rd, rtime = rt}
-            (srec, isHit) = hit a ry tmin tmax hrec
+            (srec, isHit, g1) = hit a g ry tmin tmax hrec
         in if not isHit
-           then (srec, isHit)
+           then (srec, isHit, g1)
            else let p = add (point srec) offset
                     HRec {
                         hdist = h1, point = h2, pnormal = h3, matPtr = h4,
@@ -49,7 +49,7 @@ instance Hittable Translatable where
                     nsrec = HRec {hdist = h1, point = p, pnormal = h3, 
                                   matPtr = h4, hUV_u = h5, hUV_v = h6,
                                   isFront = h7}
-                in (setFaceNormal nsrec ry h3, True)
+                in (setFaceNormal nsrec ry h3, True, g1)
 
     boundingBox (Translate a offset) tmn tmx ab =
         let (abound, isBox) = boundingBox a tmn tmx ab

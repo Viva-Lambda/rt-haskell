@@ -35,7 +35,7 @@ twoCheckeredSpheres =
         sp2 = SphereObj {sphereCenter = VList [0.0, 10.0, 0.0],
                          sphereRadius = 10,
                          sphereMat = lmb}
-        hs = HList {objects = NList (HitSphere sp1) [HitSphere sp2]}
+        hs = HList {objects = NList (HittableCons sp1) [HittableCons sp2]}
     in SceneVals {
         img_width = imageWidth,
         aspect_ratio = aspectRatio,

@@ -113,7 +113,7 @@ mkRotatable ptr angle axis =
 
 
 instance Hittable Rotatable where
-    hit (Rotate a angle axis _ _) ry tmin tmax hrec =
+    hit (Rotate a angle axis _ _) g ry tmin tmax hrec =
         --
         let theta = degrees_to_radians angle
             rotmat = toMatrix axis theta
@@ -123,9 +123,9 @@ instance Hittable Rotatable where
             rro = rotateByMatrix ro rotmat -- rotated origin
             rrd = rotateByMatrix rd rotmat -- rotated direction
             nry = Rd {origin = rro, direction = rrd, rtime = rtime ry}
-            (srec, isHit) = hit a nry tmin tmax hrec
+            (srec, isHit, g1) = hit a g nry tmin tmax hrec
         in if not isHit
-           then (srec, isHit)
+           then (srec, isHit, g1)
            else let invp = rotateByMatrix (point srec) invrot
                     invn = rotateByMatrix (pnormal srec) invrot
                     HRec {
@@ -135,7 +135,7 @@ instance Hittable Rotatable where
                     nsrec = HRec {hdist = h1, point = invp, pnormal = invn, 
                                   matPtr = h4, hUV_u = h5, hUV_v = h6,
                                   isFront = h7}
-                in (setFaceNormal nsrec nry invn, True)
+                in (setFaceNormal nsrec nry invn, True, g1)
 
     -- there is a problem here the bounding box does not care about the time
     -- TODO

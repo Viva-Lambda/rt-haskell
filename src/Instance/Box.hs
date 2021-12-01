@@ -55,20 +55,20 @@ instance Show Box where
 
 instance Hittable Box where
     {-# INLINE hit #-}
-    hit a ry tmin tmax hrec =
+    hit a g ry tmin tmax hrec =
         let (e:es) = boxSides a
-            hitobjs = hits tmax (e:es) hrec -- [(hrec, Bool)]
+            hitobjs = hits g tmax (e:es) hrec -- [(hrec, Bool, g)]
         in if null hitobjs
-           then (hrec, False)
+           then (hrec, False, g)
            else minimumBy (compare `on` hrecDist) hitobjs
-        where hits _ [] _ = []
-              hits mx (t:ts) hr =
-                let (nhrec, isHit) = hit t ry tmin mx hr
+        where hits _ _ [] _ = []
+              hits g1 mx (t:ts) hr =
+                let (nhrec, isHit, g2) = hit t g1 ry tmin mx hr
                     nhdist = hdist nhrec
                 in if isHit
-                   then (nhrec, isHit) : hits nhdist ts nhrec
-                   else hits mx ts hr
-              hrecDist (a, _) = hdist a
+                   then (nhrec, isHit, g2) : hits g2 nhdist ts nhrec
+                   else hits g2 mx ts hr
+              hrecDist (a, _, _) = hdist a
 
     boundingBox !a !time0 !time1 !ab =
         let hs = boxSides a
@@ -86,23 +86,3 @@ instance Hittable Box where
                                 then bbox False t0 t1 sbox htls sbox
                                 else let obox = ssBox outBox sbox
                                      in bbox False t0 t1 sbox htls obox
-
-
-instance Transformable Box where
-    transform b nlocs =
-        let bmat = boxMat b
-        in case nlocs of
-                (NList a [c]) -> mkBox a c bmat
-                _ -> error $ "transform is not possible " ++ show (lengthNL nlocs)
-
-instance Locatable Box where
-    --
-    localCoords a _ = 
-        let ma = minBox a 
-            mb = maxBox a
-            mcross = cross3d ma mb
-        in NList ma [mb]
-
-instance Translatable Box where
-
-instance Rotatable Box where

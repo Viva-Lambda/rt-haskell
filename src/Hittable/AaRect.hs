@@ -178,7 +178,7 @@ instance Show AaRect where
         in "<Quad :: " ++ normstr ++ dstr ++ istr ++ astr2 ++ ">"
 
 instance Hittable AaRect where
-    hit a inray tmin tmax hrec =
+    hit a g inray tmin tmax hrec =
         let (Quad {quadMat = m,
                 quadNormal = anormal,
                 quadDistance = k,
@@ -196,7 +196,7 @@ instance Hittable AaRect where
             t = notAlignedOrigDist / (vget rd (aAxis2Int $ notAligned axinfo))
             distCheck = t < tmin || t > tmax
         in if distCheck
-           then (hrec, False)
+           then (hrec, False, g)
            else let adist1 = vget ro (aAxis2Int $ aligned1 axinfo)
                     adist2 = vget rd (aAxis2Int $ aligned1 axinfo)
                     adist = adist1 + t * adist2
@@ -206,14 +206,14 @@ instance Hittable AaRect where
                     acheck = a1 < adist && adist < a2
                     bcheck = b1 < bdist && bdist < b2
                 in if not (acheck && bcheck)
-                   then (hrec, False)
+                   then (hrec, False, g)
                    else let ru = (adist - a1) / (a2 - a1)
                             rv = (bdist - b1) / (b2 - b1)
                             rp = at inray t
                             hr = HRec {hdist = t, point = rp, pnormal = anormal,
                                        matPtr = m, hUV_u = ru, hUV_v = rv,
                                        isFront = False}
-                        in (setFaceNormal hr inray anormal, True)
+                        in (setFaceNormal hr inray anormal, True, g)
 
     boundingBox a tmn tmx ab =
         let (Quad {quadMat = m,

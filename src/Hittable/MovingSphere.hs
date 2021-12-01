@@ -68,7 +68,7 @@ instance Show MovingSphere where
 
 instance Hittable MovingSphere where
     {-# INLINE hit #-}
-    hit !s !(Rd {origin = ro, rtime = t0, direction = rd}) !tmin !tmax !hrec =
+    hit !s g !(Rd {origin = ro, rtime = t0, direction = rd}) !tmin !tmax !hrec =
         let sr = msphereRadius s
             sm = msphereMat s
             sc = (getMSphereCenter s t0)
@@ -79,7 +79,7 @@ instance Hittable MovingSphere where
             discriminant = hb * hb - a * c
             ry = Rd {origin = ro, direction = rd, rtime = t0}
         in if discriminant < 0
-           then (hrec, False)
+           then (hrec, False, g)
            else let sqd = sqrt discriminant
                     root = (-hb - sqd) / a
                     nroot = (-hb + sqd) / a
@@ -87,7 +87,7 @@ instance Hittable MovingSphere where
                     cond2 = nroot < tmin || tmax < nroot
                 in if cond1
                    then if cond2
-                        then (hrec, False)
+                        then (hrec, False, g)
                         else let hpoint = at ry nroot
                                  hnorm = divideS (subtract hpoint sc) sr
                                  (hu, hv) = getSphereUV hnorm
@@ -97,7 +97,7 @@ instance Hittable MovingSphere where
                                             hUV_u = hu,
                                             hUV_v = hv,
                                             isFront = False}
-                             in (setFaceNormal hr ry hnorm, True)
+                             in (setFaceNormal hr ry hnorm, True, g)
                    else let hpoint = at ry root
                             hnorm = divideS (subtract hpoint sc) sr
                             (hu, hv) = getSphereUV hnorm
@@ -105,7 +105,7 @@ instance Hittable MovingSphere where
                                        pnormal = hnorm, matPtr = sm,
                                        hUV_u = hu, hUV_v = hv,
                                        isFront = False}
-                        in (setFaceNormal hr ry hnorm, True)
+                        in (setFaceNormal hr ry hnorm, True, g)
 
     boundingBox !s !time0 !time1 !ab =
         let ct0 = getMSphereCenter s time0

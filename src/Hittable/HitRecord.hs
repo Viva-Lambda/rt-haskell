@@ -20,6 +20,9 @@ emptyRecord nbDims = HRec {point = zeroV nbDims,
                            matPtr = NoMat,
                            isFront = False}
 
+emptyRec :: HitRecord
+emptyRec = emptyRecord 3
+
 setFaceNormal :: HitRecord -> Ray -> Vector -> HitRecord
 setFaceNormal HRec {point = p, 
                     pnormal = pv, 

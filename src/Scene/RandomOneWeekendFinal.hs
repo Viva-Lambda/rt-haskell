@@ -58,7 +58,7 @@ mkRndMat gen !a !b !isMoving =
                      laMat = LambMat $! LambC diffAlbedo
                 in if isMoving
                    then let (rv3, g6) = randomDouble g5 0.0 0.5
-                        in (Just $! MvHitSphere MovSphereObj {
+                        in (Just $! HittableCons MovSphereObj {
                             msphereCenter1 = center,
                             msphereCenter2 = add center (VList [0.0, rv3, 0.0]),
                             msphereRadius = 0.2,
@@ -66,20 +66,20 @@ mkRndMat gen !a !b !isMoving =
                             mTime0 = 0.0,
                             mTime1 = 1.0
                             }, g6)
-                   else (Just $! HitSphere SphereObj {sphereCenter = center,
+                   else (Just $! HittableCons SphereObj {sphereCenter = center,
                                                      sphereRadius = 0.2,
                                                      sphereMat = laMat}, g5)
             else if chooseMat >= 0.8 && chooseMat < 0.9
                  then let (rv1, g4) = randomVec (0.5, 1.0) g3
                           (fz, g5) = randomDouble g4 0.0 0.5
                           metMat = MetalMat $! MetC rv1 fz
-                      in (Just $! HitSphere SphereObj {
+                      in (Just $! HittableCons SphereObj {
                                     sphereCenter = center,
                                     sphereRadius = 0.2,
                                     sphereMat = metMat
                                     }, g5)
                  else let dieMt = DielMat $! DielRefIndices [1.5]
-                      in (Just $! HitSphere SphereObj {
+                      in (Just $! HittableCons SphereObj {
                                     sphereCenter = center,
                                     sphereRadius = 0.2,
                                     sphereMat = dieMt
@@ -98,24 +98,24 @@ world gen !isM = let as = [0..7]
                      coords = [(a - 3, b - 3) | a <- as, b <- bs]
                      objs = mkRndMats gen isM coords
                      groundMat = LambMat $! LambC ( VList [0.5, 0.5, 0.5])
-                     ground = HitSphere SphereObj {
+                     ground = HittableCons SphereObj {
                                     sphereCenter = VList [0.0, -1000.0, 0.0],
                                     sphereRadius = 1000.0,
                                     sphereMat = groundMat}
                      dielM1 = DielMat $! DielRefIndices [1.5]
                      lambM2 = LambMat $! LambC (VList [0.4, 0.2, 0.1])
                      metalM3 = MetalMat $! MetC ( VList [0.7, 0.6, 0.5] ) 0.0
-                     dielObj = HitSphere $! SphereObj {
+                     dielObj = HittableCons $! SphereObj {
                             sphereCenter =VList [0.0, 1.0, 0.0],
                             sphereRadius = 1.0,
                             sphereMat = dielM1 
                         }
-                     lambObj = HitSphere $! SphereObj {
+                     lambObj = HittableCons $! SphereObj {
                             sphereCenter = VList [-4.0, 1.0, 0.0],
                             sphereRadius = 1.0,
                             sphereMat = lambM2
                         }
-                     metObj = HitSphere $! SphereObj {
+                     metObj = HittableCons $! SphereObj {
                             sphereCenter =  VList [4.0, 1.0, 0.0],
                             sphereRadius = 1.0,
                             sphereMat = metalM3

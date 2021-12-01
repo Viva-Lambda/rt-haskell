@@ -22,20 +22,20 @@ data HittableList = HList {objects :: NonEmptyList HittableObj}
 
 instance Hittable HittableList where
     {-# INLINE hit #-}
-    hit !hobj !ry !tmin !tmax !hrec =
+    hit !hobj g !ry !tmin !tmax !hrec =
         let hs = toList $ objects hobj
-            hitobjs = hits tmax hs hrec -- [(hrec, Bool)]
+            hitobjs = hits g tmax hs hrec -- [(hrec, Bool)]
         in if null hitobjs
-           then (hrec, False)
+           then (hrec, False, g)
            else minimumBy (compare `on` hrecDist) hitobjs
-        where hits _ [] _ = []
-              hits mx (t:ts) hr =
-                let (nhrec, isHit) = hit t ry tmin mx hr
+        where hits _ _ [] _ = []
+              hits g1 mx (t:ts) hr =
+                let (nhrec, isHit, g2) = hit t g1 ry tmin mx hr
                     nhdist = hdist nhrec
                 in if isHit
-                   then (nhrec, isHit) : hits nhdist ts nhrec
-                   else hits mx ts hr
-              hrecDist (a, _) = hdist a
+                   then (nhrec, isHit, g2) : hits g2 nhdist ts nhrec
+                   else hits g2 mx ts hr
+              hrecDist (a, _, _) = hdist a
 
     boundingBox !hobjs !time0 !time1 !ab =
         let tempBox = zeroAabb3
