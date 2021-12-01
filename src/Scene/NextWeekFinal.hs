@@ -9,14 +9,19 @@ import Scene.Scene
 import System.Random
 import Random
 import GHC.Float
+import Data.Bitmap.Base
+import Data.Bitmap.Simple
 
 -- math
 import Math3D.Vector
+import Math3D.CommonOps
 import Math3D.Ray
 
 -- texture
 import Texture.SolidColor
 import Texture.TextureObj
+import Texture.Image
+import Texture.Noise
 
 -- hittable
 import Hittable.HittableList
@@ -25,7 +30,10 @@ import Hittable.Hittable
 import Hittable.AaRect
 import Hittable.Rotatable
 import Hittable.Translatable
+import Hittable.MovingSphere
+import Hittable.Sphere
 import Hittable.Bvh
+import Hittable.ConstantMedium
 
 -- instance
 import Instance.Box
@@ -55,13 +63,94 @@ mkBoxes g =
         (g2, boxes) = foldl mkbox (g, []) bcoords
     in (g2, boxes)
 
-nextWeekFinal :: RandomGen g => g -> Scene
-nextWeekFinal gen =
+mkMovSphere :: HittableObj
+mkMovSphere = let c1 = VList [400.0, 400.0, 200.0]
+                  c2 = add c1 (VList [30.0, 0.0, 0.0])
+                  lmat = LambMat $! LambC (VList [0.78, 0.3, 0.1])
+              in HittableCons $! MovSphereObj {msphereCenter1 = c1,
+                                               msphereCenter2 = c2,
+                                               msphereRadius = 50.0,
+                                               mTime0 = 0.0,
+                                               mTime1 = 1.0,
+                                               msphereMat = lmat}
+
+earthImg :: Bitmap Word8 -> HittableObj
+earthImg bmp =
+    let ptex = TextureCons $! bitmapToImageT bmp
+        -- ptex = SolidTexture $ SolidV ( VList [0.2, 0.3, 0.1] )
+        lmb = LambMat $! LambT ptex 
+    in HittableCons $! SphereObj {sphereCenter = VList [400.0, 200.0, 400.0],
+                                  sphereRadius = 100,
+                                  sphereMat = lmb}
+
+noiseSphere :: RandomGen g => g -> (g, HittableObj)
+noiseSphere g1 =
+    let (g2, noiseT) = mkPerlinNoiseWithSeed g1 0.1
+        ptex =TextureCons noiseT
+        lmb = LambMat $! LambT ptex 
+    in (g2, HittableCons $! SphereObj {
+            sphereCenter = VList [220.0, 280.0, 300.0],
+            sphereRadius = 80.0,
+            sphereMat = lmb
+        })
+
+mkTransformedBoxes :: RandomGen g => g -> (g, HittableObj)
+mkTransformedBoxes g =
+    --
+    let whmat = LambMat $! LambC (VList [0.75, 0.7, 0.8])
+        foldlfn acc _ = let (g1, lst) = acc
+                            (rvec, g2) = randomVec (0.0, 165.0) g1
+                            sp = HittableCons $! SphereObj {
+                                        sphereCenter = rvec,
+                                        sphereRadius = 10,
+                                        sphereMat = whmat
+                                    }
+                        in (g2, lst ++ [sp])
+        (g1, boxes) = foldl foldlfn (g, []) [0..999]
+        bvhboxes = mkBvh boxes g1 0 (length boxes) 0.0 1.0
+        rotatedBoxes = mkRotatable bvhboxes 15.0 RY
+        transBoxes = Translate bvhboxes (VList [-100.0, 270.0, 395.0])
+    in (g1, HittableCons transBoxes)
+
+
+nextWeekFinal :: RandomGen g => g -> Bitmap Word8 -> Scene
+nextWeekFinal gen img =
     let (g1, boxes) = mkBoxes gen
         mbvh = mkBvh boxes g1 0 (length boxes) 0.0 1.0
         lightMat = LightMat $! DLightColorCons (VList [15.0, 15.0, 15.0])
-        light = HittableCons $ mkXzRect 123.0 423.0 147.0 412.0 554.0 lightMat
-        hs = HList {objects = NList (HittableCons mbvh) [light]}
+        light = HittableCons $! mkXzRect 123.0 423.0 147.0 412.0 554.0 lightMat
+        msphere = mkMovSphere
+        dieSp1 = HittableCons $! SphereObj {
+                                sphereCenter = VList [260.0, 150.0, 45.0],
+                                sphereRadius = 50.0,
+                                sphereMat = DielMat $! DielRefIndices [1.5]
+                                }
+        dieSp2 = HittableCons $! SphereObj {
+                        sphereCenter = VList [0.0, 150.0, 145.0],
+                        sphereRadius = 50.0,
+                        sphereMat = MetalMat $! MetC (VList [0.8, 0.8, 0.9]) 1.0
+                        }
+        boundary1 = HittableCons $! SphereObj {
+                        sphereCenter = VList [360.0, 150.0, 145.0],
+                        sphereRadius = 70.0,
+                        sphereMat = DielMat $! DielRefIndices [1.5]
+                        }
+        cmed1 = HittableCons $! mkConstantMediumColor boundary1 0.2 (VList [0.2, 0.4, 0.9])
+
+        boundary2 = HittableCons $! SphereObj {
+                        sphereCenter = zeroV3,
+                        sphereRadius = 5000.0,
+                        sphereMat = DielMat $! DielRefIndices [1.5]
+                        }
+
+        cmed2 = HittableCons $! mkConstantMediumColor boundary2 0.001 (VList [1.0, 1.0, 1.0])
+        eimg = earthImg img
+        (g2, noiseS) = noiseSphere g1
+        (g3, tboxes) = mkTransformedBoxes g2
+        hs = HList {objects = NList (HittableCons mbvh) [
+            light, msphere, dieSp1, dieSp2, boundary1,
+            cmed1, cmed2, eimg, noiseS, tboxes
+            ]}
     -- in error $ "\nN: " ++ show b2 ++ "\nR: " ++ show b2rot ++ "\nT: " ++ show b2trans
     in SceneVals {
         img_width = 800,

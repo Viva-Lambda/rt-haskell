@@ -181,7 +181,7 @@ perlinTurbulance !prln !point !depth =
         (nAcc, ntemp, nweight) = foldl' foldfn (0.0, point, 1.0) [0..depth]
     in abs nAcc
 
-mkPerlin :: RandomGen g => g -> Int -> Int -> Perlin
+mkPerlin :: RandomGen g => g -> Int -> Int -> (g, Perlin)
 mkPerlin g nb_points vecSize =
     let points = [0..(nb_points - 1)]
         -- foldFn :: (a -> b -> a) :: ([] -> _ -> [i])
@@ -192,19 +192,24 @@ mkPerlin g nb_points vecSize =
         unitvs = map toUnit vs
         (x_ps, ng) = perlinPermute g1 points
         (y_ps, nng) = perlinPermute ng points
-        (z_ps, _) = perlinPermute nng points
-    in PNoise {perm_x = x_ps, perm_y = y_ps, perm_z = z_ps, prandVec = unitvs}
+        (z_ps, g3) = perlinPermute nng points
+    in (g3, PNoise {perm_x = x_ps, perm_y = y_ps, perm_z = z_ps, prandVec = unitvs})
 
-mkPerlinV3 :: RandomGen g => g -> Int -> Perlin
+mkPerlinV3 :: RandomGen g => g -> Int -> (g, Perlin)
 mkPerlinV3 g nb_points = mkPerlin g nb_points 3
 
-perlinDefault :: RandomGen g => g -> Perlin
+perlinDefault :: RandomGen g => g -> (g, Perlin)
 perlinDefault g = mkPerlinV3 g 256
 
 data PerlinNoise = PerN { noiseScale :: Double, noiseGen :: Perlin }
 
+mkPerlinNoiseWithSeed :: RandomGen g => g -> Double -> (g, PerlinNoise)
+mkPerlinNoiseWithSeed !g !scale = 
+    let (g1, p) = perlinDefault g
+    in (g1, PerN { noiseScale = scale, noiseGen = p})
+
 mkPerlinNoise :: RandomGen g => g -> Double -> PerlinNoise
-mkPerlinNoise !g !scale = PerN { noiseScale = scale, noiseGen = perlinDefault g}
+mkPerlinNoise !g !scale = snd $ mkPerlinNoiseWithSeed g scale
 
 instance Texture PerlinNoise where
     color !(PerN {noiseScale = s, noiseGen = p}) !hu !hv !hp =
