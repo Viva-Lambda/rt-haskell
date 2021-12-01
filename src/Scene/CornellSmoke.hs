@@ -71,7 +71,7 @@ cornellSmoke gen =
         b2 = mkBox (zeroV3) (VList [165.0, 165.0, 165.0]) whiteMat
         b2rot = mkRotatable b2 (-18.0) RY
         b2trans = Translate b2rot (VList [130.0, 0.0, 65.0])
-        b1smoke = mkConstantMediumColor b1trans 0.01 (singularV 3 1.0) -- white
+        b1smoke = mkConstantMediumColor b1trans 0.1 (VList [0.7, 0.4, 0.6]) -- white
         b2smoke = mkConstantMediumColor b2trans 0.01 (singularV 3 0.0) -- black
 
         hs = HList {objects = NList (HittableCons b1smoke) [HittableCons $ b2smoke,

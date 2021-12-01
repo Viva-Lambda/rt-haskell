@@ -33,6 +33,7 @@ instance Show HittableObj where
 
 
 instance Hittable HittableObj where
+    {-# INLINE hit #-}
     hit hobj g !ry !tmin !tmax !hrec =
         case hobj of
             (HittableCons a) -> hit a g ry tmin tmax hrec
