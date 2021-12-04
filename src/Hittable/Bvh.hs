@@ -45,8 +45,9 @@ instance Show Bvh where
              
 
 instance Hittable Bvh where
+    {-# INLINE hit #-}
     -- hit :: bvh -> randgen -> Ray -> Double -> Double -> HitRecord -> (HitRecord, Bool)
-    hit bvh g ray tmin tmax hrec =
+    hit !bvh !g !ray !tmin !tmax !hrec =
         case bvh of
             (BNode a b box) ->
                 let boxHit = aabbHit box ray tmin tmax
@@ -69,13 +70,19 @@ instance Hittable Bvh where
                                             
 
     -- boundingBox :: bvh -> Double -> Double -> Aabb -> (Aabb, Bool)
-    boundingBox (BNode _ _ a) t0 t1 obox = (a, True)
-    boundingBox (BLeaf _ a) t0 t1 obox = (a, True)
+    boundingBox mbvh  _ _ _ = 
+        case mbvh of 
+            (BNode _ _ a) -> (a, True)
+            (BLeaf _ a) -> (a, True)
+
+    -- pdf value
+    pdf_value _ g _ _ = (0.0, g)
+    hrandom _ g _ = randomVec (0.0, 1.0) g
 
 
 mkBvh :: (Show a, Eq a, Hittable a, RandomGen g) => [a] -> g -> Int -> Int -> Double -> Double -> Bvh
 
-mkBvh objects gen start end time0 time1 =
+mkBvh !objects !gen !start !end !time0 !time1 =
     let (axisd, g1) = randomDouble gen 0.0 2.0
         axis = double2Int axisd
         compareFn = if axis == 0

@@ -140,3 +140,6 @@ instance Hittable Rotatable where
     -- there is a problem here the bounding box does not care about the time
     -- TODO
     boundingBox (Rotate a angle axis hasBox bbox) tmn tmx ab = (bbox, hasBox)
+
+    pdf_value a g _ _ = (0.0, g)
+    hrandom _ g _ = randomVec (0.0, 1.0) g

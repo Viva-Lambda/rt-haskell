@@ -3,6 +3,7 @@ module Hittable.AaRect where
 
 import Math3D.Vector
 import Math3D.Ray
+import Math3D.CommonOps
 
 --
 import Hittable.Hittable
@@ -12,6 +13,9 @@ import Hittable.Aabb
 import Material.Material
 
 import Utility.Utils
+
+import Random
+import Prelude hiding(subtract)
 
 data AlignmentAxis = AaX
                    | AaY
@@ -121,6 +125,10 @@ mkAaRect a0 a1 b0 b1 dist mat normal =
         quadAlignedAxisB2 = b1
         }
 
+newtype XyRect = XyR AaRect
+newtype XzRect = XzR AaRect
+newtype YzRect = YzR AaRect
+
 mkXyRect :: AAxisValue -> AAxisValue -> AAxisValue -> AAxisValue -> AADistance -> Material -> AaRect
 mkXyRect x0 x1 y0 y1 dist mat = 
     mkAaRect x0 x1 y0 y1 dist mat (VList [0.0, 0.0, 1.0] )
@@ -133,6 +141,13 @@ mkYzRect :: AAxisValue -> AAxisValue -> AAxisValue -> AAxisValue -> AADistance -
 mkYzRect y0 y1 z0 z1 dist mat = 
     mkAaRect y0 y1 z0 z1 dist mat (VList [1.0, 0.0, 0.0] )
 
+
+getRectPdfValue :: Vector -> Vector -> Double -> Double -> Double
+getRectPdfValue dir normal dist area =
+    let dsqr = dist * dist
+        dsqr2 = dsqr * (lengthSquared dir)
+        cosine = abs $ ((dot dir normal) / (magnitude dir))
+    in dsqr2 / (cosine * area)
 
 instance Eq AaRect where
     a == b =
@@ -231,3 +246,42 @@ instance Hittable AaRect where
                             AaX -> (VList [k - 0.0001, a1, b1], VList [k + 0.0001, a2, b2])
         in (AaBbox {aabbMin = p1, aabbMax = p2}, True)
 
+    pdf_value a g orig v =
+        let hr = emptyRec
+            ry = Rd {origin = orig, direction = v, rtime = 0.0}
+            (ahit, isHit, g1) = hit a g ry 0.001 (infty) hr
+        in if not isHit
+           then (0.0, g1)
+           else let a1 = quadAlignedAxisA1 a
+                    a2 = quadAlignedAxisA2 a
+                    a_2 = maximum [a1, a2]
+                    a_1 = minimum [a1, a2]
+                    b1 = quadAlignedAxisB1 a
+                    b2 = quadAlignedAxisB2 a
+                    b_2 = maximum [b1, b2]
+                    b_1 = minimum [b1, b2]
+                    area = (a_2 - a_1) * (b_2 - b_1)
+                    dist = hdist hr
+                in (getRectPdfValue v (pnormal hr) dist area, g1)
+
+    hrandom a g orig =
+        let k = quadDistance a
+            qi = quadInfo a
+            a1 = quadAlignedAxisA1 a
+            a2 = quadAlignedAxisA2 a
+            b1 = quadAlignedAxisB1 a
+            b2 = quadAlignedAxisB2 a
+            mkv g1 x1 x2 y1 y2 = 
+                let (x, g2) = randomDouble g1 (minimum [x1, x2]) (maximum [x1, x2])
+                    (y, g3) = randomDouble g2 (minimum [y1, y2]) (maximum [y1, y2])
+                in (g3, x, y)
+
+        in case notAligned qi of
+                AaZ -> let (gz, x, y) = mkv g a1 a2 b1 b2
+                       in (subtract (VList [x, y, k]) orig, gz)
+
+                AaY -> let (gy, x, z) = mkv g a1 a2 b1 b2
+                       in (subtract (VList [x, k, z]) orig, gy)
+
+                AaX -> let (gx, y, z) = mkv g a1 a2 b1 b2
+                       in (subtract (VList [k, y, z]) orig, gx)

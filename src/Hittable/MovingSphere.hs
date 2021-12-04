@@ -6,6 +6,7 @@ module Hittable.MovingSphere where
 import Math3D.Ray
 import Math3D.Vector
 import Math3D.CommonOps
+import Math3D.Onb
 
 -- hittable
 import Hittable.Hittable
@@ -115,3 +116,27 @@ instance Hittable MovingSphere where
             ab1 = AaBbox {aabbMin = subtract ct0 vrad, aabbMax = add ct0 vrad}
             ab2 = AaBbox {aabbMin = subtract ct1 vrad, aabbMax = add ct1 vrad}
         in (ssBox ab1 ab2, True)
+
+    pdf_value a g orig v = 
+        let hr = emptyRec
+            ry = Rd {origin = orig, direction = v, rtime = 0.0}
+            (ahit, isHit, g1) = hit a g ry 0.001 (infty) hr
+        in if not isHit
+           then (0.0, g1)
+           else let cent = getMSphereCenter a 0.0
+                    corg = lengthSquared $! subtract cent orig
+                    radius = msphereRadius a
+                    radorg = (radius * radius) / corg
+                    costheta = sqrt $! 1.0 - radorg
+                    solidAngle = 2.0 * m_pi * (1.0 - costheta)
+                in (1.0 / solidAngle, g1)
+
+    hrandom a g orig =
+        let cent = getMSphereCenter a 0.0
+            dir = subtract cent orig
+            distSqr = lengthSquared dir
+            onb = fromW2Onb dir
+            radius = msphereRadius a
+            (rv, g1) = random2Sphere g radius distSqr
+        in (localVec onb rv, g1)
+

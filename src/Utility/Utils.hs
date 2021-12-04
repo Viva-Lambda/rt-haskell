@@ -56,3 +56,7 @@ takeBetween mnv mxv lst =
                      subseq = filter pred enums
                      (nms, els) = unzip subseq
                  in els
+
+-- debug utilities
+debugTraceStr :: Show a => [a] -> String
+debugTraceStr xs = intercalate "\n " (map show xs)

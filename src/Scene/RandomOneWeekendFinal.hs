@@ -92,7 +92,7 @@ mkRndMats gen !isMov !((a, b):es) = case mkRndMat gen a b isMov of
                                      (Just c, g) -> c : mkRndMats g isMov es
                                      (Nothing, g) -> mkRndMats g isMov es
 
-world :: RandomGen g => g -> Bool -> HittableList
+world :: RandomGen g => g -> Bool -> (HittableList, HittableList)
 world gen !isM = let as = [0..7]
                      bs = [0..7]
                      coords = [(a - 3, b - 3) | a <- as, b <- bs]
@@ -122,15 +122,15 @@ world gen !isM = let as = [0..7]
                         }
                   in if null objs
                      then error $ unwords (map show objs)
-                     else HList {
+                     else (HList {
                          objects = NList ground (objs ++ [dielObj, lambObj, metObj])
-                     }
+                     }, HList {objects = NList (head objs) (tail objs)})
 
 
-worldStat :: RandomGen g => g -> HittableList
+worldStat :: RandomGen g => g -> (HittableList, HittableList)
 worldStat g = world g False
 
-worldMoving :: RandomGen g => g -> HittableList
+worldMoving :: RandomGen g => g -> (HittableList, HittableList)
 worldMoving g = world g True
 
 -- book scenes
@@ -138,7 +138,7 @@ worldMoving g = world g True
 
 randomOneWeekendFinalScene :: RandomGen g => g -> Bool -> Scene
 randomOneWeekendFinalScene g b =
-    let hl = world g b
+    let (hl, sobjs) = world g b
     in SceneVals {
         img_width = imageWidth,
         aspect_ratio = aspectRatio,
@@ -152,6 +152,7 @@ randomOneWeekendFinalScene g b =
         cam_focus_distance = camFocDistance,
         cam_aperture = 0.1,
         scene_obj = hl,
+        sample_obj = sobjs,
         back_ground = VList [0.7, 0.8, 1.0]
     }
 

@@ -41,3 +41,12 @@ instance Hittable HittableObj where
     boundingBox hobj time0 time1 ab =
         case hobj of
             (HittableCons s) -> boundingBox s time0 time1 ab
+
+    pdf_value hobj g o v =
+        case hobj of
+            (HittableCons s) -> pdf_value s g o v
+
+    hrandom hobj g v =
+        case hobj of
+            (HittableCons s) -> hrandom s g v
+

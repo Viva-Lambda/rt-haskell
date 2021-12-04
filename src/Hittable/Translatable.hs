@@ -58,3 +58,6 @@ instance Hittable Translatable where
            else let amin = add (aabbMin abound) offset
                     amax = add (aabbMax abound) offset
                 in (AaBbox {aabbMin = amin, aabbMax = amax}, True)
+
+    pdf_value a g _ _ = (0.0, g)
+    hrandom _ g _ = randomVec (0.0, 1.0) g

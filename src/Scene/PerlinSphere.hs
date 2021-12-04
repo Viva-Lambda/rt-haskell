@@ -53,6 +53,7 @@ twoPerlinSpheres g =
         cam_focus_distance = camFocDistance,
         cam_aperture = 0.0,
         scene_obj = hs,
+        sample_obj = HList {objects = NList (HittableCons sp1) []},
         back_ground = VList [0.7, 0.8, 1.0]
     }
 

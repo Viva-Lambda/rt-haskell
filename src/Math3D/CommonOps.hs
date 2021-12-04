@@ -22,5 +22,5 @@ class Eq a => BinaryOps a where
     multiplyS !a !s = let f = \d -> d * s in elementwiseScalarOp "multiply" f a
     divideS :: a -> Double -> a
     divideS !a !s = if s == 0.0
-                    then error "ZeroDivisionError :: performing zero division" 
+                    then traceStack "ZeroDivisionError :: performing zero division" a
                     else let f = \d -> d / s in elementwiseScalarOp "divide" f a

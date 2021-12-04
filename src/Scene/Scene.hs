@@ -19,6 +19,7 @@ data Scene = SceneVals {
     cam_aperture :: Double,
     cam_focus_distance :: Double,
     scene_obj :: HittableList,
+    sample_obj :: HittableList,
     back_ground :: Vector
     }
 

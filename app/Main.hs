@@ -74,7 +74,7 @@ printColor = do
     tstart <- getCurrentTime
     g <- newStdGen
     imD <- loadImage "./earthmap.jpg"
-    (smpl, (imw, imh), ps) <- traceScene g imD 8
+    (smpl, (imw, imh), ps) <- traceScene g imD 9
     -- print pixCoords
     _ <- printPPMHeader imw imh
     _ <- printPixels ps smpl

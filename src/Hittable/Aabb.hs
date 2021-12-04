@@ -30,7 +30,7 @@ aabbHit :: Aabb -> Ray -> Double -> Double -> Bool
 aabbHit ab ray t_min t_max =
         let AaBbox {aabbMin = a, aabbMax = b} = ab
             lena = vsize a
-            isHit = foldl1 (&&) [compHitAabb i ab ray t_min t_max | i <- [0..lena]]
+            isHit = foldl1 (&&) [compHitAabb i ab ray t_min t_max | i <- [0..(lena - 1)]]
         in isHit
 
 -- surrounding box

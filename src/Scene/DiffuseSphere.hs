@@ -49,6 +49,7 @@ diffuseSphere =
         cam_focus_distance = camFocDistance,
         cam_aperture = 0.1,
         scene_obj = sobj,
+        sample_obj = sobj,
         back_ground = VList [0.7, 0.8, 1.0]
          }
 

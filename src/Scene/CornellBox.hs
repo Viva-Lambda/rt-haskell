@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns #-}
 -- cornell box
 module Scene.CornellBox(cornellBox) where
 
@@ -66,22 +67,21 @@ cornellBox gen =
         (_, _, time) = loc
         b1 = mkBox (zeroV3) (VList [165.0, 330.0, 165.0]) whiteMat
         b1rot = mkRotatable b1 45.0 RY
-        b1trans = Translate b1rot (VList [265.0, 0.0, 295.0])
+        b1trans = HittableCons $! Translate b1rot (VList [265.0, 0.0, 295.0])
         b2 = mkBox (zeroV3) (VList [165.0, 165.0, 165.0]) whiteMat
         b2rot = mkRotatable b2 (-18.0) RY
-        b2trans = Translate b2rot (VList [130.0, 0.0, 65.0])
+        b2trans = HittableCons $! Translate b2rot (VList [130.0, 0.0, 65.0])
 
-        hs = HList {objects = NList (HittableCons b1trans) [HittableCons $ b2trans,
-                                                      yzGreenWall, yzRedWall,
-                                                      xzWhiteWall1, xzWhiteWall2,
-                                                      xyWhiteWall, lightR]}
+        hs = HList {objects = NList (b1trans) [b2trans, yzGreenWall, yzRedWall,
+                                               xzWhiteWall1, xzWhiteWall2,
+                                               xyWhiteWall, lightR]}
     -- in error $ "\nN: " ++ show b2 ++ "\nR: " ++ show b2rot ++ "\nT: " ++ show b2trans
     in SceneVals {
         img_width = imageWidth,
         aspect_ratio = aspectRatio,
         img_height = imageHeight,
-        nb_samples = 200,
-        bounce_depth = 50,
+        nb_samples = 10,
+        bounce_depth = 20,
         cam_look_from = cfrom,
         cam_look_to = cto,
         cam_vfov = cvfov,
@@ -89,5 +89,6 @@ cornellBox gen =
         cam_focus_distance = camFocDistance,
         cam_aperture = 0.0,
         scene_obj = hs,
+        sample_obj = HList {objects = NList lightR [b1trans, b2trans]},
         back_ground = VList [0.0, 0.0, 0.0]
     }

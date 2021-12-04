@@ -49,7 +49,9 @@ vget :: Vector -> Int -> Double
 vget !v !index = 
     let VList vs = v
     in if (vsize v) <= index || index < 0
-       then error $ "IndexError: uncorrect index size: " ++ show index
+       then traceStack (
+       "IndexError: uncorrect index size: " ++ show index ++
+       " vector: " ++ show v) 0.0
        else vs !! index
 
 

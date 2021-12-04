@@ -6,10 +6,22 @@ module Material.Scatter where
 import Math3D.Ray
 import Math3D.Vector
 import Math3D.CommonOps
+
+--
 import System.Random
 import Random
+import Utility.Utils
+
+--
 import Hittable.HitRecord
+
+-- 
 import Material.Material
+import Material.ScatterRecord
+
+-- pdf
+import Pdf.PdfObj
+import Pdf.CosinePdf
 
 -- textures
 import Texture.Texture
@@ -22,7 +34,7 @@ type ScatteredRay = Ray
 type SOutput = (Attenuation, ScatteredRay, Bool)
 
 class Scatterer a where
-    scatter :: RandomGen g => g -> a -> Ray -> HitRecord -> (g, Attenuation, ScatteredRay, Bool)
+    scatter :: RandomGen g => g -> a -> Ray -> HitRecord -> (g, ScatterRecord, Bool)
     emitted :: a -> Double -> Double -> Vector -> Vector
     scattering_pdf :: a -> Ray -> HitRecord -> Ray -> Double
 
@@ -33,7 +45,7 @@ class Scatterer a where
 instance Scatterer Material where
     scatter gen a r h = 
         case a of
-            NoMat -> (gen, zeroV3, r, False)
+            NoMat -> (gen, emptySRec emptyPdfObj, False)
             (LambMat la) -> scatter gen la r h
             (MetalMat m) -> scatter gen m r h
             (DielMat m) -> scatter gen m r h
@@ -45,7 +57,14 @@ instance Scatterer Material where
             (LightMat m) -> emitted m u v p
             _ -> zeroV3
 
-    scattering_pdf a r hrec sr = 0.0
+    scattering_pdf a r hrec sr = 
+        case a of
+            NoMat -> 0.0
+            LambMat la -> scattering_pdf la r hrec sr
+            MetalMat m -> scattering_pdf m r hrec sr
+            DielMat d -> scattering_pdf d r hrec sr
+            LightMat li -> scattering_pdf li r hrec sr
+            IsotMat im -> scattering_pdf im r hrec sr
 
 
 instance Scatterer Lambertian where
@@ -61,17 +80,36 @@ instance Scatterer Lambertian where
                     hu = hUV_u hrec
                     hv = hUV_v hrec
                 in if nearZeroVec sdir
-                   then (g, color t hu hv recp, 
-                        Rd {origin = recp,
-                                  direction = recn,
-                                  rtime = rtime inray}, True)
-                   else (g, color t hu hv recp, 
-                         Rd {origin = recp, 
+                   then (g,
+                    mkSRecord 
+                        (Rd {origin = recp,
+                             direction = recn,
+                             rtime = rtime inray})
+                        (False)
+                        (color t hu hv recp)
+                        (PdfCons $! CosNormalPdf recn), True
+                        )
+                   else (g, 
+                    mkSRecord 
+                        (Rd {origin = recp, 
                                    direction = sdir,
-                                   rtime = rtime inray}, True)
+                                   rtime = rtime inray})
+                        (False)
+                        (color t hu hv recp)
+                        (PdfCons $! CosNormalPdf recn), True
+                        )
             -- Color
             LambC c -> let lambtxt = TextureCons $ SolidV c
                        in scatter gen (LambT lambtxt) inray hrec
+
+
+    scattering_pdf _ r hrec sr =
+        let n = pnormal hrec
+            u = toUnit $! direction sr
+            cosine = dot n u
+        in if cosine < 0.0
+           then 0.0
+           else cosine / m_pi
 
 
 instance Scatterer Metal where
@@ -87,14 +125,23 @@ instance Scatterer Metal where
                     refdir = reflect indir recn
                     (uvec, g) = randomUnitSphere gen
                     rdir = add refdir (multiplyS uvec b)
-                in (g, color a hu hv recp, Rd {origin = recp, 
-                              direction = rdir, 
-                              rtime = rtime inray}, (dot rdir recn) > 0)
+                in (g,
+                    mkSRecord 
+                        (Rd {origin = recp, 
+                             direction = rdir, 
+                             rtime = rtime inray})
+                        (True)
+                        (color a hu hv recp) 
+                        (emptyPdfObj),
+                    True)
             (MetC a b) -> let mt = TextureCons $ SolidV a
                           in scatter gen (MetT mt b) inray hrec
 
+    scattering_pdf _ _ _ _ = 0.0
+
 
 instance Scatterer Dielectric where
+    scattering_pdf _ _ _ _ = 0.0
     emitted _ _ _ _ = zeroV3
     scatter !gen !a !inray !hrec =
         case a of
@@ -118,10 +165,17 @@ instance Scatterer Dielectric where
                                  direction = rdir,
                                  rtime = rtime inray
                                  }
-                in (g, atten, outray, True)
+                in (g,
+                    mkSRecord 
+                        outray
+                        True
+                        atten
+                        emptyPdfObj,
+                    True)
 
 instance Scatterer DiffuseLight where
-    scatter !gen !a !inray !hrec = (gen, zeroV3, inray, False)
+    scattering_pdf _ _ _ _ = 0.0
+    scatter !gen !a !inray !hrec = (gen, emptySRec emptyPdfObj, False)
     emitted b u v p = 
         case b of
             DLightEmitTextureCons a -> color a u v p
@@ -129,6 +183,7 @@ instance Scatterer DiffuseLight where
                                  in color b u v p
 
 instance Scatterer Isotropic where
+    scattering_pdf _ _ _ _ = 0.0
     emitted _ _ _ _ = zeroV3
     scatter !gen !b !inray !hrec =
         case b of
@@ -141,7 +196,13 @@ instance Scatterer Isotropic where
                                  direction = uvec, 
                                  rtime = rtime inray}
                     atten = color a hu hv recp
-                in (g, atten, outray, True)
+                in (g,
+                    mkSRecord
+                        outray
+                        True
+                        atten
+                        emptyPdfObj,
+                    True)
 
             IsotColor c -> let mt = TextureCons $ SolidV c
                            in scatter gen (IsotTexture mt) inray hrec

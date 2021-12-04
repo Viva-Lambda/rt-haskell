@@ -13,8 +13,11 @@ vecToInt v =
     in map double2Int d
 
 writeColor :: Vector -> Int -> String
-writeColor v sample_nb =
-    let scale = 1.0 / (int2Double sample_nb)
+writeColor (VList clr) sample_nb =
+    let v = if (all isNaN clr)
+            then zeroV3
+            else VList clr
+        scale = 1.0 / (int2Double sample_nb)
         sv = multiplyS v scale
         svgamma = vecScalarOp sqrt sv
         nsv = clampV svgamma 0.0 0.999

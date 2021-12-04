@@ -32,6 +32,9 @@ import Scene.CornellBox
 -- cornell smoke
 import Scene.CornellSmoke
 
+-- next week final scene
+import Scene.NextWeekFinal
+
 
 chooseScene :: RandomGen g => g -> [Bitmap Word8] -> Int -> (Int, Scene)
 chooseScene g s choice =
@@ -48,5 +51,9 @@ chooseScene g s choice =
         6 -> let sc = simpleLight g in (nb_samples sc, sc)
         7 -> let sc = cornellBox g in (nb_samples sc, sc)
         8 -> let sc = cornellSmoke g in (nb_samples sc, sc)
+        9 -> let sc = if null s
+                      then diffuseSphere
+                      else nextWeekFinal g (head s)
+             in (nb_samples sc, sc)
         _ -> let sc = diffuseSphere in (nb_samples sc, sc)
 

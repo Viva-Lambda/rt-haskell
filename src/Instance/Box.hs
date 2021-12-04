@@ -86,3 +86,14 @@ instance Hittable Box where
                                 then bbox False t0 t1 sbox htls sbox
                                 else let obox = ssBox outBox sbox
                                      in bbox False t0 t1 sbox htls obox
+    {-
+    pdf_value a g orig v =
+        let hr = emptyRec
+            ry = Rd {origin = orig, direction = v, rtime = 0.0}
+            (ahit, isHit, g1) = hit a g ry 0.001 (infty) hr
+        in if not isHit
+           then (0.0, g1)
+           else let mnmx = divideS (add (minBox a) (maxBox a)) 2.0
+    -}
+
+

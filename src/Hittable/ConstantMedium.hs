@@ -100,3 +100,6 @@ instance Hittable ConstantMedium where
                                        hUV_v = hUV_v nrec1
                                        } ,
                                          True, g4)
+    
+    pdf_value _ g _ _ = (0.0, g)
+    hrandom _ g _ = randomVec (0.0, 1.0) g

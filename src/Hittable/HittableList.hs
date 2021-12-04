@@ -2,19 +2,25 @@
 -- hittable list module contains hittables and related
 module Hittable.HittableList where
 
+-- hittable
 import Hittable.Hittable
 import Hittable.HittableObj
 import Hittable.Sphere
 import Hittable.MovingSphere
 import Hittable.Aabb
 import Hittable.HitRecord
+
+-- material
 import Material.Material
 
-
+-- utility etc
 import Utility.HelperTypes
+import Random
 
+-- third party
 import Data.List
 import Data.Function
+import GHC.Float
 
 
 data HittableList = HList {objects :: NonEmptyList HittableObj}
@@ -52,4 +58,16 @@ instance Hittable HittableList where
                         else let obox = ssBox outBox sbox
                              in bbox False t0 t1 sbox htls obox
 
---
+    pdf_value hobjs gen orig dir =
+        let weight = 1.0 / (int2Double $ lengthNL (objects hobjs))
+            fn acc hobj = let (sumval, g) = acc 
+                              (pdfval, g2) = (pdf_value hobj g orig dir) 
+                              pval = pdfval * weight
+                          in (sumval + pval, g2)
+            objs = toList $! objects hobjs
+        in foldl fn (0.0, gen) objs
+
+    hrandom hobjs gen orig =
+        let upper = lengthNL $! objects hobjs
+            (index, g2) = randomInt gen 0 upper
+        in hrandom (getNL (objects hobjs) index) g2 orig

@@ -1,6 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
 -- next week final scene
-module Scene.NextWeekFinal where
+module Scene.NextWeekFinal(nextWeekFinal) where
 
 -- scene default values
 import Scene.Scene
@@ -143,21 +143,27 @@ nextWeekFinal gen img =
                         sphereMat = DielMat $! DielRefIndices [1.5]
                         }
 
-        cmed2 = HittableCons $! mkConstantMediumColor boundary2 0.001 (VList [1.0, 1.0, 1.0])
+        cmed2 = HittableCons $! mkConstantMediumColor boundary2 0.00001 (VList [1.0, 1.0, 1.0])
         eimg = earthImg img
         (g2, noiseS) = noiseSphere g1
         (g3, tboxes) = mkTransformedBoxes g2
-        hs = HList {objects = NList (HittableCons mbvh) [
+        objlst = [HittableCons mbvh,
             light, msphere, dieSp1, dieSp2, boundary1,
             cmed1, cmed2, eimg, noiseS, tboxes
-            ]}
+            ]
+        hs = HList {objects = NList (
+            HittableCons $ mkBvh objlst g3 0 (length objlst) 0.0 1.0
+            ) []}
     -- in error $ "\nN: " ++ show b2 ++ "\nR: " ++ show b2rot ++ "\nT: " ++ show b2trans
     in SceneVals {
-        img_width = 800,
-        aspect_ratio = 800.0 / 600.0,
-        img_height = 600,
-        nb_samples = 10000,
-        bounce_depth = 50,
+        img_width = imageWidth,
+        -- img_width = 800,
+        aspect_ratio = aspectRatio,
+        -- aspect_ratio = 800.0 / 600.0,
+        img_height = imageHeight,
+        -- img_height = 600,
+        nb_samples = 200,
+        bounce_depth = 30,
         cam_look_from = VList [478.0, 278.0, -600.0],
         cam_look_to = VList [278.0, 278.0, 0.0],
         cam_vfov = 40.0,
@@ -165,5 +171,6 @@ nextWeekFinal gen img =
         cam_focus_distance = camFocDistance,
         cam_aperture = 0.0,
         scene_obj = hs,
+        sample_obj = HList {objects = NList light []},
         back_ground = VList [0.0, 0.0, 0.0]
     }

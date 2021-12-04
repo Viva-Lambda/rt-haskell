@@ -46,13 +46,13 @@ onb3 :: Vector -> Vector -> Vector -> OrthoNormalBase
 onb3 w v u = Onb $ NList w [v, u]
 
 localVec :: OrthoNormalBase -> Vector -> Vector
-localVec ob v =
+localVec ob t =
     let u = uBasis ob
         v = vBasis ob
         w = wBasis ob
-        ux = multiplyS u $ vget v 0
-        vy = multiplyS v $ vget v 1
-        wz = multiplyS w $ vget v 2
+        ux = multiplyS u $ vget t 0
+        vy = multiplyS v $ vget t 1
+        wz = multiplyS w $ vget t 2
     in (add wz (add ux vy))
 
 localXyz :: OrthoNormalBase -> Double -> Double -> Double -> Vector

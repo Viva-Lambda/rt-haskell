@@ -5,6 +5,8 @@ module Hittable.Sphere where
 import Math3D.Vector
 import Math3D.CommonOps
 import Math3D.Ray
+import Math3D.Onb
+
 import Utility.Utils
 import Hittable.Hittable
 import Hittable.HitRecord
@@ -82,3 +84,27 @@ instance Hittable Sphere where
             cv2 = add sc (VList [sr, sr, sr])
             aBound = AaBbox { aabbMin = cv1, aabbMax = cv2 }
         in (aBound, True)
+
+    pdf_value a g orig v = 
+        let hr = emptyRec
+            ry = Rd {origin = orig, direction = v, rtime = 0.0}
+            (ahit, isHit, g1) = hit a g ry 0.001 (infty) hr
+        in if not isHit
+           then (0.0, g1)
+           else let cent = sphereCenter a
+                    corg = lengthSquared $! subtract cent orig
+                    radius = sphereRadius a
+                    radorg = (radius * radius) / corg
+                    costheta = sqrt $! 1.0 - radorg
+                    solidAngle = 2.0 * m_pi * (1.0 - costheta)
+                in (1.0 / solidAngle, g1)
+
+    hrandom a g orig =
+        let cent = sphereCenter a
+            dir = subtract cent orig
+            distSqr = lengthSquared dir
+            onb = fromW2Onb dir
+            radius = sphereRadius a
+            (rv, g1) = random2Sphere g radius distSqr
+        in (localVec onb rv, g1)
+
