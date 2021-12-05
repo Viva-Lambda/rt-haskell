@@ -35,8 +35,8 @@ instance Eq Translatable where
 
 instance Hittable Translatable where
     hit (Translate a offset) g !(Rd {origin = ro, 
-                                   direction = rd,
-                                   rtime = rt}) !tmin !tmax !hrec =
+                                     direction = rd,
+                                     rtime = rt}) !tmin !tmax !hrec =
         let ry = Rd {origin = subtract ro offset, direction = rd, rtime = rt}
             (srec, isHit, g1) = hit a g ry tmin tmax hrec
         in if not isHit
@@ -59,5 +59,9 @@ instance Hittable Translatable where
                     amax = add (aabbMax abound) offset
                 in (AaBbox {aabbMin = amin, aabbMax = amax}, True)
 
-    pdf_value a g _ _ = (0.0, g)
-    hrandom _ g _ = randomVec (0.0, 1.0) g
+    pdf_value a g orig v = 
+        case a of 
+            Translate b oset -> pdf_value b g (subtract orig oset) v
+    hrandom a g orig = 
+        case a of
+            Translate b oset -> hrandom b g (subtract orig oset)

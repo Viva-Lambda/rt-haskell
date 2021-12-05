@@ -4,6 +4,7 @@ module Instance.Box where
 
 -- math3d
 import Math3D.Vector
+import Math3D.CommonOps
 import Math3D.Ray
 import Math3D.Transform
 
@@ -17,6 +18,9 @@ import Data.Function
 
 import Material.Material
 import Utility.HelperTypes
+import Utility.Utils
+
+import Prelude hiding(subtract)
 
 data Box = HBox { minBox :: Vector, maxBox :: Vector,
                   boxMat :: Material, boxSides :: [AaRect] }
@@ -86,14 +90,22 @@ instance Hittable Box where
                                 then bbox False t0 t1 sbox htls sbox
                                 else let obox = ssBox outBox sbox
                                      in bbox False t0 t1 sbox htls obox
-    {-
+
     pdf_value a g orig v =
         let hr = emptyRec
             ry = Rd {origin = orig, direction = v, rtime = 0.0}
             (ahit, isHit, g1) = hit a g ry 0.001 (infty) hr
         in if not isHit
            then (0.0, g1)
-           else let mnmx = divideS (add (minBox a) (maxBox a)) 2.0
-    -}
+           else let hp = point ahit
+                    rects = boxSides a
+                    compFn r = isPointInRect hp r
+                    sideIndex = findIndex compFn rects
+                in case sideIndex of
+                        Nothing -> (0.0, g1)
+                        Just i -> let r = rects !! i
+                                  in pdf_value r g1 orig v
 
+    hrandom a g orig = let (rp, g2) = randomVector ((minBox a), (maxBox a)) g
+                       in (subtract rp orig, g2)
 

@@ -36,6 +36,9 @@ import Scene.CornellSmoke
 import Scene.NextWeekFinal
 
 
+-- cornell sphere
+import Scene.CornellSphere
+
 chooseScene :: RandomGen g => g -> [Bitmap Word8] -> Int -> (Int, Scene)
 chooseScene g s choice =
     case choice of
@@ -55,5 +58,6 @@ chooseScene g s choice =
                       then diffuseSphere
                       else nextWeekFinal g (head s)
              in (nb_samples sc, sc)
+        10 -> let sc = cornellSphere g in (nb_samples sc, sc)
         _ -> let sc = diffuseSphere in (nb_samples sc, sc)
 

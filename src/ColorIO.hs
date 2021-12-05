@@ -69,9 +69,10 @@ rayColor !ray !world lights !background !depth !gen =
                                  let {
         natten = attenuationSR srec;
         mptr = matPtr hithrec;
-        cospdf = CosNormalPdf (pnormal hithrec);
+        -- cospdf = CosNormalPdf (pnormal hithrec);
+        cospdf = pdfPtrSR srec;
         hpdf = HitPdf lights (point hithrec);
-        mpdf = MixPdf (PdfCons cospdf) (PdfCons cospdf);
+        mpdf = MixPdf (NList cospdf [PdfCons hpdf]);
         (rdir, g3) = generate mpdf g2;
         rout = Rd {origin = point hithrec, direction = rdir, rtime = rtime ray};
         (pval, g4) = pvalue mpdf g3 rdir;

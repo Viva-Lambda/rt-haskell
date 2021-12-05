@@ -132,28 +132,23 @@ randomVecGen !(mn, mx) !gen !size =
         (vdoubles, gs) = unzip [randomDouble g mn mx | g <- gens ]
     in (VList vdoubles, last gs)
 
-randomVecGen2 :: RandomGen g => (Double, Double) -> g -> Int -> (Vector, ([Double], Int))
-randomVecGen2 !(mn, mx) gen !size =
-    let (rvals, ptr) = randomRPtr gen mn mx
-        (vecRandomValues, _, nptr) = getRandVal size (rvals, ptr)
-    in (VList vecRandomValues, (rvals, nptr))
-
 randomVec :: RandomGen g => (Double, Double) -> g -> (Vector, g)
 randomVec !a !g = randomVecGen a g 3
 
-randomVec2 :: RandomGen g => (Double, Double) -> g -> (Vector, ([Double], Int))
-randomVec2 a g = randomVecGen2 a g 3
-
 -- generate random vectors
-randomVecGens :: RandomGen g => (Double, Double) -> g -> Int -> Int -> ([Vector], ([Double], Int))
-randomVecGens (mn, mx) gen size nb =
-    let (rVec, (rvals, ptr)) = randomVecGen2 (mn, mx) gen size
-        -- foldfn :: (a -> b -> a) :: ([], rv, ptr) -> i -> ([Vs], a, ptr) 
-        foldf acc _ = let (lst, rvals, ptr) = acc
-                          (nvals, _, nptr) = getRandVal size (rvals, ptr)
-                       in (lst ++ [VList nvals], rvals, nptr)
-        (vs, _, nptr) = foldl' foldf ([rVec], rvals, ptr) [0..(nb-1)]
-    in (vs, (rvals, nptr))
+
+randomVector :: RandomGen g => (Vector, Vector) -> g -> (Vector, g)
+randomVector (minp, maxp) g =
+    let lmnp = vsize minp
+        lmxp = vsize maxp
+    in if lmnp /= lmxp
+       then traceStack (sizeError minp maxp "randomVector") (zeroV3, g)
+       else let fn acc i = let (g1, vs) = acc
+                               (v, g2) = randomDouble g1 (vget minp i) (vget maxp i)
+                            in (g2, vs ++ [v])
+                indices = [0..(lmnp - 1)]
+                (g1, vals) = foldl fn (g, []) indices
+            in (VList vals, g1)
 
 
 randV :: RandomGen g => g -> (Vector, g)

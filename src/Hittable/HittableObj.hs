@@ -10,6 +10,9 @@ import Hittable.AaRect
 import Hittable.Rotatable
 import Hittable.Translatable
 
+-- 
+import Math3D.Vector
+
 --
 import Instance.Box
 
@@ -49,4 +52,3 @@ instance Hittable HittableObj where
     hrandom hobj g v =
         case hobj of
             (HittableCons s) -> hrandom s g v
-

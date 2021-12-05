@@ -1,6 +1,6 @@
 {-# LANGUAGE BangPatterns #-}
 -- cornell box
-module Scene.CornellBox(cornellBox) where
+module Scene.CornellSphere(cornellSphere) where
 
 -- scene default values
 import Scene.Scene
@@ -20,6 +20,7 @@ import Texture.TextureObj
 -- hittable
 import Hittable.HittableList
 import Hittable.HittableObj
+import Hittable.Sphere
 import Hittable.Hittable
 import Hittable.AaRect
 import Hittable.Rotatable
@@ -35,8 +36,8 @@ import Material.Material
 --
 import Utility.HelperTypes
 
-cornellBox :: RandomGen g => g -> Scene
-cornellBox gen =
+cornellSphere :: RandomGen g => g -> Scene
+cornellSphere gen =
     let cfrom = VList [278.0, 278.0, -800.0]
         cto = VList [278.0, 278.0, 0.0]
         cvfov = 40.0 
@@ -47,6 +48,8 @@ cornellBox gen =
         redMat = LambMat $! LambC (VList [0.65, 0.05, 0.05])
         greenMat = LambMat $! LambC (VList [0.12, 0.45, 0.15])
         lightMat = LightMat $! DLightColorCons (VList [15.0, 15.0, 15.0])
+        metMat = MetalMat $! MetC (VList [0.8, 0.7, 0.75]) 0.001
+        dieMt = DielMat $! DielRefIndices [1.5]
         -- cornell walls
         c1 = 0.0
         c2 = 555.0
@@ -65,14 +68,14 @@ cornellBox gen =
         -- get locating parameters
         loc = getCameraLocatingParams gen sceneC
         (_, _, time) = loc
-        b1 = mkBox (zeroV3) (VList [165.0, 330.0, 165.0]) whiteMat
-        b1rot = mkRotatable b1 45.0 RY
+        b1 = mkBox (zeroV3) (VList [165.0, 330.0, 165.0]) metMat
+        b1rot = mkRotatable b1 (-45.0) RY
         b1trans = HittableCons $! Translate b1rot (VList [265.0, 0.0, 295.0])
-        b2 = mkBox (zeroV3) (VList [165.0, 165.0, 165.0]) whiteMat
-        b2rot = mkRotatable b2 (-18.0) RY
-        b2trans = HittableCons $! Translate b2rot (VList [130.0, 0.0, 65.0])
+        b2 =  HittableCons $! SphereObj {sphereCenter = VList [190.0, 90.0, 190.0],
+                                         sphereRadius = 90.0, 
+                                         sphereMat = dieMt}
 
-        hs = HList {objects = NList (b1trans) [b2trans, yzGreenWall, yzRedWall,
+        hs = HList {objects = NList (b1trans) [b2, yzGreenWall, yzRedWall,
                                                xzWhiteWall1, xzWhiteWall2,
                                                xyWhiteWall, lightR]}
     -- in error $ "\nN: " ++ show b2 ++ "\nR: " ++ show b2rot ++ "\nT: " ++ show b2trans

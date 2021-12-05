@@ -141,5 +141,21 @@ instance Hittable Rotatable where
     -- TODO
     boundingBox (Rotate a angle axis hasBox bbox) tmn tmx ab = (bbox, hasBox)
 
-    pdf_value a g _ _ = (0.0, g)
-    hrandom _ g _ = randomVec (0.0, 1.0) g
+    pdf_value a g orig v =
+        case a of
+            (Rotate b angle axis _ _) ->
+                let theta = degrees_to_radians angle
+                    rotmat = toMatrix axis theta
+                    invrot = toMatrix axis (-theta)
+                    rro = rotateByMatrix orig rotmat -- rotated origin
+                    rrd = rotateByMatrix v rotmat -- rotated direction
+                in pdf_value b g rro rrd
+            
+    hrandom a g orig =
+        case a of
+            (Rotate b angle axis _ _) ->
+                let theta = degrees_to_radians angle
+                    rotmat = toMatrix axis theta
+                    invrot = toMatrix axis (-theta)
+                    rro = rotateByMatrix orig rotmat -- rotated origin
+                in hrandom b g rro

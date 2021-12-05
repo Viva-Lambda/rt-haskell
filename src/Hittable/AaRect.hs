@@ -16,6 +16,7 @@ import Utility.Utils
 
 import Random
 import Prelude hiding(subtract)
+import Data.List
 
 data AlignmentAxis = AaX
                    | AaY
@@ -62,6 +63,17 @@ corners a =
                    VList [a2, k, b2], VList [a2, k, b1])
            AaX -> (VList [k, a1, b1], VList [k, a1, b2],
                    VList [k, a2, b2], VList [k, a2, b1])
+
+minMaxPointsRect :: AaRect -> (Vector, Vector)
+minMaxPointsRect a =
+    let (c1, c2, c3, c4) = corners a
+        (c:cs) = [c1, c2, c3, c4]
+        fn acc i = let VList ss = i
+                       (compFn, VList acs) = acc
+                   in (compFn, VList [compFn [s, a] | (s, a) <- zip ss acs])
+        (_, minp) = foldl fn (minimum, c) cs
+        (_, maxp) = foldl fn (maximum, c) cs
+    in (minp, maxp)
 
 
 cornerNormal :: AaRect -> (Vector, Vector, Vector, Vector, Vector)
@@ -148,6 +160,23 @@ getRectPdfValue dir normal dist area =
         dsqr2 = dsqr * (lengthSquared dir)
         cosine = abs $ ((dot dir normal) / (magnitude dir))
     in dsqr2 / (cosine * area)
+
+
+isPointInRect :: Vector -> AaRect -> Bool
+isPointInRect v a =
+    let qdist = quadDistance a
+        (minp, maxp) = minMaxPointsRect a
+        VList vs = v
+    in case findIndex (== qdist) vs of
+            Nothing -> False
+            Just index -> 
+                let indices = [0..((length vs) - 1)]
+                    otherIndices = filter (/= index) indices
+                    compFn i = let ival = vget v i
+                                   mnval = vget minp i
+                                   mxval = vget maxp i
+                               in (ival >= mnval) && (ival <= mxval)
+                in all compFn otherIndices
 
 instance Eq AaRect where
     a == b =
