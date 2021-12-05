@@ -91,6 +91,11 @@ repository.
 
 ![cornell-box-02](./images/smoke.png)
 
+- Cornell sphere and a box from branch 17-scattering-pdf
+
+![cornell-box-03](./images/cornellFinal.png)
+
+
 ## Some Notes
 
 ### RNGs and performance

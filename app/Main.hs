@@ -54,7 +54,7 @@ type ImLoad = Either String Image
 traceScene :: RandomGen g => g-> ImLoad -> Int -> IO (Int, (Int, Int), [Pixel])
 traceScene g imD sceneChoice =
     let imval = case imD of
-                    Left e -> if sceneChoice == 5
+                    Left e -> if sceneChoice == 10
                               then error e
                               else []
                     Right e -> [e]
@@ -74,7 +74,7 @@ printColor = do
     tstart <- getCurrentTime
     g <- newStdGen
     imD <- loadImage "./earthmap.jpg"
-    (smpl, (imw, imh), ps) <- traceScene g imD 9
+    (smpl, (imw, imh), ps) <- traceScene g imD 10
     -- print pixCoords
     _ <- printPPMHeader imw imh
     _ <- printPixels ps smpl
