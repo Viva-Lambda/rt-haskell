@@ -69,31 +69,12 @@ rayColor !ray !world lights !background !depth !gen =
                                  let {
         natten = attenuationSR srec;
         mptr = matPtr hithrec;
-        {- 
-        hpdf = HitPdf lights (point hithrec);
-        mpdf = MixPdf (NList (PdfCons hpdf) [pdfPtrSR srec]);
-        -- (ndir, g3) = generate mpdf g2;
-        (ndir, g3) = generate hpdf g2;
-        rout = Rd {origin = point hithrec,
-                   direction = ndir,
-                   rtime = rtime ray};
-        (pval, g4) = pvalue mpdf g3 ndir;
-        -- (pval, g4) = pvalue hpdf g3 ndir;
-        (ncolor, g5) = rayColor rout world lights background (depth-1) g4;
-        -- (ncolor, g5) = rayColor (specularRaySR srec) world lights background (depth-1) g4;
-        l_r = multiplyS (multiply natten ncolor) spdf;
-        -- TODO against zero divisions we do the following hack
-        -- needs to be organized in a better way to compute a pdf value
-        -- for all sampled directions towards a hittable
-        rcolor = if pval == 0.0
-                 then VList [1.0, 0.2, 0.2]
-                 else add l_e (divideS l_r pval);
-        -- l_r = multiply natten ncolor;
-        -}
         cospdf = CosNormalPdf (pnormal hithrec);
-        (rdir, g3) = generate cospdf g2;
+        hpdf = HitPdf lights (point hithrec);
+        mpdf = MixPdf (PdfCons cospdf) (PdfCons cospdf);
+        (rdir, g3) = generate mpdf g2;
         rout = Rd {origin = point hithrec, direction = rdir, rtime = rtime ray};
-        (pval, g4) = pvalue cospdf g3 rdir;
+        (pval, g4) = pvalue mpdf g3 rdir;
         spdf = scattering_pdf mptr ray hithrec rout;
         multv = if pval == 0.0
                 then 0.0

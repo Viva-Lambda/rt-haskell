@@ -17,7 +17,7 @@ data CosinePdf where
     CosNormalPdf :: Vector -> CosinePdf
 
 instance Pdf CosinePdf where
-    pvalue a gen dir =
+    pvalue !a gen !dir =
         case a of
             CosPdf onb ->
                let cval = dot (toUnit dir) (wBasis onb)
@@ -27,7 +27,7 @@ instance Pdf CosinePdf where
                in (rval, gen)
             CosNormalPdf v -> pvalue (CosPdf $ fromW2Onb v) gen dir
 
-    generate a g =
+    generate !a g =
         case a of 
            CosPdf onb -> let (rv, g1) = randomCosineDir g
                          in (localVec onb rv, g1)
