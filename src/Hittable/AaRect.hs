@@ -290,8 +290,8 @@ instance Hittable AaRect where
                     b_2 = maximum [b1, b2]
                     b_1 = minimum [b1, b2]
                     area = (a_2 - a_1) * (b_2 - b_1)
-                    dist = hdist hr
-                in (getRectPdfValue v (pnormal hr) dist area, g1)
+                    dist = hdist ahit
+                in (getRectPdfValue v (pnormal ahit) dist area, g1)
 
     hrandom a g orig =
         let k = quadDistance a

@@ -73,11 +73,11 @@ rayColor !ray !world lights !background !depth !gen =
         cospdf = pdfPtrSR srec;
         hpdf = HitPdf lights (point hithrec);
         mpdf = MixPdf (NList cospdf [PdfCons hpdf]);
-        (rdir, g3) = generate mpdf g2;
-        rout = Rd {origin = point hithrec, direction = rdir, rtime = rtime ray};
-        (pval, g4) = pvalue mpdf g3 rdir;
+        (rdir, g3) = generate hpdf g2;
+        rout = Rd {origin = point hithrec, direction = toUnit rdir, rtime = rtime ray};
+        (pval, g4) = pvalue hpdf g3 (direction rout);
         spdf = scattering_pdf mptr ray hithrec rout;
-        multv = if pval == 0.0
+        multv = if pval == 0.0 || isNaN pval
                 then 0.0
                 else spdf / pval;
         (rcolor, g5) = let (rCol, gv) = rayColor rout world lights background (depth - 1) g4
@@ -86,8 +86,8 @@ rayColor !ray !world lights !background !depth !gen =
                                 in (rcolor, g5)
                                 {- in traceStack 
                                         (debugTraceStr [
-                                            show rout, show ncolor, show l_r,
-                                            show spdf, show pval, show ndir,
+                                            show rout,
+                                            show spdf, show pval, show rdir,
                                             show rcolor
                                             ])
                                         (zeroV3, g5)

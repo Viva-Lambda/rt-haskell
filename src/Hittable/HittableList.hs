@@ -62,12 +62,12 @@ instance Hittable HittableList where
         let weight = 1.0 / (int2Double $ lengthNL (objects hobjs))
             fn acc hobj = let (sumval, g) = acc 
                               (pdfval, g2) = (pdf_value hobj g orig dir) 
-                              pval = pdfval * weight
-                          in (sumval + pval, g2)
+                          in (sumval + pdfval * weight, g2)
             objs = toList $! objects hobjs
         in foldl fn (0.0, gen) objs
 
     hrandom hobjs gen orig =
         let upper = lengthNL $! objects hobjs
-            (index, g2) = randomInt gen 0 upper
+            -- randomInt produces random values in a closed range
+            (index, g2) = randomInt gen 0 (upper - 1) 
         in hrandom (getNL (objects hobjs) index) g2 orig
