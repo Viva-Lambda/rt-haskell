@@ -14,6 +14,7 @@ import Math3D.CommonOps
 -- pdf
 import Pdf.MixturePdf
 import Pdf.HittablePdf
+import Pdf.CosinePdf
 import Pdf.PdfObj
 import Pdf.Pdf
 
@@ -67,6 +68,7 @@ rayColor !ray !world lights !background !depth !gen =
                             else -- start computing pdf values
                                  let {
         natten = attenuationSR srec;
+        mptr = matPtr hithrec;
         {- 
         hpdf = HitPdf lights (point hithrec);
         mpdf = MixPdf (NList (PdfCons hpdf) [pdfPtrSR srec]);
@@ -88,28 +90,16 @@ rayColor !ray !world lights !background !depth !gen =
                  else add l_e (divideS l_r pval);
         -- l_r = multiply natten ncolor;
         -}
-        -- sample lights directly
-        (xv, g3) = randomDouble g2 213.0 343.0;
-        (zv, g4) = randomDouble g3 227.0 332.0;
-        onlight = VList [xv, 554.0, zv];
-        tolight = subtract onlight (point hithrec);
-        disqr = lengthSquared tolight;
-        tulight = toUnit tolight;
-        dval = dot tulight (pnormal hithrec);
-        larea = (343.0-213.0) * (332.0 - 227.0);
-        lcos = abs $ vget tulight 1;
-        pval = disqr / (lcos * larea);
-        rout = Rd {origin = point hithrec,
-                   direction = tulight,
-                   rtime = rtime ray};
-        spdf = scattering_pdf (matPtr hithrec) ray hithrec rout;
-        multv = spdf / pval;
-        (rcolor, g5) = if dval < 0.0
-                 then (l_e, g4)
-                 else if lcos < 0.00001
-                      then (l_e, g4)
-                      else let (rCol, gv) = rayColor rout world lights background (depth - 1) g4
-                           in (multiplyS (multiply natten rCol) multv, gv);
+        cospdf = CosNormalPdf (pnormal hithrec);
+        (rdir, g3) = generate cospdf g2;
+        rout = Rd {origin = point hithrec, direction = rdir, rtime = rtime ray};
+        (pval, g4) = pvalue cospdf g3 rdir;
+        spdf = scattering_pdf mptr ray hithrec rout;
+        multv = if pval == 0.0
+                then 0.0
+                else spdf / pval;
+        (rcolor, g5) = let (rCol, gv) = rayColor rout world lights background (depth - 1) g4
+                       in (add l_e (multiplyS (multiply natten rCol) multv), gv);
                                     }
                                 in (rcolor, g5)
                                 {- in traceStack 
