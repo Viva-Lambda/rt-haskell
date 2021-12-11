@@ -1,6 +1,8 @@
 -- helper types 
 module Utility.HelperTypes where
 
+import Debug.Trace
+
 data NonEmptyList a = NList a [a]
 
 headNL :: NonEmptyList a -> a
@@ -22,10 +24,14 @@ lastNL (NList a b) = if null b
 lengthNL :: NonEmptyList a -> Int
 lengthNL (NList a b) = 1 + length b
 
-toList :: NonEmptyList a -> [a]
-toList (NList a b) = [a] ++ b
+nl2List :: NonEmptyList a -> [a]
+nl2List (NList a b) = [a] ++ b
+
+fromList2NL :: a -> [a] -> NonEmptyList a
+fromList2NL a b = NList a b
 
 getNL :: NonEmptyList a -> Int -> a
 getNL a index = if (index >= lengthNL a) || (index < 0)
-                then error $ "IndexError :: index out of bounds " ++ show index
-                else (toList a) !! index
+                then let m = "IndexError :: index out of bounds " ++ show index 
+                     in traceStack m (headNL a)
+                else (nl2List a) !! index

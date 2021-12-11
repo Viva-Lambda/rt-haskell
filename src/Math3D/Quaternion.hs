@@ -33,7 +33,7 @@ instance BinaryOps Quaternion where
 
 
 qVector :: Quaternion -> Vector
-qVector q = VList [qX q, qY q, qZ q]
+qVector q = fromList2Vec (qX q) [qY q, qZ q]
 
 qScalar :: Quaternion -> Double
 qScalar q = qR q

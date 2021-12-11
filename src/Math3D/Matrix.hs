@@ -32,7 +32,7 @@ matFromVector !(v:vs) =
     in if not allSameLength
        then traceStack "All vectors must have same length" (mzero 1 1)
        else -- foldfn :: (a -> b -> a)
-           let foldfn ac v = let VList a = v
+           let foldfn ac v = let a = vec2List v
                              in ac ++ a
                md = foldl foldfn [] (v:vs)
            in MList {mdata = md, mstride = vsize v}

@@ -71,7 +71,7 @@ instance Texture ImageT where
         let (ImgT {imgTWidth = a, imgTHeight = b, bytesPerScanline = bps,
                      bytesPerPixel = bpp, imgData = imap}) = imgt
         in if null imap
-           then VList [0.0, 1.0, 1.0]
+           then fromList2Vec 0.0 [1.0, 1.0]
            else let uu = clamp u 0.0 1.0
                     vv = 1.0 - (clamp v 0.0 1.0)
                     -- vv = clamp v 0.0 1.0

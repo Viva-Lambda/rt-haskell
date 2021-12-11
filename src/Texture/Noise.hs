@@ -33,10 +33,11 @@ swapEl !i !j !iis = let eli = iis !! i
                     in lft ++ [elj] ++ mid ++ [eli] ++ right
 
 
-perlinInnerPermute :: RandomGen g => g -> Int -> [Int] -> ([Int], g)
+perlinInnerPermute :: RandomGen g => g -> Int -> [Int] -> RandomResult [Int] g
 perlinInnerPermute g !i !xs =
-    let (target, g2) = randomInt g 0 i
-    in (swapEl target i xs, g2)
+    case randomInt g 0 i of
+        RandResult (target, g2) ->
+            RandResult (swapEl target i xs, g2)
 
 perlinPermute :: RandomGen g => g -> [Int] -> ([Int], g)
 perlinPermute gen points =

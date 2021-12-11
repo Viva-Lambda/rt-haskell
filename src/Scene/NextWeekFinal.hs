@@ -162,8 +162,8 @@ nextWeekFinal gen img =
         -- aspect_ratio = 800.0 / 600.0,
         img_height = imageHeight,
         -- img_height = 600,
-        nb_samples = 200,
-        bounce_depth = 30,
+        nb_samples = 100,
+        bounce_depth = 20,
         cam_look_from = VList [478.0, 278.0, -600.0],
         cam_look_to = VList [278.0, 278.0, 0.0],
         cam_vfov = 40.0,
@@ -171,6 +171,6 @@ nextWeekFinal gen img =
         cam_focus_distance = camFocDistance,
         cam_aperture = 0.0,
         scene_obj = hs,
-        sample_obj = HList {objects = NList light []},
+        sample_obj = HList {objects = NList light [dieSp1,boundary1,tboxes]},
         back_ground = VList [0.0, 0.0, 0.0]
     }
