@@ -13,6 +13,7 @@ import Hittable.Aabb
 import Material.Material
 
 import Utility.Utils
+import Utility.HelperTypes
 
 import Random
 import Prelude hiding(subtract)
@@ -57,12 +58,12 @@ corners a =
                 quadAlignedAxisB2 = b2
                 }) = a
     in case notAligned qi of
-           AaZ -> (VList [a1, b1, k], VList [a1, b2, k],
-                   VList [a2, b2, k], VList [a2, b1, k])
-           AaY -> (VList [a1, k, b1], VList [a1, k, b2],
-                   VList [a2, k, b2], VList [a2, k, b1])
-           AaX -> (VList [k, a1, b1], VList [k, a1, b2],
-                   VList [k, a2, b2], VList [k, a2, b1])
+           AaZ -> (fromList2Vec a1 [b1, k], fromList2Vec a1 [ b2, k],
+                   fromList2Vec a2 [b2, k], fromList2Vec a2 [ b1, k])
+           AaY -> (fromList2Vec a1 [k, b1], fromList2Vec a1 [ k, b2],
+                   fromList2Vec a2 [k, b2], fromList2Vec a2 [ k, b1])
+           AaX -> (fromList2Vec k [a1, b1], fromList2Vec k [a1, b2],
+                   fromList2Vec k [a2, b2], fromList2Vec k [a2, b1])
 
 minMaxPointsRect :: AaRect -> (Vector, Vector)
 minMaxPointsRect a =
@@ -70,7 +71,8 @@ minMaxPointsRect a =
         (c:cs) = [c1, c2, c3, c4]
         fn acc i = let VList ss = i
                        (compFn, VList acs) = acc
-                   in (compFn, VList [compFn [s, a] | (s, a) <- zip ss acs])
+                       (m:ms) = [compFn [s, a] | (s, a) <- nl2List $! zipNL ss acs]
+                   in (compFn, fromList2Vec m ms)
         (_, minp) = foldl fn (minimum, c) cs
         (_, maxp) = foldl fn (maximum, c) cs
     in (minp, maxp)
@@ -143,15 +145,15 @@ newtype YzRect = YzR AaRect
 
 mkXyRect :: AAxisValue -> AAxisValue -> AAxisValue -> AAxisValue -> AADistance -> Material -> AaRect
 mkXyRect x0 x1 y0 y1 dist mat = 
-    mkAaRect x0 x1 y0 y1 dist mat (VList [0.0, 0.0, 1.0] )
+    mkAaRect x0 x1 y0 y1 dist mat (fromList2Vec 0.0 [0.0, 1.0])
 
 mkXzRect :: AAxisValue -> AAxisValue -> AAxisValue -> AAxisValue -> AADistance -> Material -> AaRect
 mkXzRect x0 x1 z0 z1 dist mat = 
-    mkAaRect x0 x1 z0 z1 dist mat (VList [0.0, 1.0, 0.0] )
+    mkAaRect x0 x1 z0 z1 dist mat (fromList2Vec 0.0 [1.0, 0.0] )
 
 mkYzRect :: AAxisValue -> AAxisValue -> AAxisValue -> AAxisValue -> AADistance -> Material -> AaRect
 mkYzRect y0 y1 z0 z1 dist mat = 
-    mkAaRect y0 y1 z0 z1 dist mat (VList [1.0, 0.0, 0.0] )
+    mkAaRect y0 y1 z0 z1 dist mat (fromList2Vec 1.0 [0.0, 0.0] )
 
 
 getRectPdfValue :: Vector -> Vector -> Double -> Double -> Double
@@ -166,7 +168,7 @@ isPointInRect :: Vector -> AaRect -> Bool
 isPointInRect v a =
     let qdist = quadDistance a
         (minp, maxp) = minMaxPointsRect a
-        VList vs = v
+        vs = vec2List v
     in case findIndex (== qdist) vs of
             Nothing -> False
             Just index -> 
@@ -270,9 +272,12 @@ instance Hittable AaRect where
                    quadAlignedAxisB2 = b2
                 }) = a
             (p1, p2) = case notAligned axinfo of
-                            AaZ -> (VList [a1, b1, k - 0.0001], VList [a2, b2, k + 0.0001])
-                            AaY -> (VList [a1, k - 0.0001, b1], VList [a2, k + 0.0001, b2])
-                            AaX -> (VList [k - 0.0001, a1, b1], VList [k + 0.0001, a2, b2])
+                            AaZ -> (fromList2Vec a1 [b1, k - 0.0001],
+                                    fromList2Vec a2 [b2, k + 0.0001])
+                            AaY -> (fromList2Vec a1 [k - 0.0001, b1],
+                                    fromList2Vec a2 [k + 0.0001, b2])
+                            AaX -> (fromList2Vec (k - 0.0001) [a1, b1],
+                                    fromList2Vec (k + 0.0001) [a2, b2])
         in (AaBbox {aabbMin = p1, aabbMax = p2}, True)
 
     pdf_value a g orig v =
@@ -280,7 +285,7 @@ instance Hittable AaRect where
             ry = Rd {origin = orig, direction = v, rtime = 0.0}
             (ahit, isHit, g1) = hit a g ry 0.001 (infty) hr
         in if not isHit
-           then (0.0, g1)
+           then RandResult (0.0, g1)
            else let a1 = quadAlignedAxisA1 a
                     a2 = quadAlignedAxisA2 a
                     a_2 = maximum [a1, a2]
@@ -291,7 +296,7 @@ instance Hittable AaRect where
                     b_1 = minimum [b1, b2]
                     area = (a_2 - a_1) * (b_2 - b_1)
                     dist = hdist ahit
-                in (getRectPdfValue v (pnormal ahit) dist area, g1)
+                in RandResult (getRectPdfValue v (pnormal ahit) dist area, g1)
 
     hrandom a g orig =
         let k = quadDistance a
@@ -301,16 +306,19 @@ instance Hittable AaRect where
             b1 = quadAlignedAxisB1 a
             b2 = quadAlignedAxisB2 a
             mkv g1 x1 x2 y1 y2 = 
-                let (x, g2) = randomDouble g1 (minimum [x1, x2]) (maximum [x1, x2])
-                    (y, g3) = randomDouble g2 (minimum [y1, y2]) (maximum [y1, y2])
+                let RandResult (x, g2) = randomDouble g1 ((minimum [x1, x2]), (maximum [x1, x2]))
+                    RandResult (y, g3) = randomDouble g2 ((minimum [y1, y2]), (maximum [y1, y2]))
                 in (g3, x, y)
 
         in case notAligned qi of
                 AaZ -> let (gz, x, y) = mkv g a1 a2 b1 b2
-                       in (subtract (VList [x, y, k]) orig, gz)
+                           v = subtract (fromList2Vec x [y, k]) orig
+                       in RandResult (v, gz)
 
                 AaY -> let (gy, x, z) = mkv g a1 a2 b1 b2
-                       in (subtract (VList [x, k, z]) orig, gy)
+                           v = subtract (fromList2Vec x [k, z]) orig
+                       in RandResult (v, gy)
 
                 AaX -> let (gx, y, z) = mkv g a1 a2 b1 b2
-                       in (subtract (VList [k, y, z]) orig, gx)
+                           v = subtract (fromList2Vec k [y, z]) orig
+                       in RandResult (v, gx)

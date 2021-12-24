@@ -43,11 +43,13 @@ import Prelude hiding(subtract)
 import Scene.Scene
 
 
-rayColor :: RandomGen g => Ray -> HittableList -> HittableList -> Vector -> Int -> g -> (Vector, g)
-rayColor !ray !world lights !background !depth !gen =
+rayColor :: RandomGen g => RandomResult Ray g -> HittableList -> HittableList -> Vector -> Int -> RandomResult Vector g
+rayColor !rayr !world lights !background !depth =
     if depth <= 0
-    then (zeroV3, gen)
+    then RandResult (zeroV3, liftRandGen rayr)
     else let hrec = emptyRecord 3
+             ray = liftRandVal rayr
+             gen = liftRandGen rayr
              (hithrec, isHit, g1) = hit world gen ray 0.001 infty hrec
              HRec{point = recp,
                   pnormal = recnorm,
@@ -59,12 +61,14 @@ rayColor !ray !world lights !background !depth !gen =
                      (g2, srec, isScattering) = sout
                      l_e = emitted m uu vv recp
                  in if not isScattering
-                    then (l_e, g2)
+                    then RandResult (l_e, g2)
                     else let isSpec = isSpecularSR srec
                          in if isSpec
-                            then let outray = specularRaySR srec
-                                     (ncolor, g3) = rayColor outray world lights background (depth-1) g2
-                                 in (multiply ncolor (attenuationSR srec), g3)
+                            then let outray = RandResult (specularRaySR srec, g2)
+                                     resNColor = rayColor outray world lights background (depth-1)
+                                     attens = attenuationSR srec
+                                     f n = multiply n attens
+                                 in rfmap f resNColor
                             else -- start computing pdf values
                                  let {
         natten = attenuationSR srec;
@@ -73,17 +77,19 @@ rayColor !ray !world lights !background !depth !gen =
         cospdf = pdfPtrSR srec;
         hpdf = HitPdf lights (point hithrec);
         mpdf = MixPdf (NList cospdf [PdfCons hpdf]);
-        (rdir, g3) = generate hpdf g2;
+        RandResult (rdir, g3) = generate hpdf g2;
         rout = Rd {origin = point hithrec, direction = toUnit rdir, rtime = rtime ray};
-        (pval, g4) = pvalue hpdf g3 (direction rout);
+        RandResult (pval, g4) = pvalue hpdf g3 (direction rout);
+        routr = RandResult (rout, g4);
         spdf = scattering_pdf mptr ray hithrec rout;
         multv = if pval == 0.0 || isNaN pval
                 then 0.0
                 else spdf / pval;
-        (rcolor, g5) = let (rCol, gv) = rayColor rout world lights background (depth - 1) g4
-                       in (add l_e (multiplyS (multiply natten rCol) multv), gv);
+        res = let resNColor = rayColor routr world lights background (depth - 1)
+                  f n = add l_e (multiplyS (multiply natten n) multv)
+              in rfmap f resNColor;
                                     }
-                                in (rcolor, g5)
+                                in res
                                 {- in traceStack 
                                         (debugTraceStr [
                                             show rout,
@@ -93,7 +99,7 @@ rayColor !ray !world lights !background !depth !gen =
                                         (zeroV3, g5)
                                 -}
 
-            else (background, g1)
+            else RandResult (background, g1)
 
 
 renderScene :: RandomGen g => [(Int, Int)] -> g -> Scene -> [Pixel]
@@ -124,21 +130,21 @@ renderScene !cs !g scn =
           foldColor rng coord nsmp cmra sobjs sos b bd iMWh =
             let -- foldfn (a -> b -> a) :: 
                 foldfn acc _ = let (pcols_, g_) = acc
-                                   (col, g2) = mkColor coord g_ cmra sobjs sos b bd iMWh
+                                   RandResult (col, g2) = mkColor coord g_ cmra sobjs sos b bd iMWh
                                in (pcols_ ++ [col], g2)
                 (pcols, g3) = foldl' foldfn ([], rng) [0..(nsmp - 1)]
             in (foldl1 add pcols, g3)
 
           mkColor coord rng cmr sobjs sos b bdepth imwimh =
-            let (ray, g2) = mkPixelRay imwimh coord rng cmr
-                (rcol, g3) = rayColor ray sobjs sos b bdepth g2
-            in (rcol, g3)
+            let rayr = mkPixelRay imwimh coord rng cmr
+            in rayColor rayr sobjs sos b bdepth
 
 
-mkPixelRay :: RandomGen g => (Int, Int) -> (Int, Int) -> g -> Camera -> (Ray, g)
-mkPixelRay !(imw, imh) !(j,i) gen !cm  =
-    let (udouble, g1) = randval gen
-        (vdouble, g2) = randval g1
+mkPixelRay :: RandomGen g => (Int, Int) -> (Int, Int) -> g -> Camera -> RandomResult Ray g
+mkPixelRay !(imw, imh) !(j,i) gen !cm =
+    let fnlst = fromList2NL randval [randval]
+        RandResult (lst, g2) = rfmap nl2List (randFoldlFixedRange2 gen fnlst)
+        (udouble:vdouble:_) = lst
         u = (udouble + (int2Double i)) / (int2Double (imw - 1))
         v = (vdouble + (int2Double j)) / (int2Double (imh - 1))
     in getRay g2 cm u v

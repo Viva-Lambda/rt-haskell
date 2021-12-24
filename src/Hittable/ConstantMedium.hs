@@ -85,11 +85,11 @@ instance Hittable ConstantMedium where
                                             else hdist nrec2
                                     rlength = magnitude $ direction r
                                     segmentLength = (t_max - t_min) * rlength
-                                    (rval, g3) = randval g2
+                                    RandResult (rval, g3) = randval g2
                                     hitDist = invNegDensity * (log rval)
                                 in if hitDist > segmentLength
                                    then (hrec, False, g3)
-                                   else let (hnorm, g4) = randomUnitVector g3
+                                   else let RandResult (hnorm, g4) = randomUnitVector g3
                                         in (HRec {
                                        hdist = t_min + hitDist / rlength,
                                        point = at r t_min,
@@ -101,5 +101,5 @@ instance Hittable ConstantMedium where
                                        } ,
                                          True, g4)
     
-    pdf_value _ g _ _ = (0.0, g)
+    pdf_value _ g _ _ = RandResult (0.0, g)
     hrandom _ g _ = randomVec (0.0, 1.0) g

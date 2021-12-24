@@ -41,7 +41,7 @@ imgEarth !bmp =
         ptex = TextureCons $! bitmapToImageT bbmp
         -- ptex = SolidTexture $ SolidV ( VList [0.2, 0.3, 0.1] )
         lmb = LambMat $! LambT ptex 
-        sp2 = SphereObj {sphereCenter = VList [0.0, 0.0, 0.0],
+        sp2 = SphereObj {sphereCenter = fromList2Vec 0.0 [0.0, 0.0],
                          sphereRadius = 2,
                          sphereMat = lmb}
         hs = HList {objects = NList (HittableCons sp2) []}
@@ -51,7 +51,7 @@ imgEarth !bmp =
         img_height = imageHeight,
         nb_samples = nbSamples,
         bounce_depth = bounceDepth,
-        cam_look_from = VList [0.0, 0.0, 12.0],
+        cam_look_from = fromList2Vec 0.0 [0.0, 12.0],
         cam_look_to = camLookTo,
         cam_vfov = camVFov,
         cam_vup = camVUp,
@@ -59,6 +59,6 @@ imgEarth !bmp =
         cam_aperture = 0.0,
         scene_obj = hs,
         sample_obj = hs,
-        back_ground = VList [0.7, 0.8, 1.0]
+        back_ground = fromList2Vec 0.7 [0.8, 1.0]
     }
 

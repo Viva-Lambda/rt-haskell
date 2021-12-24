@@ -27,6 +27,10 @@ rfmap :: RandomGen g => (a -> b) -> RandomResult a g -> RandomResult b g
 rfmap f a = case a of
                 (RandResult (b, g)) -> RandResult (f b, g)
 
+{-
+given a random result and a function that makes random result from two-tuple
+and a two-tuple make a random result
+-}
 randomChain :: (Ord a, RandomGen g) => RandomResult a g -> (g -> (a, a) -> RandomResult a g) -> (a, a) -> RandomResult a g
 
 randomChain res rf mnmx = case res of
@@ -38,6 +42,34 @@ liftRandVal a = case a of
 liftRandGen :: RandomGen g => RandomResult a g -> g
 liftRandGen a = case a of
                     RandResult (_, b) -> b
+
+randFoldl :: RandomGen g => g -> NonEmptyList ((g -> (a, a) -> RandomResult a g), (a, a)) -> RandomResult (NonEmptyList a) g
+randFoldl gen foldableFns =
+    let foldfn acc fn = let (lst, g) = acc
+                            (f, (mn, mx)) = fn
+                            RandResult (b, g2) = f g (mn, mx)
+                        in (lst ++ [b], g2)
+        ((m:ms), g) = foldl foldfn ([], gen) (nl2List foldableFns)
+    in RandResult (fromList2NL m ms, g)
+
+randFoldlFixedRange :: RandomGen g => g -> (a, a) -> NonEmptyList (g -> (a, a) -> RandomResult a g) -> RandomResult (NonEmptyList a) g
+
+randFoldlFixedRange gen r foldableFns =
+    let foldfn acc fn = let (lst, g) = acc
+                            RandResult (b, g2) = fn g r
+                        in (lst ++ [b], g2)
+        ((m:ms), g) = foldl foldfn ([], gen) (nl2List foldableFns)
+    in RandResult (fromList2NL m ms, g)
+
+
+randFoldlFixedRange2 :: RandomGen g => g -> NonEmptyList (g -> RandomResult a g) -> RandomResult (NonEmptyList a) g
+
+randFoldlFixedRange2 gen foldableFns =
+    let foldfn acc fn = let (lst, g) = acc
+                            RandResult (b, g2) = fn g
+                        in (lst ++ [b], g2)
+        ((m:ms), g) = foldl foldfn ([], gen) (nl2List foldableFns)
+    in RandResult (fromList2NL m ms, g)
 
 
 randMap :: (Ord a, RandomGen g) => g -> (g -> (a, a) -> RandomResult a g) -> NonEmptyList (a,a) -> RandomResult (NonEmptyList a) g

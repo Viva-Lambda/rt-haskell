@@ -56,15 +56,15 @@ localVec ob t =
     in (add wz (add ux vy))
 
 localXyz :: OrthoNormalBase -> Double -> Double -> Double -> Vector
-localXyz ob x y z = localVec ob $ VList [x, y, z]
+localXyz ob x y z = localVec ob ( VList (fromList2NL x [y, z]) )
 
 fromW2Onb :: Vector -> OrthoNormalBase
 fromW2Onb wvec =
     let w = toUnit wvec
         wx = vget w 0
         a = if (abs wx) > 0.9
-            then VList [0.0, 1.0, 0.0]
-            else VList [1.0, 0.0, 0.0]
+            then VList $! fromList2NL 0.0 [1.0, 0.0]
+            else VList $! fromList2NL 1.0 [0.0, 0.0]
         v = toUnit $! cross3d w a
         u = cross3d w v
     in onb3 w v u

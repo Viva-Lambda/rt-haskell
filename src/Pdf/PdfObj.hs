@@ -5,6 +5,7 @@ module Pdf.PdfObj where
 
 import Pdf.Pdf
 import Math3D.Vector
+import Random
 
 data NoPdf = NPdf {npdfVal :: Bool}
 
@@ -22,7 +23,7 @@ instance Pdf PdfObj where
             PdfCons b -> generate b g
 
 instance Pdf NoPdf where
-    pvalue _ g _ = (0.0, g)
+    pvalue _ g _ = RandResult (0.0, g)
     generate _ g = randomVec (0.0, 1.0) g
 
 emptyPdfObj :: PdfObj

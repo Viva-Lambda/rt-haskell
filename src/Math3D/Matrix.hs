@@ -10,8 +10,18 @@ import Data.Foldable
 import Debug.Trace
 
 import Utility.Utils
+import Utility.HelperTypes
 
-data Matrix = MList {mdata :: [Double], mstride :: Int} deriving (Eq)
+data Matrix = MList {mdata :: NonEmptyList Double,
+                     mstride :: Int}
+
+instance Eq Matrix where
+    a == b = let ma = nl2List $! mdata a
+                 mb = nl2List $! mdata b
+                 msa = mstride a
+                 msb = mstride b
+             in (ma == mb) && (msa == msb)
+
 
 instance Show Matrix where
     show m = 
@@ -19,42 +29,45 @@ instance Show Matrix where
         in msg1 ++ " >"
 
 mzero :: Int -> Int -> Matrix
-mzero !rowNb !colNb = MList {mdata = replicate (rowNb * colNb) 0.0, 
-                           mstride = colNb}
+mzero !rowNb !colNb =
+    let (m:ms) = replicate (rowNb * colNb) 0.0
+    in MList {mdata = fromList2NL m ms,
+              mstride = colNb}
 
-matFromVector :: [Vector] -> Matrix
-matFromVector [] = MList {mdata = [], mstride = 0}
-matFromVector !(v:vs) = 
+matFromVector :: NonEmptyList Vector -> Matrix
+matFromVector vvs =
     -- let myStrList = lines myStr -- \n
     -- in [splitOn ',' myStr | myStr <- myStrList]
-    let sizes = [(vsize v_) == (vsize v) | v_ <- vs]
+    let !(v:vs) = nl2List vvs
+        sizes = [(vsize v_) == (vsize v) | v_ <- vs]
         allSameLength = foldl1 (==) sizes
     in if not allSameLength
        then traceStack "All vectors must have same length" (mzero 1 1)
        else -- foldfn :: (a -> b -> a)
-           let foldfn ac v = let a = vec2List v
-                             in ac ++ a
-               md = foldl foldfn [] (v:vs)
-           in MList {mdata = md, mstride = vsize v}
+           let foldfn ac p = let a = vec2List p in ac ++ a
+               (m:ms) = foldl foldfn [] (v:vs)
+           in MList {mdata = fromList2NL m ms, mstride = vsize v}
 
 
 mrows :: Matrix -> [Vector]
 mrows !m =
-    let d = mdata m
+    let d = nl2List $! mdata m
         s = mstride m
         rowNb = mRowNb m
-    in [VList $ takeBetween (s*i) (s*i + s-1) d | i <- [0..(rowNb - 1)]]
+        vlst = [takeBetween (s*i) (s*i + s-1) d | i <- [0..(rowNb - 1)]]
+        f v = fromList2NL (head v) (tail v)
+    in map (VList . f) vlst
 
 
 mcols :: Matrix -> [Vector]
 mcols !m = 
     let rows = mrows m
-        getcol i = [vget row i | row <-rows]
+        getcol i = let (v:vs) = [vget row i | row <-rows] in fromList2NL v vs
     in [VList $ getcol i | i <- [0..((mColNb m)-1)]]
 
 
 msize :: Matrix -> Int
-msize !m = length (mdata m)
+msize !m = lengthNL (mdata m)
 
 mget :: Matrix -> Int -> Int -> Double
 mget !mat col row = vget (mgetRow mat row) col
@@ -89,14 +102,15 @@ msetRow :: Matrix -> Int -> Vector -> Matrix
 msetRow mat index v =
     if index >= (mRowNb mat)
     then traceStack "given row index is larger than number of rows of matrix" (mzero 1 1)
-    else let md = mdata mat
+    else let md = nl2List $! mdata mat
              colnb = mColNb mat
              VList vs = v
              loc = index * colnb
              rowend = loc + colnb
              (before, rdata) = splitAt loc md
              (berdata, after) = splitAt rowend md
-         in MList {mdata = before ++ vs ++ after, mstride = mstride mat}
+             (m:ms) = before ++ (nl2List vs) ++ after
+         in MList {mdata = fromList2NL m ms, mstride = mstride mat}
 
 
 
@@ -117,19 +131,21 @@ matArithmeticOp opname f !v !e =
     then error $ sizeError v e opname
     else if (mstride v) /= (mstride e) 
          then error $ sizeError v e opname
-         else let ds = mdata v
-                  es = mdata e 
-                  ndata = zipWith f ds es
-              in MList {mdata = ndata, mstride = mstride v}
+         else let ds = nl2List $! mdata v
+                  es = nl2List $! mdata e 
+                  (m:ms) = zipWith f ds es
+              in MList {mdata = fromList2NL m ms, mstride = mstride v}
 
 matScalarOp :: String -> (Double -> Double) -> Matrix -> Matrix
-matScalarOp _ f !v = MList {mdata = map f (mdata v), mstride = mstride v}
+matScalarOp _ f !v =
+    let (m:ms) = map f (nl2List $! mdata v)
+    in MList {mdata = fromList2NL m ms, mstride = mstride v}
 
 instance BinaryOps Matrix where
     elementwiseOp = matArithmeticOp
     elementwiseScalarOp = matScalarOp
     divide !v !e =
-        let es = mdata e
+        let es = nl2List $! mdata e
         in if 0.0 `elem` es
            then error $ matError e "contains zero in a division operation"
            else matArithmeticOp "divide" (/) v e
@@ -151,6 +167,6 @@ matmul !a !b =
             let bcols = mcols b
                 arows = mrows a
                 fn arow = [dot arow bcol | bcol <- bcols]
-                nmatData = concat $ map fn arows
-            in MList {mdata = nmatData, mstride = bColNb}
+                (m:ms) = concat $ map fn arows
+            in MList {mdata = fromList2NL m ms, mstride = bColNb}
             

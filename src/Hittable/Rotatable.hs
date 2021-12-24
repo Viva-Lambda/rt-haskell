@@ -16,6 +16,7 @@ import Math3D.Ray
 
 -- utility
 import Utility.Utils
+import Utility.HelperTypes
 
 --
 import Prelude hiding(subtract)
@@ -37,18 +38,18 @@ instance Show RotationAxis where
 
 toMatrix :: RotationAxis -> Double -> Matrix
 toMatrix r theta = case r of
-                RX -> let matv1 = VList [1.0, 0.0, 0.0]
-                          matv2 = VList [0.0, cos theta, -(sin theta)]
-                          matv3 = VList [0.0, sin theta, cos theta]
-                      in matFromVector [matv1, matv2, matv3]
-                RY -> let matv1 = VList [cos theta, 0.0, sin theta]
-                          matv2 = VList [0.0, 1.0, 0.0]
-                          matv3 = VList [-(sin theta), 0.0, cos theta]
-                      in matFromVector [matv1, matv2, matv3]
-                RZ -> let matv1 = VList [cos theta, -(sin theta), 0.0]
-                          matv2 = VList [sin theta, cos theta, 0.0]
-                          matv3 = VList [0.0, 0.0, 1.0]
-                      in matFromVector [matv1, matv2, matv3]
+                RX -> let matv1 = fromList2Vec 1.0 [0.0, 0.0]
+                          matv2 = fromList2Vec 0.0 [cos theta, -(sin theta)]
+                          matv3 = fromList2Vec 0.0 [sin theta, cos theta]
+                      in matFromVector (fromList2NL matv1 [ matv2, matv3])
+                RY -> let matv1 = fromList2Vec (cos theta) [0.0, sin theta]
+                          matv2 = fromList2Vec 0.0 [1.0, 0.0]
+                          matv3 = fromList2Vec (-(sin theta)) [0.0, cos theta]
+                      in matFromVector (fromList2NL matv1 [matv2, matv3])
+                RZ -> let matv1 = fromList2Vec (cos theta) [-(sin theta), 0.0]
+                          matv2 = fromList2Vec (sin theta) [cos theta, 0.0]
+                          matv3 = fromList2Vec 0.0 [0.0, 1.0]
+                      in matFromVector (fromList2NL matv1 [matv2, matv3])
 
 rotateByMatrix :: Vector -> Matrix -> Vector
 rotateByMatrix (VList ps) rotmat =
@@ -85,14 +86,15 @@ innerRotatable i j k bbox rotmat minv maxv =
         yval = mnmxMult (int2Double j) 1
         zval = mnmxMult (int2Double k) 2
         -- make matrix for rotation
-        pmat = MList {mdata = [xval, yval, zval], mstride = 1}
+        pmat = MList {mdata = fromList2NL xval [yval, zval], mstride = 1}
         -- obtain rotated point vector
         rotated = mdata (matmul rotmat pmat)
         VList mnvs = minv
         VList mxvs = maxv
-        minvals = [minimum [mv, rv] | (mv, rv) <- zip rotated mnvs]
-        maxvals = [maximum [mv, rv] | (mv, rv) <- zip rotated mxvs]
-    in (VList minvals, VList maxvals)
+        f compfn lst = [compfn [mv, rv] | (mv, rv) <- nl2List $! zipNL rotated lst]
+        (m:ms) = f minimum mnvs
+        (n:ns) = f maximum mxvs
+    in (fromList2Vec m ms, fromList2Vec n ns)
 
 mkRotatable :: (Show a, Hittable a, Eq a) => a -> Double -> RotationAxis -> Rotatable
 mkRotatable ptr angle axis =

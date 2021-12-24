@@ -77,7 +77,7 @@ hamiltonProduct q_a q_b =
         ab_plus_cross = add a_plus_b a_cross_b
         --
         sab_minus_adotb = sab - a_dot_b
-        VList [x, y, z] = ab_plus_cross
+        (x:y:z:_) = vec2List $! ab_plus_cross
     in Quat {qR = sab_minus_adotb, qX = x, qY = y, qZ = z}
 
 

@@ -34,17 +34,16 @@ class Transformable a => Locatable a where
     located :: a -> LocatingParams -> a
     located a (origin, onb, time) =
         let func v = locate v origin onb
-            locs = map func $ toList (localCoords a time)
-        in transform a (NList (head locs) (tail locs))
+            locs = mapNL func (localCoords a time)
+        in transform a locs
 
 
 class (Show a, Locatable a, Transformable a) => Translatable a where
     translate :: a -> Offset -> Double -> a
     translate a offset time =
         let fnc vec = add vec offset
-            locs = toList (localCoords a time)
-            nlocs = map fnc locs
-        in transform a (NList (head nlocs) (tail nlocs))
+            nlocs = mapNL fnc (localCoords a time)
+        in transform a nlocs
 
 
 class (Locatable a, Transformable a, Show a) => Rotatable a where
@@ -56,61 +55,61 @@ class (Locatable a, Transformable a, Show a) => Rotatable a where
     -}
     rotate a (origin, onb, time) quat =
         let -- locs = [ locate v origin onb | v <- (toList $ localCoords a time) ]
-            locs = toList $ localCoords a time
+            locs = localCoords a time
             rotatePoint point =
                 let pquat = fromSVec2Quaternion 0.0 point
                     qinv = qInverse quat
                 in hamiltonProduct qinv (hamiltonProduct pquat quat) 
-            nlocs = map qVector $! map rotatePoint locs
-        in transform a (NList (head nlocs) (tail nlocs))
+            nlocs = mapNL qVector $! mapNL rotatePoint locs
+        in transform a nlocs
 
     rotateMatAngle :: a -> Double -> Double -> Matrix -> a
     rotateMatAngle a angleDegree time rotmat =
         let 
-            locs = toList $ localCoords a time
+            locs = localCoords a time
             -- 3x1 vector
             toMatrix v = let (v1, v2, v3) = ((vget v 0), (vget v 1), (vget v 2))
-                         in MList {mdata = [v1, v2, v3], mstride = 1}
-            matList = map toMatrix locs
+                         in MList {mdata = fromList2NL v1 [v2, v3], mstride = 1}
+            matList = mapNL toMatrix locs
             mmul m = matmul rotmat m
-            rotatedCoords = map mmul matList
+            rotatedCoords = mapNL mmul matList
             -- mat to vector
             toVector m = VList $ mdata m
-            nlocs = map toVector rotatedCoords
-            nobj = transform a (NList (head nlocs) (tail nlocs))
-        in nobj 
+            nlocs = mapNL toVector rotatedCoords
+            nobj = transform a nlocs
+        in nobj
 
     rotateXByAngle :: a -> Double -> Double -> a
     rotateXByAngle a angleDegree time =
         let theta = degrees_to_radians angleDegree
-            matv1 = VList [1.0, 0.0, 0.0]
-            matv2 = VList [0.0, cos theta, -(sin theta)]
-            matv3 = VList [0.0, sin theta, cos theta]
-            rotmat = matFromVector [matv1, matv2, matv3] -- 3x3 matrix
+            matv1 = fromList2Vec 1.0 [0.0, 0.0]
+            matv2 = fromList2Vec 0.0 [cos theta, -(sin theta)]
+            matv3 = fromList2Vec 0.0 [sin theta, cos theta]
+            rotmat = matFromVector (fromList2NL matv1 [matv2, matv3]) -- 3x3 matrix
         in rotateMatAngle a angleDegree time rotmat
 
     rotateYByAngle :: a -> Double -> Double -> a
     rotateYByAngle a angleDegree time =
         let theta = degrees_to_radians angleDegree
-            matv1 = VList [cos theta, 0.0, sin theta]
-            matv2 = VList [0.0, 1.0, 0.0]
-            matv3 = VList [-(sin theta), 0.0, cos theta]
-            rotmat = matFromVector [matv1, matv2, matv3] -- 3x3 matrix
+            matv1 = fromList2Vec (cos theta) [0.0, sin theta]
+            matv2 = fromList2Vec 0.0 [1.0, 0.0]
+            matv3 = fromList2Vec (-(sin theta)) [0.0, cos theta]
+            rotmat = matFromVector (fromList2NL matv1 [matv2, matv3]) -- 3x3 matrix
         in rotateMatAngle a angleDegree time rotmat
 
     rotateZByAngle :: a -> Double -> Double -> a
     rotateZByAngle a angleDegree time =
         let theta = degrees_to_radians angleDegree
-            matv1 = VList [cos theta, -(sin theta), 0.0]
-            matv2 = VList [sin theta, cos theta, 0.0]
-            matv3 = VList [0.0, 0.0, 1.0]
-            rotmat = matFromVector [matv1, matv2, matv3] -- 3x3 matrix
+            matv1 = fromList2Vec (cos theta) [-(sin theta), 0.0]
+            matv2 = fromList2Vec (sin theta) [cos theta, 0.0]
+            matv3 = fromList2Vec 0.0 [0.0, 1.0]
+            rotmat = matFromVector (fromList2NL matv1 [matv2, matv3]) -- 3x3 matrix
         in rotateMatAngle a angleDegree time rotmat
 
 
 class Scalable a where
     scale :: (Locatable a, Transformable a) => a -> Offset -> LocatingParams -> a
     scale a offset (origin, onb, time) =
-        let locs = [ locate v origin onb | v <- (toList $ localCoords a time) ]
-            nlocs = [multiply offset v | v <- locs]
-        in transform a (NList (head nlocs) (tail nlocs))
+        let locs = [locate v origin onb | v <- (nl2List $ localCoords a time)]
+            (n:ns) = [multiply offset v | v <- locs]
+        in transform a (fromList2NL n ns)

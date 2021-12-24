@@ -25,14 +25,14 @@ import Utility.HelperTypes
 
 twoCheckeredSpheres :: Scene
 twoCheckeredSpheres =
-    let s1 = SolidV $! VList [0.2, 0.3, 0.1]
-        s2 = SolidV $! VList [0.9, 0.9, 0.8]
+    let s1 = SolidV $! fromList2Vec 0.2 [0.3, 0.1]
+        s2 = SolidV $! fromList2Vec 0.9 [ 0.9, 0.8]
         tobj = TextureCons $! CheckT s1 s2
         lmb = LambMat $! LambT tobj
-        sp1 = SphereObj {sphereCenter = VList [0.0, -10.0, 0.0],
+        sp1 = SphereObj {sphereCenter = fromList2Vec 0.0 [-10.0, 0.0],
                          sphereRadius = 10,
                          sphereMat = lmb}
-        sp2 = SphereObj {sphereCenter = VList [0.0, 10.0, 0.0],
+        sp2 = SphereObj {sphereCenter = fromList2Vec 0.0 [10.0, 0.0],
                          sphereRadius = 10,
                          sphereMat = lmb}
         hs = HList {objects = NList (HittableCons sp1) [HittableCons sp2]}
@@ -50,6 +50,6 @@ twoCheckeredSpheres =
         cam_aperture = 0.0,
         scene_obj = hs,
         sample_obj = HList {objects = NList (HittableCons sp1) []},
-        back_ground = VList [0.7, 0.8, 1.0]
+        back_ground = fromList2Vec 0.7 [0.8, 1.0]
     }
 

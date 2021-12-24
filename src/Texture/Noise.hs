@@ -35,7 +35,7 @@ swapEl !i !j !iis = let eli = iis !! i
 
 perlinInnerPermute :: RandomGen g => g -> Int -> [Int] -> RandomResult [Int] g
 perlinInnerPermute g !i !xs =
-    case randomInt g 0 i of
+    case randomInt g (0, i) of
         RandResult (target, g2) ->
             RandResult (swapEl target i xs, g2)
 
@@ -44,7 +44,8 @@ perlinPermute gen points =
     let ns = reverse points
         -- foldFn :: (a -> b -> a) :: (nmap -> i1 -> nmap)
         foldFn acc indx = let (lst, ng) = acc
-                          in perlinInnerPermute ng indx lst
+                              RandResult (lst2, ng2) = perlinInnerPermute ng2 indx lst2
+                          in (lst2, ng2)
     in foldl' foldFn (ns, gen) ns
 
 
@@ -114,7 +115,7 @@ perlinInnerInterp !(uu, vv, ww) !(u, v, w) !(i, j, k) !cijk =
         ifl = int2Double i
         jfl = int2Double j
         kfl = int2Double k
-        weight = VList [u - ifl, v - jfl, w - kfl]
+        weight = fromList2Vec (u - ifl) [v - jfl, w - kfl]
         wdot = dot weight cijk
         jvv = f jfl vv
         iuu = f ifl uu
@@ -150,8 +151,9 @@ perlinInnerNoise !prln !(i,j,k) !(di, dj, dk) !mpv =
 
 
 perlinNoise :: Perlin -> Vector -> Double
-perlinNoise !prln !(VList [px, py, pz]) =
-    let (PNoise {prandVec = vs,
+perlinNoise !prln !pvec =
+    let (px:py:pz:_) = vec2List pvec
+        (PNoise {prandVec = vs,
                  perm_x = xs,
                  perm_y = ys,
                  perm_z = zs}) = prln
@@ -187,7 +189,7 @@ mkPerlin g nb_points vecSize =
     let points = [0..(nb_points - 1)]
         -- foldFn :: (a -> b -> a) :: ([] -> _ -> [i])
         foldfn acc _ = let (v, g1) = acc
-                           (fv, g2) = randomVecGen (-1.0, 1.0) g1 vecSize
+                           RandResult (fv, g2) = randomVecGen (-1.0, 1.0) g1 vecSize
                        in (v ++ [fv], g2)
         (vs, g1) = foldl' foldfn ([], g) points
         unitvs = map toUnit vs
@@ -221,4 +223,4 @@ instance Texture PerlinNoise where
             pnoiseS = 10 * pnoise
             nval = 1 + sin ( pzscale + pnoiseS )
             nvalHalf = 0.5 * nval
-        in VList [nvalHalf, nvalHalf, nvalHalf]
+        in fromList2Vec nvalHalf [nvalHalf, nvalHalf]

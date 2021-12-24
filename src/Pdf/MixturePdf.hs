@@ -26,15 +26,16 @@ instance Pdf MixturePdf where
     pvalue !mpdf gen !dir =
         case mpdf of
             (MixPdf mxs) -> let weight = 1.0 / (int2Double $ lengthNL mxs)
-                                objs = toList mxs
-                                fn acc pobj = let (pval, g) = acc
-                                                  (rval, g2) = pvalue pobj g dir
-                                              in (pval + rval * weight, g2)
-                            in foldl fn (0.0, gen) objs
+                                objs = nl2List mxs
+                                fn acc pobj = let RandResult (pval, g) = acc
+                                                  res = pvalue pobj g dir
+                                                  res2 = rfmap (+ pval) res
+                                              in rfmap (* weight) res2
+                            in foldl fn (RandResult (0.0, gen)) objs
 
     generate !mpdf g = 
         case mpdf of
             (MixPdf mxs) ->
                 let upper = lengthNL $! mxs
-                    (index, g2) = randomInt g 0 upper
+                    RandResult (index, g2) = randomInt g (0, upper)
                 in generate (getNL mxs index) g2

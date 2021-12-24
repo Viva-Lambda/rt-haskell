@@ -11,6 +11,7 @@ import Math3D.Vector
 
 -- utility
 import Utility.Utils
+import Random
 
 data CosinePdf where
     CosPdf :: OrthoNormalBase -> CosinePdf
@@ -24,12 +25,12 @@ instance Pdf CosinePdf where
                    rval = if cval <= 0.0
                           then 0.0
                           else cval / m_pi
-               in (rval, gen)
+               in RandResult (rval, gen)
             CosNormalPdf v -> pvalue (CosPdf $ fromW2Onb v) gen dir
 
     generate !a g =
         case a of 
-           CosPdf onb -> let (rv, g1) = randomCosineDir g
-                         in (localVec onb rv, g1)
+           CosPdf onb -> let res = randomCosineDir g
+                         in rfmap (localVec onb) res
 
            CosNormalPdf v -> generate (CosPdf $! fromW2Onb v) g

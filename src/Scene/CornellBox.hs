@@ -37,16 +37,16 @@ import Utility.HelperTypes
 
 cornellBox :: RandomGen g => g -> Scene
 cornellBox gen =
-    let cfrom = VList [278.0, 278.0, -800.0]
-        cto = VList [278.0, 278.0, 0.0]
+    let cfrom = fromList2Vec 278.0 [ 278.0, -800.0]
+        cto = fromList2Vec 278.0 [ 278.0, 0.0]
         cvfov = 40.0 
         -- set up camera
         sceneC = mkCamTime cfrom cto camVUp cvfov aspectRatio 0.0 camFocDistance
 
-        whiteMat = LambMat $! LambC (VList [0.75, 0.75, 0.75])
-        redMat = LambMat $! LambC (VList [0.65, 0.05, 0.05])
-        greenMat = LambMat $! LambC (VList [0.12, 0.45, 0.15])
-        lightMat = LightMat $! DLightColorCons (VList [15.0, 15.0, 15.0])
+        whiteMat = LambMat $! LambC (fromList2Vec 0.75 [ 0.75, 0.75])
+        redMat = LambMat $! LambC (fromList2Vec 0.65 [ 0.05, 0.05])
+        greenMat = LambMat $! LambC (fromList2Vec 0.12 [ 0.45, 0.15])
+        lightMat = LightMat $! DLightColorCons (fromList2Vec 15.0 [ 15.0, 15.0])
         -- cornell walls
         c1 = 0.0
         c2 = 555.0
@@ -65,12 +65,12 @@ cornellBox gen =
         -- get locating parameters
         loc = getCameraLocatingParams gen sceneC
         (_, _, time) = loc
-        b1 = mkBox (zeroV3) (VList [165.0, 330.0, 165.0]) whiteMat
+        b1 = mkBox (zeroV3) (fromList2Vec 165.0 [ 330.0, 165.0]) whiteMat
         b1rot = mkRotatable b1 45.0 RY
-        b1trans = HittableCons $! Translate b1rot (VList [265.0, 0.0, 295.0])
-        b2 = mkBox (zeroV3) (VList [165.0, 165.0, 165.0]) whiteMat
+        b1trans = HittableCons $! Translate b1rot (fromList2Vec 265.0 [0.0, 295.0])
+        b2 = mkBox (zeroV3) (fromList2Vec 165.0 [ 165.0, 165.0]) whiteMat
         b2rot = mkRotatable b2 (-18.0) RY
-        b2trans = HittableCons $! Translate b2rot (VList [130.0, 0.0, 65.0])
+        b2trans = HittableCons $! Translate b2rot (fromList2Vec 130.0 [0.0, 65.0])
 
         hs = HList {objects = NList (b1trans) [b2trans, yzGreenWall, yzRedWall,
                                                xzWhiteWall1, xzWhiteWall2,
@@ -90,5 +90,5 @@ cornellBox gen =
         cam_aperture = 0.0,
         scene_obj = hs,
         sample_obj = HList {objects = NList lightR []},
-        back_ground = VList [0.0, 0.0, 0.0]
+        back_ground = fromList2Vec 0.0 [0.0, 0.0]
     }

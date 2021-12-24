@@ -89,9 +89,9 @@ instance Texture ImageT where
                               coeff = (j * bps) + (i * bpp)
                               iis = [coeff + c | c <- cs]
                               -- vals = map pixToDouble [imap !! ii | ii <- iis]
-                              vals = VList $ map pixToDouble (imap !! (j * a + i))
+                              (val:vals) = map pixToDouble (imap !! (j * a + i))
                           -- in VList [imap DMap.! ii | ii <- iis]
-                          in vals
+                          in fromList2Vec val vals
                     cval = multiplyS pix cscale
                 in cval
                 -- in error $ show imgt

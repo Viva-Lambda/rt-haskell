@@ -75,7 +75,7 @@ instance Scatterer Lambertian where
             LambT t ->
                 let recp = point hrec
                     recn = pnormal hrec
-                    (uvec, g) = randomUnitVector gen
+                    RandResult (uvec, g) = randomUnitVector gen
                     sdir = add recn uvec
                     hu = hUV_u hrec
                     hv = hUV_v hrec
@@ -123,7 +123,7 @@ instance Scatterer Metal where
                     hv = hUV_v hrec
                     indir = toUnit $! direction inray
                     refdir = reflect indir recn
-                    (uvec, g) = randomUnitSphere gen
+                    RandResult (uvec, g) = randomUnitSphere gen
                     rdir = add refdir (multiplyS uvec b)
                 in (g,
                     mkSRecord 
@@ -146,7 +146,7 @@ instance Scatterer Dielectric where
     scatter !gen !a !inray !hrec =
         case a of
             (DielRefIndices rs) ->
-                let atten = VList [1.0, 1.0, 1.0]
+                let atten = fromList2Vec 1.0 [1.0, 1.0]
                     -- can change with respect to wavelength
                     ir = head rs
                     refratio = if isFront hrec
@@ -156,7 +156,7 @@ instance Scatterer Dielectric where
                     costheta = min (dot (multiplyS udir (-1.0)) (pnormal hrec)) 1.0
                     sintheta = sqrt (1.0 - costheta * costheta)
                     canNotRefract = refratio * sintheta > 1.0
-                    (rval, g) = randval gen
+                    RandResult (rval, g) = randval gen
                     schlickVal = schlickRef costheta refratio
                     rdir = if canNotRefract || (schlickVal > rval)
                            then reflect udir (pnormal hrec)
@@ -188,7 +188,7 @@ instance Scatterer Isotropic where
     scatter !gen !b !inray !hrec =
         case b of
             IsotTexture a ->
-                let (uvec, g) = randomUnitSphere gen
+                let RandResult (uvec, g) = randomUnitSphere gen
                     recp = point hrec
                     hu = hUV_u hrec
                     hv = hUV_v hrec

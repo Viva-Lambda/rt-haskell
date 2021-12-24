@@ -45,7 +45,6 @@ executables:
       #- -v2
     - -Werror
     - -O2
-    - -prof
     - -fprof-auto
     - -funbox-strict-fields
     dependencies:
