@@ -20,6 +20,8 @@ import Material.Material
 import Utility.HelperTypes
 import Utility.Utils
 
+import Random
+
 import Prelude hiding(subtract)
 
 data Box = HBox { minBox :: Vector, maxBox :: Vector,
@@ -96,16 +98,17 @@ instance Hittable Box where
             ry = Rd {origin = orig, direction = v, rtime = 0.0}
             (ahit, isHit, g1) = hit a g ry 0.001 (infty) hr
         in if not isHit
-           then (0.0, g1)
+           then RandResult (0.0, g1)
            else let hp = point ahit
                     rects = boxSides a
                     compFn r = isPointInRect hp r
                     sideIndex = findIndex compFn rects
                 in case sideIndex of
-                        Nothing -> (0.0, g1)
+                        Nothing -> RandResult (0.0, g1)
                         Just i -> let r = rects !! i
                                   in pdf_value r g1 orig v
 
-    hrandom a g orig = let (rp, g2) = randomVector ((minBox a), (maxBox a)) g
-                       in (subtract rp orig, g2)
+    hrandom a g orig = let res = randomVector ((minBox a), (maxBox a)) g
+                           f rp = subtract rp orig
+                       in rfmap f res
 

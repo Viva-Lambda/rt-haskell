@@ -8,15 +8,13 @@ import Utility.Utils
 
 -- print vector
 vecToInt :: Vector -> [Int]
-vecToInt v =
-    let VList d = v
-    in map double2Int d
+vecToInt v = map double2Int (vec2List v)
 
 writeColor :: Vector -> Int -> String
-writeColor (VList clr) sample_nb =
-    let v = if (all isNaN clr)
+writeColor clr sample_nb =
+    let v = if (all isNaN (vec2List clr))
             then zeroV3
-            else VList clr
+            else clr
         scale = 1.0 / (int2Double sample_nb)
         sv = multiplyS v scale
         svgamma = vecScalarOp sqrt sv

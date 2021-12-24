@@ -13,6 +13,9 @@ import Hittable.Hittable
 import Hittable.HitRecord
 import Hittable.Aabb
 
+-- random
+import Random
+
 -- material
 import Material.Material
 
@@ -40,8 +43,9 @@ getMSphereCenter !(MovSphereObj {msphereCenter1 = a,
 
 
 getSphereUV :: Vector -> (Double, Double)
-getSphereUV (VList [x, y, z]) = 
-    let theta = acos (-y)
+getSphereUV v = 
+    let (x: y: z:_) = vec2List v
+        theta = acos (-y)
         phi = (atan2 (-z) x) + m_pi
     in (phi / (2*m_pi), theta / m_pi)
 
@@ -112,7 +116,7 @@ instance Hittable MovingSphere where
         let ct0 = getMSphereCenter s time0
             ct1 = getMSphereCenter s time1
             srad = msphereRadius s
-            vrad = VList [srad, srad, srad]
+            vrad = fromList2Vec srad [srad, srad]
             ab1 = AaBbox {aabbMin = subtract ct0 vrad, aabbMax = add ct0 vrad}
             ab2 = AaBbox {aabbMin = subtract ct1 vrad, aabbMax = add ct1 vrad}
         in (ssBox ab1 ab2, True)
@@ -122,14 +126,14 @@ instance Hittable MovingSphere where
             ry = Rd {origin = orig, direction = v, rtime = 0.0}
             (ahit, isHit, g1) = hit a g ry 0.001 (infty) hr
         in if not isHit
-           then (0.0, g1)
+           then RandResult (0.0, g1)
            else let cent = getMSphereCenter a 0.0
                     corg = lengthSquared $! subtract cent orig
                     radius = msphereRadius a
                     radorg = (radius * radius) / corg
                     costheta = sqrt $! 1.0 - radorg
                     solidAngle = 2.0 * m_pi * (1.0 - costheta)
-                in (1.0 / solidAngle, g1)
+                in RandResult (1.0 / solidAngle, g1)
 
     hrandom a g orig =
         let cent = getMSphereCenter a 0.0
@@ -137,6 +141,6 @@ instance Hittable MovingSphere where
             distSqr = lengthSquared dir
             onb = fromW2Onb dir
             radius = msphereRadius a
-            (rv, g1) = random2Sphere g radius distSqr
-        in (localVec onb rv, g1)
+            res = random2Sphere g (radius, distSqr)
+        in rfmap (localVec onb) res
 

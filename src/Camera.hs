@@ -75,18 +75,19 @@ getCameraTime :: RandomGen g => g -> Camera -> Double
 getCameraTime gen c =
     let t0 = time0 c
         t1 = time1 c
-    in fst $ randomDouble gen t0 t1
+        RandResult (res, _) = randomDouble gen (t0, t1)
+    in res
 
 getCameraLocatingParams :: RandomGen g => g -> Camera -> LocatingParams
 getCameraLocatingParams g c = (corigin c, getCameraOnb c, getCameraTime g c)
 
 -- camera for listing 69
 lookF :: Vector
-lookF = VList [13.0, 2.0, 3.0]
+lookF = fromList2Vec 13.0 [2.0, 3.0]
 lookT :: Vector
-lookT = VList [0.0, 0.0, 0.0]
+lookT = fromList2Vec 0.0 [0.0, 0.0]
 vUp :: Vector
-vUp = VList [0.0, 1.0, 0.0]
+vUp = fromList2Vec 0.0 [1.0, 0.0]
 
 mkCamera :: Camera
 mkCamera =
@@ -99,13 +100,13 @@ mkCamera =
         0.1 -- aperture
         10.0 -- focus distance 
 
-getRay :: RandomGen g => g -> Camera -> Double -> Double -> (Ray, g)
+getRay :: RandomGen g => g -> Camera -> Double -> Double -> RandomResult Ray g
 getRay gen Cam {corigin = cameraOrigin, horizontal = cameraH,
             vertical = cameraV, lowerLeftCorner = llCorner,
             camU = cu, camW = cw, camV = cv, lensRadius = lr,
             time0 = t0, time1 = t1
             } s t =
-    let (uvec, g) = randomUnitDisk gen
+    let RandResult (uvec, g) = randomUnitDisk gen
         rd = multiplyS uvec lr
         rdx = vget rd 0
         rdy = vget rd 1
@@ -115,5 +116,5 @@ getRay gen Cam {corigin = cameraOrigin, horizontal = cameraH,
         rdir2 = add rdir1 (multiplyS cameraV t)
         rdir3 = subtract rdir2 cameraOrigin
         rdir4 = subtract rdir3 offset
-        (timeD, g2) = randomDouble g t0 t1
-    in (Rd {origin = rorigin, direction = rdir4, rtime = timeD}, g2)
+        RandResult (timeD, g2) = randomDouble g (t0, t1)
+    in RandResult (Rd {origin = rorigin, direction = rdir4, rtime = timeD}, g2)

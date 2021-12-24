@@ -11,6 +11,6 @@ import System.Random
 
 class Pdf a where
     -- obtain pdf sampling value
-    pvalue :: RandomGen g => a -> g -> Vector -> (Double, g)
+    pvalue :: RandomGen g => a -> g -> Vector -> RandomResult Double g
     -- generate direction
-    generate :: RandomGen g => a -> g -> (Vector, g)
+    generate :: RandomGen g => a -> g -> RandomResult Vector g

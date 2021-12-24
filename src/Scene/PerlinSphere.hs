@@ -33,10 +33,10 @@ twoPerlinSpheres :: RandomGen g => g -> Scene
 twoPerlinSpheres g =
     let ptex = TextureCons $! mkPerlinNoise g 4.0
         lmb = LambMat $! LambT ptex
-        sp1 = SphereObj {sphereCenter = VList [0.0, -1000.0, 0.0],
+        sp1 = SphereObj {sphereCenter = fromList2Vec 0.0 [-1000.0, 0.0],
                          sphereRadius = 1000,
                          sphereMat = lmb}
-        sp2 = SphereObj {sphereCenter = VList [0.0, 2.0, 0.0],
+        sp2 = SphereObj {sphereCenter = fromList2Vec 0.0 [2.0, 0.0],
                          sphereRadius = 2,
                          sphereMat = lmb}
         hs = HList {objects = NList (HittableCons sp1) [HittableCons sp2]}
@@ -54,6 +54,6 @@ twoPerlinSpheres g =
         cam_aperture = 0.0,
         scene_obj = hs,
         sample_obj = HList {objects = NList (HittableCons sp1) []},
-        back_ground = VList [0.7, 0.8, 1.0]
+        back_ground = fromList2Vec 0.7 [0.8, 1.0]
     }
 

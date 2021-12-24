@@ -37,7 +37,7 @@ eulerToVec eangles =
     let roll = eulerValue $ eulerRoll eangles
         pitch = eulerValue $ eulerPitch eangles
         yaw = eulerValue $ eulerYaw eangles
-    in VList [roll, pitch, yaw]
+    in fromList2Vec roll [pitch, yaw]
 
 
 fromValsToEuler :: Double -> Double -> Double -> EulerAngles
@@ -68,4 +68,5 @@ toFrontVec :: EulerAngles -> Vector
 toFrontVec eangles =
     let yaw = eulerVal $ eulerYaw eangles
         pitch = eulerVal $ eulerPitch eangles
-    in VList [(cos yaw) * (cos pitch), sin pitch, (sin yaw) * (cos pitch)]
+        f = (cos yaw) * (cos pitch)
+    in fromList2Vec f [sin pitch, (sin yaw) * (cos pitch)]

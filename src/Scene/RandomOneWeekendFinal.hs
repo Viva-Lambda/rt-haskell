@@ -40,27 +40,26 @@ import Utility.HelperTypes
 
 mkRndMat :: RandomGen g => g -> Int -> Int -> Bool -> (Maybe HittableObj, g)
 mkRndMat gen !a !b !isMoving =
-    let (chooseMat, g1) = randval gen
-        (cxrand, g2) = randval g1
-        (czrand, g3) = randval g2
-        center = VList [
-            (int2Double a) + (0.9 * cxrand),
-            0.2,
-            (int2Double b) + (0.9 * czrand)
-            ]
-        diff = subtract center (VList [4.0, 0.2, 0.0])
+    let fnlist = fromList2NL randval [randval, randval]
+        RandResult (nlst, g3) = randFoldlFixedRange2 gen fnlist
+        (chooseMat:cxrand:czrand:_) = nl2List nlst
+        center = fromList2Vec ((int2Double a) + (0.9 * cxrand)) [
+                                            0.2,
+                                            (int2Double b) + (0.9 * czrand)]
+        diff = subtract center (fromList2Vec 4.0 [0.2, 0.0])
         cdiff = magnitude diff
     in if cdiff > 0.9
        then if (chooseMat > 0.3) && (chooseMat < 0.8)
-            then let (rv1, g4) = randV g3
-                     (rv2, g5) = randV g4
+            then let fnlst2 = fromList2NL randV [randV]
+                     RandResult (nlst2, g5) = randFoldlFixedRange2 g3 fnlst2
+                     (rv1:rv2:_) = nl2List nlst2
                      diffAlbedo = multiply rv1 rv2
                      laMat = LambMat $! LambC diffAlbedo
                 in if isMoving
-                   then let (rv3, g6) = randomDouble g5 0.0 0.5
+                   then let RandResult (rv3, g6) = randomDouble g5 (0.0, 0.5)
                         in (Just $! HittableCons MovSphereObj {
                             msphereCenter1 = center,
-                            msphereCenter2 = add center (VList [0.0, rv3, 0.0]),
+                            msphereCenter2 = add center (fromList2Vec 0.0 [rv3, 0.0]),
                             msphereRadius = 0.2,
                             msphereMat = laMat,
                             mTime0 = 0.0,
@@ -70,8 +69,8 @@ mkRndMat gen !a !b !isMoving =
                                                      sphereRadius = 0.2,
                                                      sphereMat = laMat}, g5)
             else if chooseMat >= 0.8 && chooseMat < 0.9
-                 then let (rv1, g4) = randomVec (0.5, 1.0) g3
-                          (fz, g5) = randomDouble g4 0.0 0.5
+                 then let RandResult (rv1, g4) = randomVec (0.5, 1.0) g3
+                          RandResult (fz, g5) = randomDouble g4 (0.0, 0.5)
                           metMat = MetalMat $! MetC rv1 fz
                       in (Just $! HittableCons SphereObj {
                                     sphereCenter = center,
@@ -97,26 +96,26 @@ world gen !isM = let as = [0..7]
                      bs = [0..7]
                      coords = [(a - 3, b - 3) | a <- as, b <- bs]
                      objs = mkRndMats gen isM coords
-                     groundMat = LambMat $! LambC ( VList [0.5, 0.5, 0.5])
+                     groundMat = LambMat $! LambC (singularV 3 0.5 )
                      ground = HittableCons SphereObj {
-                                    sphereCenter = VList [0.0, -1000.0, 0.0],
+                                    sphereCenter = fromList2Vec 0.0 [-1000.0, 0.0],
                                     sphereRadius = 1000.0,
                                     sphereMat = groundMat}
                      dielM1 = DielMat $! DielRefIndices [1.5]
-                     lambM2 = LambMat $! LambC (VList [0.4, 0.2, 0.1])
-                     metalM3 = MetalMat $! MetC ( VList [0.7, 0.6, 0.5] ) 0.0
+                     lambM2 = LambMat $! LambC (fromList2Vec 0.4 [ 0.2, 0.1])
+                     metalM3 = MetalMat $! MetC ( fromList2Vec 0.7 [ 0.6, 0.5] ) 0.0
                      dielObj = HittableCons $! SphereObj {
-                            sphereCenter =VList [0.0, 1.0, 0.0],
+                            sphereCenter =fromList2Vec 0.0 [ 1.0, 0.0],
                             sphereRadius = 1.0,
                             sphereMat = dielM1 
                         }
                      lambObj = HittableCons $! SphereObj {
-                            sphereCenter = VList [-4.0, 1.0, 0.0],
+                            sphereCenter = fromList2Vec (-4.0) [1.0, 0.0],
                             sphereRadius = 1.0,
                             sphereMat = lambM2
                         }
                      metObj = HittableCons $! SphereObj {
-                            sphereCenter =  VList [4.0, 1.0, 0.0],
+                            sphereCenter =  fromList2Vec 4.0 [ 1.0, 0.0],
                             sphereRadius = 1.0,
                             sphereMat = metalM3
                         }
@@ -153,7 +152,7 @@ randomOneWeekendFinalScene g b =
         cam_aperture = 0.1,
         scene_obj = hl,
         sample_obj = sobjs,
-        back_ground = VList [0.7, 0.8, 1.0]
+        back_ground = fromList2Vec 0.7 [0.8, 1.0]
     }
 
 randomOneWeekendFinalSceneStatic ::RandomGen g => g -> Scene

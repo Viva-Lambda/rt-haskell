@@ -40,19 +40,16 @@ bounceDepth :: Int
 bounceDepth = 20
 
 camLookFrom :: Vector
-camLookFrom = VList [13.0, 2.0, 3.0]
+camLookFrom = fromList2Vec 13.0 [2.0, 3.0]
 
 camLookTo :: Vector
-camLookTo = VList [0.0, 0.0, 0.0]
+camLookTo = fromList2Vec 0.0 [0.0, 0.0]
 
 camVFov :: Double
 camVFov = 20.0
 
 camVUp :: Vector
-camVUp = VList [0.0, 1.0, 0.0]
+camVUp = fromList2Vec 0.0 [1.0, 0.0]
 
 camFocDistance :: Double
 camFocDistance = 10.0
-
-
-

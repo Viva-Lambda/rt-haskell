@@ -76,15 +76,15 @@ instance Hittable Bvh where
             (BLeaf _ a) -> (a, True)
 
     -- pdf value
-    pdf_value _ g _ _ = (0.0, g)
+    pdf_value _ g _ _ = RandResult (0.0, g)
     hrandom _ g _ = randomVec (0.0, 1.0) g
 
 
 mkBvh :: (Show a, Eq a, Hittable a, RandomGen g) => [a] -> g -> Int -> Int -> Double -> Double -> Bvh
 
 mkBvh !objects !gen !start !end !time0 !time1 =
-    let (axisd, g1) = randomDouble gen 0.0 2.0
-        axis = double2Int axisd
+    let resAxis = randomDouble gen (0.0, 2.0)
+        RandResult (axis, g1) = rfmap double2Int resAxis
         compareFn = if axis == 0
                     then box_x_compare
                     else if axis == 1
@@ -161,5 +161,5 @@ mkBvh !objects !gen !start !end !time0 !time1 =
 mkBvhFromHittableList :: RandomGen g => HittableList -> g -> Double -> Double -> Bvh
 
 mkBvhFromHittableList hobjs g time0 time1 =
-    let hs = toList $ objects hobjs
+    let hs = nl2List $ objects hobjs
     in mkBvh hs g 0 (length hs) time0 time1

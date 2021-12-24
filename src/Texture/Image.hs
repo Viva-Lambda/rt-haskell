@@ -71,7 +71,7 @@ instance Texture ImageT where
         let (ImgT {imgTWidth = a, imgTHeight = b, bytesPerScanline = bps,
                      bytesPerPixel = bpp, imgData = imap}) = imgt
         in if null imap
-           then VList [0.0, 1.0, 1.0]
+           then fromList2Vec 0.0 [1.0, 1.0]
            else let uu = clamp u 0.0 1.0
                     vv = 1.0 - (clamp v 0.0 1.0)
                     -- vv = clamp v 0.0 1.0
@@ -89,9 +89,9 @@ instance Texture ImageT where
                               coeff = (j * bps) + (i * bpp)
                               iis = [coeff + c | c <- cs]
                               -- vals = map pixToDouble [imap !! ii | ii <- iis]
-                              vals = VList $ map pixToDouble (imap !! (j * a + i))
+                              (val:vals) = map pixToDouble (imap !! (j * a + i))
                           -- in VList [imap DMap.! ii | ii <- iis]
-                          in vals
+                          in fromList2Vec val vals
                     cval = multiplyS pix cscale
                 in cval
                 -- in error $ show imgt

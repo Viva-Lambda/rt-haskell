@@ -27,14 +27,14 @@ diffuseSphere :: Scene
 diffuseSphere =
     let sobj = HList {objects = NList (
             HittableCons $! SphereObj {
-                            sphereCenter = VList [-4.0, 1.0, 0.0],
+                            sphereCenter = fromList2Vec (-4.0) [1.0, 0.0],
                             sphereRadius = 1.0,
-                            sphereMat = LambMat $! LambC (VList [0.4, 0.2, 0.1])
+                            sphereMat = LambMat $! LambC (fromList2Vec 0.4 [0.2, 0.1])
                         }) [
             HittableCons $ SphereObj {
-                            sphereCenter = VList [0.0, -1000.0, 0.0],
+                            sphereCenter = fromList2Vec 0.0 [-1000.0, 0.0],
                             sphereRadius = 1000.0,
-                            sphereMat =  LambMat $! LambC (VList [0.5, 0.5, 0.5])
+                            sphereMat =  LambMat $! LambC (fromList2Vec 0.5 [0.5, 0.5])
                         } ]}
     in SceneVals {
         img_width = imageWidth,
@@ -50,6 +50,5 @@ diffuseSphere =
         cam_aperture = 0.1,
         scene_obj = sobj,
         sample_obj = sobj,
-        back_ground = VList [0.7, 0.8, 1.0]
+        back_ground = fromList2Vec 0.7 [0.8, 1.0]
          }
-

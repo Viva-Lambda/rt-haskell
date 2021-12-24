@@ -14,14 +14,18 @@ import Hittable.Aabb
 import Prelude hiding(subtract)
 import Material.Material
 
+-- random
+import Random
+
 
 data Sphere  = SphereObj {sphereCenter :: Vector,
                           sphereRadius :: Double, 
                           sphereMat :: Material}
 
 getSphereUV :: Vector -> (Double, Double)
-getSphereUV (VList [x, y, z]) = 
-    let theta = acos (-y)
+getSphereUV v =
+    let (x:y:z:_) = vec2List v
+        theta = acos (-y)
         phi = (atan2 (-z) x) + m_pi
     in (phi / (2*m_pi), theta / m_pi)
 
@@ -80,8 +84,8 @@ instance Hittable Sphere where
 
     boundingBox !(SphereObj {sphereCenter = sc, sphereRadius = sr,
                             sphereMat = _}) !tmn !tmx !ab =
-        let cv1 = subtract sc (VList [sr, sr, sr])
-            cv2 = add sc (VList [sr, sr, sr])
+        let cv1 = subtract sc (fromList2Vec sr [sr, sr])
+            cv2 = add sc (fromList2Vec sr [sr, sr])
             aBound = AaBbox { aabbMin = cv1, aabbMax = cv2 }
         in (aBound, True)
 
@@ -90,14 +94,14 @@ instance Hittable Sphere where
             ry = Rd {origin = orig, direction = v, rtime = 0.0}
             (ahit, isHit, g1) = hit a g ry 0.001 (infty) hr
         in if not isHit
-           then (0.0, g1)
+           then RandResult (0.0, g1)
            else let cent = sphereCenter a
                     corg = lengthSquared $! subtract cent orig
                     radius = sphereRadius a
                     radorg = (radius * radius) / corg
                     costheta = sqrt $! 1.0 - radorg
                     solidAngle = 2.0 * m_pi * (1.0 - costheta)
-                in (1.0 / solidAngle, g1)
+                in RandResult (1.0 / solidAngle, g1)
 
     hrandom a g orig =
         let cent = sphereCenter a
@@ -105,6 +109,6 @@ instance Hittable Sphere where
             distSqr = lengthSquared dir
             onb = fromW2Onb dir
             radius = sphereRadius a
-            (rv, g1) = random2Sphere g radius distSqr
-        in (localVec onb rv, g1)
+            res = random2Sphere g (radius, distSqr)
+        in rfmap (localVec onb) res
 

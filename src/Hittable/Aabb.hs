@@ -35,8 +35,9 @@ aabbHit ab ray t_min t_max =
 
 -- surrounding box
 ssBox :: Aabb -> Aabb -> Aabb
-ssBox (AaBbox {aabbMin = VList a, aabbMax = VList b}) 
-      (AaBbox {aabbMin = VList c, aabbMax = VList d}) =
-      let aMn = zipWith min a c
-          aMx = zipWith max b d
-      in AaBbox {aabbMin = VList aMn, aabbMax = VList aMx}
+ssBox (AaBbox {aabbMin = a, aabbMax = b}) 
+      (AaBbox {aabbMin = c, aabbMax = d}) =
+      let f el = vec2List el
+          (mi:mn) = zipWith min (f a) (f c)
+          (ma:mx) = zipWith max (f b) (f d)
+      in AaBbox {aabbMin = fromList2Vec mi mn, aabbMax = fromList2Vec ma mx}

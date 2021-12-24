@@ -9,20 +9,30 @@ import Debug.Trace
 
 import Data.Foldable
 import Utility.Utils
+import Utility.HelperTypes
 
 import Math3D.CommonOps
 
-data Vector = VList [Double]
-            deriving (Eq)
+data Vector = VList (NonEmptyList Double)
+
+instance Eq Vector where
+    (VList a) == (VList b) = (nl2List a) == (nl2List b)
+
+fromList2Vec :: Double -> [Double] -> Vector
+fromList2Vec a b = VList (fromList2NL a b)
+
+vec2List :: Vector -> [Double]
+vec2List (VList a) = nl2List a
 
 instance Show Vector where
-    show (VList a) =
-        let msg1 = "<Vector " ++ "size " ++ show (length a) 
-            msg2 = msg1 ++ " data " ++ (unwords $ map show a) ++ " >"
-        in msg2
+    show a =
+        let msg1 = "<Vector " ++ "size " ++ show (vsize a)
+            msg2 = msg1 ++ " data " ++ (unwords $ map show (vec2List a))
+            msg3 = msg2 ++ " >"
+        in msg3
 
 singularV :: Int -> Double -> Vector
-singularV !size v = VList $ replicate size v
+singularV !size v = fromList2Vec v (replicate (size - 1) v)
 
 zeroV :: Int -> Vector
 zeroV !size = singularV size 0.0
@@ -43,17 +53,10 @@ negInftyV3 ::Vector
 negInftyV3 = negInftyV 3
 
 vsize :: Vector -> Int
-vsize !(VList v) = length v
+vsize (VList v) = lengthNL v
 
 vget :: Vector -> Int -> Double
-vget !v !index = 
-    let VList vs = v
-    in if (vsize v) <= index || index < 0
-       then traceStack (
-       "IndexError: uncorrect index size: " ++ show index ++
-       " vector: " ++ show v) 0.0
-       else vs !! index
-
+vget !(VList v) !index = getNL v index
 
 
 sizeError :: Vector -> Vector -> String -> String
@@ -72,16 +75,15 @@ vecArithmeticOp :: String -> (Double -> Double -> Double) -> Vector -> Vector ->
 vecArithmeticOp opname f !v !e =
     if (vsize v) /= (vsize e)
     then traceStack (sizeError v e opname) zeroV3
-    else let (VList ds) = v
-             (VList es) = e 
-         in VList $! zipWith f ds es
+    else let (b:bs) = zipWith f (vec2List v) (vec2List e)
+         in fromList2Vec b bs
 
 vecScalarOp :: (Double -> Double) -> Vector -> Vector
-vecScalarOp f !v = let (VList vs) = v in VList $! map f vs 
+vecScalarOp f !v = let (b:bs) = map f (vec2List v) in fromList2Vec b bs
 
 nearZeroVec :: Vector -> Bool
-nearZeroVec !v =
-    let (VList vs) = v
+nearZeroVec !(VList v) =
+    let vs = nl2List v
         nzero = 1e-10
     in foldl1 (&&) $! map (< nzero) (map abs vs)
 
@@ -89,15 +91,14 @@ instance BinaryOps Vector where
     elementwiseOp str f a b = vecArithmeticOp str f a b
     elementwiseScalarOp _ f a = vecScalarOp f a
     divide v e =
-        let (VList es) = e
+        let es = vec2List e
         in if 0.0 `elem` es
-           then error $ vecError e "contains zero in a division operation"
+           then traceStack (vecError e "contains zero in a division operation") (zeroV3)
            else vecArithmeticOp "divide" (/) v e
 
 dot :: Vector -> Vector -> Double
 dot !v !e = let mult = multiply v e
-                (VList vs) = mult
-            in foldl1 (+) vs
+            in foldl1 (+) (vec2List mult)
 
 lengthSquared :: Vector -> Double
 lengthSquared !v = dot v v
@@ -112,8 +113,8 @@ cross3d !v !e =
     if (((vsize v) /= 3) || ((vsize e) /= 3))
     then error $ sizeError v e "cross product"
     else 
-            let (VList vs) = v
-                (VList es) = e
+            let vs = vec2List v
+                es = vec2List e
                 us0 = vs !! 0
                 us1 = vs !! 1
                 us2 = vs !! 2
@@ -123,85 +124,108 @@ cross3d !v !e =
                 r0 = us1 * vs2 - us2 * vs1
                 r1 = us2 * vs0 - us0 * vs2
                 r2 = us0 * vs1 - us1 * vs0
-            in VList [r0, r1, r2]
+            in fromList2Vec r0 [r1, r2]
 
 
-randomVecGen :: RandomGen g => (Double, Double) -> g -> Int -> (Vector, g)
+randomVecGen :: RandomGen g => (Double, Double) -> g -> Int -> RandomResult Vector g
 randomVecGen !(mn, mx) !gen !size =
-    let gens = randomGens gen size
-        (vdoubles, gs) = unzip [randomDouble g mn mx | g <- gens ]
-    in (VList vdoubles, last gs)
+    let ranges = NList (mn, mx) (replicate (size - 1) (mn, mx))
+        r = randMap gen randomDouble ranges
+    in case r of
+         RandResult (NList a b, g) -> RandResult (fromList2Vec a b, g)
 
-randomVec :: RandomGen g => (Double, Double) -> g -> (Vector, g)
+randomVec :: RandomGen g => (Double, Double) -> g -> RandomResult Vector g
 randomVec !a !g = randomVecGen a g 3
 
 -- generate random vectors
 
-randomVector :: RandomGen g => (Vector, Vector) -> g -> (Vector, g)
+randomVector :: RandomGen g => (Vector, Vector) -> g -> RandomResult Vector g
 randomVector (minp, maxp) g =
     let lmnp = vsize minp
         lmxp = vsize maxp
     in if lmnp /= lmxp
-       then traceStack (sizeError minp maxp "randomVector") (zeroV3, g)
-       else let fn acc i = let (g1, vs) = acc
-                               (v, g2) = randomDouble g1 (vget minp i) (vget maxp i)
-                            in (g2, vs ++ [v])
-                indices = [0..(lmnp - 1)]
-                (g1, vals) = foldl fn (g, []) indices
-            in (VList vals, g1)
+       then traceStack (sizeError minp maxp "randomVector") (RandResult (zeroV3, g))
+       else let mnlst = vec2List minp
+                mxlst = vec2List maxp
+                (z:zs) = zip mnlst mxlst
+                r = randMap g randomDouble $! fromList2NL z zs
+            in case r of
+                 RandResult (NList a b, g2) -> RandResult (fromList2Vec a b, g2)
 
 
-randV :: RandomGen g => g -> (Vector, g)
+randV :: RandomGen g => g -> RandomResult Vector g
 randV !g = randomVec (0.0, 1.0) g
 
 -- random functions resulting in vectors
-randomUnitSphere :: RandomGen g => g -> (Vector, g)
+randomUnitSphere :: RandomGen g => g -> RandomResult Vector g
 
-randomUnitSphere !gen = let (rvec, g) = randomVec (-1.0, 1.0) gen
-                       in if (lengthSquared rvec) >= 1.0
-                          then randomUnitSphere g
-                          else (rvec, g)
+randomUnitSphere !gen = let r = randomVec (-1.0, 1.0) gen
+                            lsqr = rfmap lengthSquared r
+                            RandResult (more1, g) = rfmap (>= 1.0) lsqr
+                        in if more1
+                           then randomUnitSphere g
+                           else r
 
-randomUnitVector :: RandomGen g => g -> (Vector, g)
-randomUnitVector !gen = let (v, g) = randomUnitSphere gen in (toUnit v, g)
+randomUnitVector :: RandomGen g => g -> RandomResult Vector g
+randomUnitVector !gen = case randomUnitSphere gen of
+                          RandResult (v, g) -> RandResult (toUnit v, g)
 
-randomHemisphere :: RandomGen g => g -> Vector -> (Vector, g)
+randomHemisphere :: RandomGen g => g -> Vector -> RandomResult Vector g
 randomHemisphere !gen !norm =
-    let (rv, g) = randomUnitSphere gen
-    in if (dot rv norm) > 0.0
-       then (rv, g)
-       else (multiplyS rv (-1.0), g)
+    let rus = randomUnitSphere gen
+        fn arg = dot arg norm
+        rv = rfmap fn rus
+        RandResult (isPlus, g) = rfmap (> 0.0) rv
+    in if isPlus
+       then rus
+       else let mfn arg2 = multiplyS arg2 (-1.0)
+            in rfmap mfn rus
+
 
 -- random in unit disk
-randomUnitDisk :: RandomGen g => g -> (Vector, g)
-randomUnitDisk !gen =
-    let (VList [a,b,_], g) = randomVec (-1.0, 1.0) gen
-        rvec = VList [a,b,0.0]
-    in if (lengthSquared rvec) >= 1.0
-       then randomUnitDisk g
-       else (rvec, g)
+randomUnitDisk :: RandomGen g => g -> RandomResult Vector g
+randomUnitDisk !gen = case randomVec (-1.0, 1.0) gen of
+                        RandResult (VList v, g) ->
+                            case nl2List v of
+                                [a, b, _] ->
+                                    let rvec = fromList2Vec a [b, 0.0]
+                                    in if (lengthSquared rvec) >= 1.0
+                                       then randomUnitDisk g
+                                       else RandResult (rvec, g)
 
 -- random cosine direction
-randomCosineDir :: RandomGen g => g -> (Vector, g)
-randomCosineDir g = 
-    let (r1, g1) = randval g
-        (r2, g2) = randval g1
-        z = sqrt (1.0 - r2)
-        phi = m_pi * 2 * r1
-        x = (cos phi) * (sqrt r2)
-        y = (sin phi) * (sqrt r2)
-    in (VList [x, y, z], g2)
+randomCosineDir :: RandomGen g => g -> RandomResult Vector g
+randomCosineDir g =
+    let r1 = randval g
+        r2 = randomChain r1 randomDouble (0.0, 1.0)
+        min1r2 arg = 1.0 - arg
+        r2sub1 = rfmap min1r2 r2
+        z = rfmap sqrt r2sub1
+        sqr2 = rfmap sqrt r2
+        phi = rfmap (* (m_pi * 2.0)) r1
+        cosphi = rfmap cos phi
+        sinphi = rfmap sin phi
+        x = rfmap (* (liftRandVal cosphi)) sqr2
+        y = rfmap (* (liftRandVal sinphi)) sqr2
+    in RandResult (fromList2Vec (liftRandVal x) [liftRandVal y, liftRandVal z], 
+                  liftRandGen y)
 
 -- random to sphere
-random2Sphere :: RandomGen g => g -> Double -> Double -> (Vector, g)
-random2Sphere g radius sqrDist =
-    let (r1, g1) = randval g
-        (r2, g2) = randval g1
-        z = 1.0 + r2 * ((sqrt (1.0 - (radius * radius)/sqrDist))- 1)
-        phi = m_pi * 2 * r1
-        x = (cos phi) * (sqrt (1.0 - z * z))
-        y = (sin phi) * (sqrt (1.0 - z * z))
-    in (VList [x, y, z], g2)
+random2Sphere :: RandomGen g => g -> (Double, Double) -> RandomResult Vector g 
+random2Sphere g (radius, sqrDist) =
+    let r1 = randval g
+        r2 = randomChain r1 randomDouble (0.0, 1.0)
+        val = ((sqrt (1.0 - (radius * radius)/sqrDist))- 1)
+        r2val = rfmap (* val) r2
+        z = rfmap (+ 1.0) r2val
+        phi = rfmap (* (m_pi * 2)) r1
+        phival = liftRandVal phi
+        (cosphi, sinphi) = (cos phival, sin phival)
+        z2 = rfmap (* (liftRandVal z)) z
+        fn arg = sqrt (1.0 - arg)
+        x = liftRandVal $! rfmap (* cosphi) ( rfmap fn z2)
+        y = liftRandVal $! rfmap (* sinphi) ( rfmap fn z2)
+    in RandResult (fromList2Vec x [y, liftRandVal z], liftRandGen r2)
 
 
 
@@ -218,8 +242,8 @@ refract !uv !n !etaiOverEta =
 
 clampV :: Vector -> Double -> Double -> Vector
 clampV v mn mx =
-    let (VList vs) = v
-        nvs = clampvals vs
-    in VList nvs
+    let vs = vec2List v
+        (n:ns) = clampvals vs
+    in fromList2Vec n ns
     where clampvals [] = []
           clampvals (e:es) = clamp e mn mx : clampvals es
