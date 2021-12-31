@@ -21,6 +21,13 @@ clamp x min max = if x < min
                        then max
                        else x
 
+-- interpolate a value in one range to another range
+interp :: (Double, Double) -> (Double, Double) -> Double -> Double
+interp (inputStart, inputEnd) (outputStart, outputEnd) value =
+    let idiff = (value - inputStart) / (inputEnd - inputStart)
+        odiff = outputEnd - outputStart
+    in idiff * odiff + outputStart
+
 -- 
 eqReduce :: Eq a => [a] -> ((a -> Bool) -> [a] -> Bool) -> Bool
 eqReduce lst f = case lst of
