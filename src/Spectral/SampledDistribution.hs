@@ -6,83 +6,87 @@ module Spectral.SampledDistribution where
 import Math3D.Vector
 
 import Utility.HelperTypes
-import Utility.Utils
+import Utility.Utils as Ut 
 
 -- third party
 import qualified Data.Map as DMap
 import Data.Word
+import Debug.Trace
 
-type WavePower = DMap.Map Word32 Double
+type SampledWavePower = DMap.Map Word32 Double
 
-data SpecPowerDistribution = SPD {
-    waveStart :: Double,
-    waveEnd :: Double,
-    distribution :: WavePower
-    } deriving (Eq, Show)
 
-wavelengths :: SpecPowerDistribution -> NonEmptyList Word32
-wavelengths a = let dmap = distribution a
-                    (w:ws) = DMap.keys dmap
-                in fromList2NL w ws
+wavelengths :: SampledWavePower -> NonEmptyList Word32
+wavelengths dmap = let (w:ws) = DMap.keys dmap in fromList2NL w ws
 
-powers :: SpecPowerDistribution -> NonEmptyList Double
-powers a = let dmap = distribution a
-               (p:ps) = DMap.elems dmap
-           in fromList2NL p ps
+powers :: SampledWavePower -> Vector
+powers dmap = let (p:ps) = DMap.elems dmap in fromList2Vec p ps
 
-minmaxPower :: ([Double] -> Double) -> SpecPowerDistribution -> Double
-minmaxWavelength :: ([Word32] -> Word32) -> SpecPowerDistribution -> Word32
+minmaxPower :: ([Double] -> Double) -> SampledWavePower -> Double
+minmaxWavelength :: ([Word32] -> Word32) -> SampledWavePower -> Word32
 
-minmaxPower f a = let dmap = distribution a
-                      ps = DMap.elems dmap
-                  in f ps
+minmaxPower f dmap = let ps = DMap.elems dmap in f ps
 
-minmaxWavelength f a = let dmap = distribution a
-                           ps = DMap.keys dmap
-                       in f ps
+minmaxWavelength f dmap = let ps = DMap.keys dmap in f ps
 
-maxPower :: SpecPowerDistribution -> Double
+maxPower :: SampledWavePower -> Double
 maxPower a = minmaxPower maximum a
-minPower :: SpecPowerDistribution -> Double
+minPower :: SampledWavePower -> Double
 minPower a = minmaxPower minimum a
 
-maxWavelength :: SpecPowerDistribution -> Word32
+maxWavelength :: SampledWavePower -> Word32
 maxWavelength a = minmaxWavelength maximum a
 
-minWavelength :: SpecPowerDistribution -> Word32
+minWavelength :: SampledWavePower -> Word32
 minWavelength a = minmaxWavelength minimum a
 
 
 -- interpolate a spectral power distribution
-interpolateSpd :: SpecPowerDistribution -> (Double, Double) -> SpecPowerDistribution
-interpolateSpd a (mn, mx) =
+interpolate :: SampledWavePower -> (Double, Double) -> SampledWavePower
+interpolate a (mn, mx) =
     let minmaxer f = f [mn, mx]
         amin = minmaxer minimum
         amax = minmaxer maximum
         pmin = minPower a
         pmax = maxPower a
-        dist = distribution a
-        ps = DMap.elems dist
-        interpolator p = interp (pmin, pmax) (amin, amax) p
+        ps = DMap.elems a
+        interpolator p = Ut.interp (pmin, pmax) (amin, amax) p
         interpolatedPowers = map interpolator ps
-        skeys = DMap.keys dist
+        skeys = DMap.keys a
         ndist = DMap.fromList $ zip skeys interpolatedPowers
-    in SPD {waveStart = waveStart a, waveEnd = waveEnd a, distribution = ndist}
+    in ndist
 
 -- clamp a spectral power distribution
 
-clampSpd :: SpecPowerDistribution -> (Double, Double) -> SpecPowerDistribution
-clampSpd a (mn, mx) =
-    let dist = distribution a
-        ps = DMap.elems dist
-        clamper p = clamp p mn mx
+clamp :: SampledWavePower -> (Double, Double) -> SampledWavePower
+clamp a (mn, mx) =
+    let ps = DMap.elems a
+        clamper p = Ut.clamp p mn mx
         clampedPowers = map clamper ps
-        skeys = DMap.keys dist
+        skeys = DMap.keys a
         ndist = DMap.fromList $ zip skeys clampedPowers
-    in SPD {waveStart = waveStart a, waveEnd = waveEnd a, distribution = ndist}
+    in ndist
 
-normalizeSpd :: SpecPowerDistribution -> SpecPowerDistribution
-normalizeSpd a = interpolateSpd a (0.0, 1.0)
+normalize :: SampledWavePower -> SampledWavePower
+normalize a = interpolate a (0.0, 1.0)
 
--- integrateSpd :: SpecPowerDistribution -> SpecPowerDistribution -> SpecPowerDistribution
--- integrateSpd a b =
+evaluateWave :: Word32 -> SampledWavePower -> Double
+
+evaluateWave wave a =
+    -- in range
+    let inRange = (wave >= (minWavelength a)) && (wave <= (maxWavelength a))
+        isMember = DMap.member wave a
+        getWave w = (DMap.!) a w
+    in if isMember -- wavelength is a member, we can access to its power
+       then getWave wave
+       else if inRange -- wavelength is in range, we can interpolate power values
+            then let (smallerMap, largerMap) = DMap.split wave a
+                     (smallMaxWave, smallPower) = DMap.findMax smallerMap
+                     (largeMinWave, largePower) = DMap.findMin largerMap
+                 in (smallPower + largePower) / 2.0
+            else -- it is not in range nor a member this can not be evaluated
+                 let msg = "given wavelength " ++ (show wave) ++ " is outside"
+                     msg2 = " of sampled spectrum whose limits are "
+                     msg3 = show (minWavelength a)
+                     msg4 = show (maxWavelength a)
+                 in traceStack (msg ++ msg2 ++ msg3 ++ " and " ++ msg4) 0.0
