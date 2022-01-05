@@ -8,21 +8,31 @@ import Prelude hiding(subtract)
 import Debug.Trace
 
 import Data.Foldable
+import Data.Word
+import qualified GHC.Float as GHCFloat
+
 import Utility.Utils
 import Utility.HelperTypes
 
 import Math3D.CommonOps
 
 data Vector = VList (NonEmptyList Double)
+            | WList (NonEmptyList Word)
 
 instance Eq Vector where
     (VList a) == (VList b) = (nl2List a) == (nl2List b)
+    (VList a) == _ = False
+    (WList a) == (WList b) = (nl2List a) == (nl2List b)
+    (WList a) == _ = False
 
 fromList2Vec :: Double -> [Double] -> Vector
 fromList2Vec a b = VList (fromList2NL a b)
 
 vec2List :: Vector -> [Double]
 vec2List (VList a) = nl2List a
+vec2List (WList a) = map GHCFloat.word2Double (nl2List a)
+
+
 
 instance Show Vector where
     show a =

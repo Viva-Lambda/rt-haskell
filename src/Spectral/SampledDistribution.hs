@@ -13,17 +13,17 @@ import qualified Data.Map as DMap
 import Data.Word
 import Debug.Trace
 
-type SampledWavePower = DMap.Map Word32 Double
+type SampledWavePower = DMap.Map Word Double
 
 
-wavelengths :: SampledWavePower -> NonEmptyList Word32
+wavelengths :: SampledWavePower -> NonEmptyList Word
 wavelengths dmap = let (w:ws) = DMap.keys dmap in fromList2NL w ws
 
 powers :: SampledWavePower -> Vector
 powers dmap = let (p:ps) = DMap.elems dmap in fromList2Vec p ps
 
 minmaxPower :: ([Double] -> Double) -> SampledWavePower -> Double
-minmaxWavelength :: ([Word32] -> Word32) -> SampledWavePower -> Word32
+minmaxWavelength :: ([Word] -> Word) -> SampledWavePower -> Word
 
 minmaxPower f dmap = let ps = DMap.elems dmap in f ps
 
@@ -34,10 +34,10 @@ maxPower a = minmaxPower maximum a
 minPower :: SampledWavePower -> Double
 minPower a = minmaxPower minimum a
 
-maxWavelength :: SampledWavePower -> Word32
+maxWavelength :: SampledWavePower -> Word
 maxWavelength a = minmaxWavelength maximum a
 
-minWavelength :: SampledWavePower -> Word32
+minWavelength :: SampledWavePower -> Word
 minWavelength a = minmaxWavelength minimum a
 
 
@@ -70,7 +70,7 @@ clamp a (mn, mx) =
 normalize :: SampledWavePower -> SampledWavePower
 normalize a = interpolate a (0.0, 1.0)
 
-evaluateWave :: Word32 -> SampledWavePower -> Double
+evaluateWave :: Word -> SampledWavePower -> Double
 
 evaluateWave wave a =
     -- in range

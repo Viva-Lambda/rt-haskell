@@ -2,6 +2,7 @@
 module Utility.HelperTypes where
 
 import Debug.Trace
+import Data.List
 
 data NonEmptyList a = NList a [a]
 
@@ -44,3 +45,6 @@ foldlNL f acc n = let ms = nl2List n in foldl f acc ms
 
 zipNL :: NonEmptyList a -> NonEmptyList b -> NonEmptyList (a, b)
 zipNL a b = let (m:ms) = zip (nl2List a) (nl2List b) in fromList2NL m ms
+
+sortNL :: Ord a => NonEmptyList a -> NonEmptyList a
+sortNL a = let (m:ms) = sort $! nl2List a in fromList2NL m ms

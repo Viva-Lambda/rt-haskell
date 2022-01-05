@@ -28,6 +28,8 @@ interp (inputStart, inputEnd) (outputStart, outputEnd) value =
         odiff = outputEnd - outputStart
     in idiff * odiff + outputStart
 
+mix :: Double -> Double -> Double -> Double
+mix t v u = (1.0 - t) * v + t * u
 -- 
 eqReduce :: Eq a => [a] -> ((a -> Bool) -> [a] -> Bool) -> Bool
 eqReduce lst f = case lst of
