@@ -4,6 +4,7 @@ module Spectral.PbrSpectrum where
 import Math3D.Vector
 
 import Spectral.SampledDistribution hiding (clamp)
+import Spectral.PbrtSpecdata
 
 import Utility.HelperTypes
 import Utility.Utils
@@ -145,3 +146,121 @@ resampleWavePower pwrs wvs waveStart waveEnd outSize =
                           in (opwrs ++ [npwr], owvs ++ [nw])
         ((npwr:npwrs), (nwave:nwaves)) = foldl foldfn ([], []) [0..(outSize - 1)]
     in fromWavesPowers (fromList2NL npwr npwrs) (fromList2NL nwave nwaves)
+
+
+resampleFromSampledWavePower :: SampledWavePower -> SampledWavePower -> SampledWavePower
+resampleFromSampledWavePower a b =
+    let waves1 = wavelengths a
+        waves2 = wavelengths b
+        powers1 = powers a
+        powers2 = powers b
+        wsize1 = lengthNL waves1
+        wsize2 = lengthNL waves2
+        wsize = if wsize1 == wsize2
+                then wsize1
+                else wsize2
+        wvs = if wsize == wsize1
+              then waves1
+              else waves2
+        (VList pwrs) = if wsize == wsize1
+                       then powers1
+                       else powers2
+        maxwv1 = maxWavelength a
+        maxwv2 = maxWavelength b
+        maxwv = if maxwv1 > maxwv2
+                then maxwv1
+                else maxwv2
+        mnwv1 = minWavelength a
+        mnwv2 = minWavelength b
+        mnwv = if mnwv1 > mnwv2
+               then mnwv1
+               else mnwv2
+        --
+    in resampleWavePower pwrs wvs mnwv maxwv (int2Word wsize)
+
+resampleFromWaves :: SampledWavePower -> Word -> Word -> Word -> SampledWavePower
+resampleFromWaves a waveStart waveEnd outSize =
+    let VList pwrs = powers a
+        wvs = wavelengths a
+    in resampleWavePower pwrs wvs waveStart waveEnd outSize
+
+resampleFromOutSize :: SampledWavePower -> Word -> SampledWavePower
+resampleFromOutSize a outSize =
+    let waveStart = minWavelength a
+        waveEnd = maxWavelength a
+    in resampleFromWaves a waveStart waveEnd outSize
+
+resampleCurrentWavePower :: SampledWavePower -> SampledWavePower
+resampleCurrentWavePower a = resampleFromSampledWavePower a a
+
+rgb2Spect :: NonEmptyList Double -> NonEmptyList Double -> SampledWavePower
+rgb2Spect rgbWavesD rgbSpect =
+    let sizeCheck = (lengthNL rgbWavesD) == (lengthNL rgbSpect)
+        rgbWaves = mapNL double2Word rgbWavesD
+        minWv = minNL rgbWaves
+        maxWv = maxNL rgbWaves
+        pwrs = rgbSpect
+        nbSample = word2Double spectralSampleNb
+        visibleStart = word2Double visibleWavelengthStart
+        visibleEnd = word2Double visibleWavelengthEnd
+        foldfn acc i = let wl0 = mix ((int2Double i) / nbSample) visibleStart visibleEnd
+                           wl1 = mix ((int2Double (i + 1)) / nbSample) visibleStart visibleEnd
+                           wl0w = double2Word wl0
+                           wl1w = double2Word wl1
+                           p = averagePowerWaves pwrs rgbWaves wl0w wl1w
+                           wl = (wl0 + wl1) / 2.0
+                           (ps, ws) = acc
+                       in (ps ++ [p], ws ++ [double2Word wl])
+        ((p:ps), (w:ws)) = foldl foldfn ([], []) [0..(word2Int spectralSampleNb)]
+    in fromWavesPowers (fromList2NL p ps) (fromList2NL w ws)
+
+spdRGBRefl2SpectWhite :: SampledWavePower
+spdRGBRefl2SpectWhite = rgb2Spect rgb2SpectLambda rgbRefl2SpectWhite
+
+spdRGBRefl2SpectCyan :: SampledWavePower
+spdRGBRefl2SpectCyan = rgb2Spect rgb2SpectLambda rgbRefl2SpectCyan
+
+spdRGBRefl2SpectMagenta :: SampledWavePower
+spdRGBRefl2SpectMagenta = rgb2Spect rgb2SpectLambda rgbRefl2SpectMagenta
+
+spdRGBRefl2SpectYellow :: SampledWavePower
+spdRGBRefl2SpectYellow = rgb2Spect rgb2SpectLambda rgbRefl2SpectYellow
+
+spdRGBRefl2SpectRed :: SampledWavePower
+spdRGBRefl2SpectRed = rgb2Spect rgb2SpectLambda rgbRefl2SpectRed
+
+spdRGBRefl2SpectGreen :: SampledWavePower
+spdRGBRefl2SpectGreen = rgb2Spect rgb2SpectLambda rgbRefl2SpectGreen
+
+spdRGBRefl2SpectBlue :: SampledWavePower
+spdRGBRefl2SpectBlue = rgb2Spect rgb2SpectLambda rgbRefl2SpectBlue
+
+spdRGBIllum2SpectWhite :: SampledWavePower
+spdRGBIllum2SpectWhite = rgb2Spect rgb2SpectLambda rgbIllum2SpectWhite
+
+spdRGBIllum2SpectCyan :: SampledWavePower
+spdRGBIllum2SpectCyan = rgb2Spect rgb2SpectLambda rgbIllum2SpectCyan
+
+spdRGBIllum2SpectBlue :: SampledWavePower
+spdRGBIllum2SpectBlue = rgb2Spect rgb2SpectLambda rgbIllum2SpectBlue
+
+spdRGBIllum2SpectGreen :: SampledWavePower
+spdRGBIllum2SpectGreen = rgb2Spect rgb2SpectLambda rgbIllum2SpectGreen
+
+spdRGBIllum2SpectRed :: SampledWavePower
+spdRGBIllum2SpectRed = rgb2Spect rgb2SpectLambda rgbIllum2SpectRed
+
+spdRGBIllum2SpectMagenta :: SampledWavePower
+spdRGBIllum2SpectMagenta = rgb2Spect rgb2SpectLambda rgbIllum2SpectMagenta
+
+spdRGBIllum2SpectYellow :: SampledWavePower
+spdRGBIllum2SpectYellow = rgb2Spect rgb2SpectLambda rgbIllum2SpectYellow
+
+spdX :: SampledWavePower 
+spdX = rgb2Spect cieLambdaReal cieX
+
+spdY :: SampledWavePower
+spdY = rgb2Spect cieLambdaReal cieY
+
+spdZ :: SampledWavePower
+spdZ = rgb2Spect cieLambdaReal cieZ

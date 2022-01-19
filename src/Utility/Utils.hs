@@ -94,11 +94,12 @@ takeBetween mnv mxv lst =
 -- 
 word2Int :: Word -> Int
 word2Int a = fromIntegral a
+
 int2Word :: Int -> Word
 int2Word a = fromIntegral a
 
 double2Word :: Double -> Word
-double2Word a = fromIntegral $! double2Int a
+double2Word a = fromIntegral $ double2Int a
 
 -- debug utilities
 debugTraceStr :: Show a => [a] -> String
