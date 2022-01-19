@@ -1,9 +1,9 @@
--- pbr spectrum
+-- pbr spectrum: translated mostly from pbrt book
 module Spectral.PbrSpectrum where
 
 import Math3D.Vector
 
-import Spectral.SampledDistribution
+import Spectral.SampledDistribution hiding (clamp)
 
 import Utility.HelperTypes
 import Utility.Utils
@@ -11,7 +11,7 @@ import Utility.Utils
 -- 
 import qualified Data.Map as DMap
 import Data.List
-import GHC.Float
+import GHC.Float hiding (clamp)
 
 -- average spectrum
 averagePowerWaves :: NonEmptyList Double -> NonEmptyList Word -> Word -> Word -> Double
@@ -71,3 +71,77 @@ averageSpectrum :: SampledWavePower -> Word -> Word -> Double
 averageSpectrum a waveStart waveEnd = 
     let (VList ps) = powers a
     in averagePowerWaves ps (wavelengths a) waveStart waveEnd
+
+
+-- resample wave power
+resampleWavePower :: NonEmptyList Double -> NonEmptyList Word -> Word -> Word -> Word -> SampledWavePower
+resampleWavePower pwrs wvs waveStart waveEnd outSize =
+    let wsize = lengthNL wvs
+        wdelta = (word2Double (waveEnd - waveStart)) / (int2Double (wsize - 1))
+        -- clamp wave length fn
+        wlStartClamp index = if index == (-1)
+                             then double2Word ((word2Double waveStart) - wdelta)
+                             else if index == wsize
+                                  then double2Word ((word2Double waveEnd) + wdelta)
+                                  else getNL wvs index
+        -- clamp power fn
+        powerClamp index = clamp index 0 (wsize - 1)
+        -- resampling fn
+        sampler waveVal =
+            let halfDelta = wdelta / 2.0
+                waveValD = word2Double waveVal
+                waveValDDiff = waveValD - wdelta
+                waveValDSum = waveValD + wdelta
+                (v, inRange) = if (double2Word (waveValD + halfDelta)) <= (headNL wvs)
+                               then (headNL pwrs, True)
+                               else if (double2Word (waveValD - halfDelta)) >= (lastNL wvs)
+                                    then (lastNL pwrs, True)
+                                    else (0.0, False)
+            in if inRange
+               then v
+               else if wsize == 1
+                    then headNL pwrs
+                    else let starti = if waveValDDiff < (word2Double (headNL wvs))
+                                      then -1
+                                      else let intervalFn i =
+                                                (word2Double (getNL wvs i)) <= waveValDDiff
+                                           in findInterval wsize intervalFn
+                             endi = if waveValDSum > (word2Double (lastNL wvs))
+                                    then wsize
+                                    else let estart = if starti > 0
+                                                      then starti
+                                                      else 0
+                                             fix e = let ef = e < wsize
+                                                         wf = waveValDSum
+                                                         wl = word2Double $ getNL wvs e
+                                                         cond = ef && (wf > wl)
+                                                     in if cond
+                                                        then fix (e + 1)
+                                                        else e
+                                         in fix estart
+                                     --
+                             cond1 = (endi - starti) == 2
+                             cond2 = (wlStartClamp starti) <= (double2Word waveValDDiff)
+                             cond3 = (getNL wvs (starti)) == waveVal
+                             cond4 = (wlStartClamp endi) >= (double2Word waveValDSum)
+                         in if cond1 && cond2 && cond3 && cond4
+                            then getNL pwrs (starti + 1)
+                            else if (endi - starti) == 1
+                                 then let wst = word2Double $! wlStartClamp starti
+                                          wnd = word2Double $! wlStartClamp endi
+                                          t = (waveValD - wst) / (wnd - wst)
+                                          pwrCS = int2Double $ powerClamp starti
+                                          pwrCE = int2Double $ powerClamp endi
+                                      in mix t pwrCS pwrCE
+                                 else let wvds = double2Word $ waveValD - halfDelta
+                                          wvde = double2Word $ waveValD + halfDelta
+                                      in averagePowerWaves pwrs wvs wvds wvde
+        --
+        foldfn acc oset = let (opwrs, owvs) = acc
+                              ot = (word2Double oset) / (word2Double (outSize - 1))
+                              nwave = mix ot (word2Double waveStart) (word2Double waveEnd)
+                              nw = double2Word nwave
+                              npwr = sampler nw
+                          in (opwrs ++ [npwr], owvs ++ [nw])
+        ((npwr:npwrs), (nwave:nwaves)) = foldl foldfn ([], []) [0..(outSize - 1)]
+    in fromWavesPowers (fromList2NL npwr npwrs) (fromList2NL nwave nwaves)

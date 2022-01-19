@@ -48,3 +48,12 @@ zipNL a b = let (m:ms) = zip (nl2List a) (nl2List b) in fromList2NL m ms
 
 sortNL :: Ord a => NonEmptyList a -> NonEmptyList a
 sortNL a = let (m:ms) = sort $! nl2List a in fromList2NL m ms
+
+minNL :: Ord a => NonEmptyList a -> a
+minNL a = let (m:ms) = nl2List a in minimum (m:ms) 
+
+maxNL :: Ord a => NonEmptyList a -> a
+maxNL a = let (m:ms) = nl2List a in maximum (m:ms) 
+
+reverseNL :: NonEmptyList a -> NonEmptyList a
+reverseNL a = let (m:ms) = reverse $ nl2List a in fromList2NL m ms

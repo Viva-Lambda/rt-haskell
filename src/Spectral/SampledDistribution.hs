@@ -22,6 +22,13 @@ wavelengths dmap = let (w:ws) = DMap.keys dmap in fromList2NL w ws
 powers :: SampledWavePower -> Vector
 powers dmap = let (p:ps) = DMap.elems dmap in fromList2Vec p ps
 
+fromWavesPowers :: NonEmptyList Double -> NonEmptyList Word -> SampledWavePower
+fromWavesPowers pwrs wvs =
+    if (lengthNL pwrs) /= (lengthNL wvs)
+    then let errmsg = "number of powers do not match to number of waves"
+         in traceStack errmsg DMap.empty
+    else DMap.fromList $! zip (nl2List wvs) (nl2List pwrs)
+
 minmaxPower :: ([Double] -> Double) -> SampledWavePower -> Double
 minmaxWavelength :: ([Word] -> Word) -> SampledWavePower -> Word
 

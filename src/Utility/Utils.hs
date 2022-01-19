@@ -2,7 +2,10 @@
 module Utility.Utils where
 
 import Data.List
+import Data.Bits
 import Debug.Trace
+
+import GHC.Float hiding (clamp)
 
 infty :: Double
 infty = (read "Infinity") :: Double
@@ -13,7 +16,7 @@ m_pi = 3.141592653589793238
 degrees_to_radians :: Double -> Double
 degrees_to_radians degrees = degrees * m_pi / 180.0
 
-clamp :: Double -> Double -> Double -> Double
+clamp :: Ord a => a -> a -> a -> a
 
 clamp x min max = if x < min
                   then min
@@ -27,6 +30,28 @@ interp (inputStart, inputEnd) (outputStart, outputEnd) value =
     let idiff = (value - inputStart) / (inputEnd - inputStart)
         odiff = outputEnd - outputStart
     in idiff * odiff + outputStart
+
+-- find the corresponding interval given a function and a value
+checkMiddle :: Int -> Int -> Int -> Int -> (Int -> Bool) -> (Int, Int)
+checkMiddle middle fs lval hlf intervalFn = 
+    if intervalFn middle
+    then (middle + 1, lval - (hlf + 1))
+    else (fs, hlf)
+
+findInterval :: Int -> (Int -> Bool) -> Int
+findInterval size intervalFn =
+    let first = 0
+        len = size
+        --
+        halfSearch lval fs = let hlf = lval `shiftR` 1
+                                 middle = fs + hlf
+                                 (nfs, nlval) = checkMiddle middle fs lval hlf intervalFn
+                             in if nlval > 0
+                                then halfSearch nlval nfs
+                                else (nfs, nlval)
+        (nfirst, _) = halfSearch len first
+    in clamp (nfirst - 1) 0 (size - 2)
+
 
 mix :: Double -> Double -> Double -> Double
 mix t v u = (1.0 - t) * v + t * u
@@ -65,6 +90,15 @@ takeBetween mnv mxv lst =
                      subseq = filter pred enums
                      (nms, els) = unzip subseq
                  in els
+
+-- 
+word2Int :: Word -> Int
+word2Int a = fromIntegral a
+int2Word :: Int -> Word
+int2Word a = fromIntegral a
+
+double2Word :: Double -> Word
+double2Word a = fromIntegral $! double2Int a
 
 -- debug utilities
 debugTraceStr :: Show a => [a] -> String
