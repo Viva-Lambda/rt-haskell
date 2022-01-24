@@ -35,7 +35,6 @@ import Scene.CornellSmoke
 -- next week final scene
 import Scene.NextWeekFinal
 
-
 -- cornell sphere
 import Scene.CornellSphere
 

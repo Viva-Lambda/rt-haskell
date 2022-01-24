@@ -4,9 +4,9 @@ module Main where
 -- options +RTS (enables statistics) -N2 (two threads) -p 
 -- the order of options is important
 
-import ColorIO
-import Pixel
-import Color
+import Render
+import Color.Pixel
+import Color.Color
 import System.Random
 import Prelude hiding(subtract)
 import Data.Time.Clock

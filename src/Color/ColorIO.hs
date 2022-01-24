@@ -1,5 +1,5 @@
 -- color input output, conversion module
-module Color where
+module Color.Color where
 
 import GHC.Float hiding(clamp)
 import Math3D.Vector

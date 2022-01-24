@@ -1,8 +1,9 @@
 {-# LANGUAGE BangPatterns #-}
--- input output of colors
-module ColorIO where
+-- renderer function
+module Render where
 
-import Pixel
+--
+import Color.Pixel
 import Scenes
 import Camera
 
@@ -98,7 +99,6 @@ rayColor !rayr !world lights !background !depth =
                                             ])
                                         (zeroV3, g5)
                                 -}
-
             else RandResult (background, g1)
 
 
@@ -113,7 +113,7 @@ renderScene !cs !g scn =
         sample_pixs = nb_samples scn
         aratio = aspect_ratio scn
         bdepth = bounce_depth scn
-        cam = mkCam cmfrom cmto  cmvup cmvf aratio cm_apr cm_fdist 0.0 0.0
+        cam = mkCam cmfrom cmto cmvup cmvf aratio cm_apr cm_fdist 0.0 0.0
         wrld = scene_obj scn
         imw_ = img_width scn
         imh_ = img_height scn

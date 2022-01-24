@@ -47,6 +47,13 @@ maxWavelength a = minmaxWavelength maximum a
 minWavelength :: SampledWavePower -> Word
 minWavelength a = minmaxWavelength minimum a
 
+zeroLike :: SampledWavePower -> SampledWavePower
+zeroLike a =
+    let wls = wavelengths a
+        pwrs = powers a
+        VList b = zeroV (vsize pwrs)
+    in fromWavesPowers b wls
+
 
 -- interpolate a spectral power distribution
 interpolate :: SampledWavePower -> (Double, Double) -> SampledWavePower

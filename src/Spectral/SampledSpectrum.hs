@@ -1,8 +1,11 @@
 -- sampled spectrum
 module Spectral.SampledSpectrum where
 
-import Math3D.Vector
 import Spectral.SampledDistribution
+import Spectral.PbrSpectrum
+
+-- vector
+import Math3D.Vector
 
 data SpectrumType = REFLECTANCE
                   | ILLUMINANT
@@ -15,3 +18,6 @@ data SampledSpectrum = SSpec {
     -- sampled data
     sampled :: SampledWavePower
     } deriving (Eq, Show)
+
+-- fromRGB :: Double -> Double -> Double -> SpectrumType -> SampledSpectrum
+-- fromRGB r g b t =

@@ -1,5 +1,5 @@
 -- pixel
-module Pixel where
+module Color.Pixel where
 
 import Math3D.Vector
 
