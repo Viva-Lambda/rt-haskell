@@ -13,6 +13,24 @@ infty = (read "Infinity") :: Double
 m_pi :: Double
 m_pi = 3.141592653589793238
 
+float_max :: Double
+float_max = 1e37 -- from c++
+
+float_min :: Double
+float_min = 1e-37 -- from c++
+
+spd_stride :: Word
+spd_stride = 5
+
+spd_nb_sample :: Word
+spd_nb_sample = 30
+
+visible_lambda_start :: Word
+visible_lambda_start = 380
+
+visible_lambda_end :: Word
+visible_lambda_end = 720
+
 degrees_to_radians :: Double -> Double
 degrees_to_radians degrees = degrees * m_pi / 180.0
 

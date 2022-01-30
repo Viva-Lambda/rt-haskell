@@ -3,7 +3,6 @@
 module Render where
 
 --
-import Color.Pixel
 import Scenes
 import Camera
 
@@ -11,6 +10,10 @@ import Camera
 import Math3D.Ray
 import Math3D.Vector
 import Math3D.CommonOps
+
+-- color handling
+import Color.Pixel
+import Color.ColorInterface
 
 -- pdf
 import Pdf.MixturePdf
@@ -44,10 +47,10 @@ import Prelude hiding(subtract)
 import Scene.Scene
 
 
-rayColor :: RandomGen g => RandomResult Ray g -> HittableList -> HittableList -> Vector -> Int -> RandomResult Vector g
+rayColor :: RandomGen g => RandomResult Ray g -> HittableList -> HittableList -> ColorInterface -> Int -> RandomResult ColorInterface g
 rayColor !rayr !world lights !background !depth =
     if depth <= 0
-    then RandResult (zeroV3, liftRandGen rayr)
+    then RandResult (emptyModelLike background, liftRandGen rayr)
     else let hrec = emptyRecord 3
              ray = liftRandVal rayr
              gen = liftRandGen rayr
@@ -102,42 +105,51 @@ rayColor !rayr !world lights !background !depth =
             else RandResult (background, g1)
 
 
-renderScene :: RandomGen g => [(Int, Int)] -> g -> Scene -> [Pixel]
-renderScene !cs !g scn =
+getSceneCamera :: Scene -> Camera
+getSceneCamera scn =
     let cmfrom = cam_look_from scn
         cmto = cam_look_to scn
         cmvf = cam_vfov scn
         cmvup = cam_vup scn
         cm_fdist = cam_focus_distance scn
         cm_apr = cam_aperture scn
-        sample_pixs = nb_samples scn
         aratio = aspect_ratio scn
-        bdepth = bounce_depth scn
-        cam = mkCam cmfrom cmto cmvup cmvf aratio cm_apr cm_fdist 0.0 0.0
-        wrld = scene_obj scn
-        imw_ = img_width scn
-        imh_ = img_height scn
-        bground = back_ground scn
-        samplingObj = sample_obj scn
-    in pixels g cs sample_pixs cam wrld samplingObj bground bdepth (imw_, imh_)
+    in mkCam cmfrom cmto cmvup cmvf aratio cm_apr cm_fdist 0.0 0.0
 
-    where pixels gen ((cy, cx):cc) nb_smpl cMra objs sobjs b depth imWh =
-            let (pc, g2) = foldColor gen (cy, cx) nb_smpl cMra objs sobjs b depth imWh
+foldColor :: RandomGen g => g -> (Int, Int) -> Camera -> Scene -> (PixelSpectrum, g)
+foldColor rng coord cmra scene =
+    let samples = nb_samples scene
+                -- foldfn (a -> b -> a) :: 
+        foldfn acc _ = let (pcols_, g_) = acc
+                           RandResult (col, g2) = mkColor coord g_ cmra scene
+                       in (pcols_ ++ [col], g2)
+        (pcols, g3) = foldl' foldfn ([], rng) [0..(samples - 1)]
+    in (foldl1 add pcols, g3)
+
+mkColor :: RandomGen g => (Int, Int) -> g -> Camera -> Scene -> RandomResult PixelSpectrum g
+mkColor coord rng cmr scene =
+    let imwimh = (img_width scene, img_height scene)
+        rayr = mkPixelRay imwimh coord rng cmr
+        sceneObjects = scene_obj scene
+        sampleObjects = sample_obj scene
+        back = back_ground scene
+        depth = bounce_depth scene
+    in rayColor rayr sceneObjects sampleObjects back depth
+
+foldPixels :: RandomGen g => g -> [(Int, Int)] -> Camera -> Scene -> [Pixel]
+foldPixels gen lst cMra scne =
+    case lst of
+        [] -> []
+        ((cy, cx):cc) ->
+            let (pc, g2) = foldColor gen (cy, cx) cMra scne
                 p = Pix {x = cx, y = cy, color = pc}
-            in p : pixels g2 cc nb_smpl cMra objs sobjs b depth imWh
-          pixels _ [] _ _ _ _ _ _ _ = []
+            in p : foldPixels g2 cc cMra scne
 
-          foldColor rng coord nsmp cmra sobjs sos b bd iMWh =
-            let -- foldfn (a -> b -> a) :: 
-                foldfn acc _ = let (pcols_, g_) = acc
-                                   RandResult (col, g2) = mkColor coord g_ cmra sobjs sos b bd iMWh
-                               in (pcols_ ++ [col], g2)
-                (pcols, g3) = foldl' foldfn ([], rng) [0..(nsmp - 1)]
-            in (foldl1 add pcols, g3)
 
-          mkColor coord rng cmr sobjs sos b bdepth imwimh =
-            let rayr = mkPixelRay imwimh coord rng cmr
-            in rayColor rayr sobjs sos b bdepth
+renderScene :: RandomGen g => [(Int, Int)] -> g -> Scene -> [Pixel]
+renderScene !cs !g scn =
+    let cam = getSceneCamera scn
+    in foldPixels g cs cam scn
 
 
 mkPixelRay :: RandomGen g => (Int, Int) -> (Int, Int) -> g -> Camera -> RandomResult Ray g

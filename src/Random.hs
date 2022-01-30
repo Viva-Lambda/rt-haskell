@@ -90,5 +90,8 @@ randomDouble gen a = randomFn gen a
 randomInt :: RandomGen g => g -> (Int, Int) -> RandomResult Int g
 randomInt gen a = randomFn gen a
 
+randomWord :: RandomGen g => g -> (Word, Word) -> RandomResult Word g
+randomWord gen a = randomFn gen a
+
 randval :: RandomGen g => g -> RandomResult Double g
 randval g = randomDouble g (0.0, 1.0)

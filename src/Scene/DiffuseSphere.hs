@@ -7,6 +7,9 @@ import Scene.Scene
 import Math3D.Vector
 import Math3D.CommonOps
 
+-- color
+import Color.ColorInterface
+
 -- hittable
 import Hittable.HittableList
 import Hittable.HittableObj
@@ -50,5 +53,5 @@ diffuseSphere =
         cam_aperture = 0.1,
         scene_obj = sobj,
         sample_obj = sobj,
-        back_ground = fromList2Vec 0.7 [0.8, 1.0]
+        back_ground = fromRGB 0.7 0.8 1.0
          }

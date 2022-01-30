@@ -169,4 +169,3 @@ matmul !a !b =
                 fn arow = [dot arow bcol | bcol <- bcols]
                 (m:ms) = concat $ map fn arows
             in MList {mdata = fromList2NL m ms, mstride = bColNb}
-            

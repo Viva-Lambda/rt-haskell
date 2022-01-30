@@ -10,6 +10,8 @@ import Hittable.HittableList
 import Hittable.HittableObj
 import Hittable.Sphere
 
+import Color.ColorInterface
+
 --
 import GHC.Float
 import Prelude hiding(subtract)
@@ -59,6 +61,6 @@ imgEarth !bmp =
         cam_aperture = 0.0,
         scene_obj = hs,
         sample_obj = hs,
-        back_ground = fromList2Vec 0.7 [0.8, 1.0]
+        back_ground = fromRGB 0.7 0.8 1.0
     }
 

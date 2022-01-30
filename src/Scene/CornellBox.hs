@@ -5,6 +5,7 @@ module Scene.CornellBox(cornellBox) where
 -- scene default values
 import Scene.Scene
 
+import Color.ColorInterface
 -- 
 import System.Random
 import Random
@@ -90,5 +91,5 @@ cornellBox gen =
         cam_aperture = 0.0,
         scene_obj = hs,
         sample_obj = HList {objects = NList lightR []},
-        back_ground = fromList2Vec 0.0 [0.0, 0.0]
+        back_ground = fromRGB 0.0 0.0 0.0
     }

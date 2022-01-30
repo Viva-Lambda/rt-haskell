@@ -1,15 +1,24 @@
 -- module solid color
 module Texture.SolidColor where
 
+-- math3d
 import Math3D.Vector
+
+-- color
+import Color.ColorInterface
+-- texture
 import Texture.Texture
 
 data SolidColor = SolidV Vector
                 | SolidD Double Double Double
 
 instance Texture SolidColor where
-    color (SolidV a) _ _ _ = a
-    color (SolidD a b c) _ _ _ = fromList2Vec a [b, c]
+    color (SolidV a) _ _ _ = if (vsize a) == 3
+                             then ColorInt { stype = RGB, colorData = a}
+                             else fromPowers a
+
+    color (SolidD a b c) _ _ _ = ColorInt {stype = RGB,
+                                           colorData = fromList2Vec a [b, c]}
 
 instance Eq SolidColor where
     (SolidV v) == (SolidD a b c) = v == (fromList2Vec a [b,c])

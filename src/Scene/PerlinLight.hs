@@ -4,6 +4,8 @@ module Scene.PerlinLight(simpleLight) where
 -- default values
 import Scene.Scene
 
+import Color.ColorInterface
+
 -- math3d
 import Math3D.Vector
 import Math3D.CommonOps
@@ -59,6 +61,6 @@ simpleLight g =
         cam_aperture = 0.0,
         scene_obj = hs,
         sample_obj = HList {objects = NList dlight []},
-        back_ground = fromList2Vec 0.0 [0.0, 0.0]
+        back_ground = fromRGB 0.0 0.0 0.0
     }
 

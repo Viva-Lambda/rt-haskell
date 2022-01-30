@@ -33,7 +33,6 @@ vec2List (VList a) = nl2List a
 vec2List (WList a) = map GHCFloat.word2Double (nl2List a)
 
 
-
 instance Show Vector where
     show a =
         let msg1 = "<Vector " ++ "size " ++ show (vsize a)
@@ -49,6 +48,9 @@ zeroV !size = singularV size 0.0
 
 zeroV3 :: Vector
 zeroV3 = zeroV 3
+
+zeroLikeVector :: Vector -> Vector
+zeroLikeVector a = zeroV (vsize a)
 
 inftyV :: Int -> Vector
 inftyV !size = singularV size infty

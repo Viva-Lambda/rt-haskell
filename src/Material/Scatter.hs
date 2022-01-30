@@ -7,8 +7,10 @@ import Math3D.Ray
 import Math3D.Vector
 import Math3D.CommonOps
 
+-- color
+import Color.ColorInterface
+
 --
-import System.Random
 import Random
 import Utility.Utils
 
@@ -28,14 +30,17 @@ import Texture.Texture
 import Texture.TextureObj
 import Texture.SolidColor
 
+-- thirdparty
+import System.Random
 
-type Attenuation = Vector
+
+type Attenuation = ColorInterface
 type ScatteredRay = Ray
 type SOutput = (Attenuation, ScatteredRay, Bool)
 
 class Scatterer a where
     scatter :: RandomGen g => g -> a -> Ray -> HitRecord -> (g, ScatterRecord, Bool)
-    emitted :: a -> Double -> Double -> Vector -> Vector
+    emitted :: a -> Double -> Double -> Vector -> ColorInterface
     scattering_pdf :: a -> Ray -> HitRecord -> Ray -> Double
 
 
@@ -55,7 +60,7 @@ instance Scatterer Material where
     emitted a u v p =
         case a of
             (LightMat m) -> emitted m u v p
-            _ -> zeroV3
+            _ -> ColorInt {stype = RGB, colorData = zeroV3}
 
     scattering_pdf a r hrec sr = 
         case a of
@@ -68,7 +73,7 @@ instance Scatterer Material where
 
 
 instance Scatterer Lambertian where
-    emitted _ _ _ _ = zeroV3
+    emitted _ _ _ _ = ColorInt {stype = RGB, colorData = zeroV3}
 
     scatter !gen !a !inray !hrec =
         case a of
@@ -113,7 +118,7 @@ instance Scatterer Lambertian where
 
 
 instance Scatterer Metal where
-    emitted _ _ _ _ = zeroV3
+    emitted _ _ _ _ = ColorInt {stype = RGB, colorData = zeroV3}
     scatter !gen !c !inray !hrec =
         case c of
             (MetT a b) -> 
@@ -142,11 +147,12 @@ instance Scatterer Metal where
 
 instance Scatterer Dielectric where
     scattering_pdf _ _ _ _ = 0.0
-    emitted _ _ _ _ = zeroV3
+    emitted _ _ _ _ = ColorInt {stype = RGB, colorData = zeroV3}
     scatter !gen !a !inray !hrec =
         case a of
             (DielRefIndices rs) ->
-                let atten = fromList2Vec 1.0 [1.0, 1.0]
+                let atten = ColorInt {stype = RGB,
+                                      colorData = fromList2Vec 1.0 [1.0, 1.0]}
                     -- can change with respect to wavelength
                     ir = head rs
                     refratio = if isFront hrec
@@ -184,7 +190,7 @@ instance Scatterer DiffuseLight where
 
 instance Scatterer Isotropic where
     scattering_pdf _ _ _ _ = 0.0
-    emitted _ _ _ _ = zeroV3
+    emitted _ _ _ _ = ColorInt {stype = RGB, colorData = zeroV3}
     scatter !gen !b !inray !hrec =
         case b of
             IsotTexture a ->

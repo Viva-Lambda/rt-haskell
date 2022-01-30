@@ -2,6 +2,8 @@
 module Scene.Scene where
 
 import Math3D.Vector
+
+import Color.ColorInterface
 import Hittable.HittableList
 
 import GHC.Float
@@ -20,7 +22,7 @@ data Scene = SceneVals {
     cam_focus_distance :: Double,
     scene_obj :: HittableList,
     sample_obj :: HittableList,
-    back_ground :: Vector
+    back_ground :: ColorInterface
     }
 
 -- default values

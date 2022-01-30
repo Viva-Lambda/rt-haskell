@@ -3,6 +3,9 @@ module Scene.CheckerScene(twoCheckeredSpheres) where
 
 import Scene.Scene
 
+
+import Color.ColorInterface
+
 -- math3d
 import Math3D.Vector
 import Math3D.CommonOps
@@ -50,6 +53,6 @@ twoCheckeredSpheres =
         cam_aperture = 0.0,
         scene_obj = hs,
         sample_obj = HList {objects = NList (HittableCons sp1) []},
-        back_ground = fromList2Vec 0.7 [0.8, 1.0]
+        back_ground = fromRGB 0.7 0.8 1.0
     }
 

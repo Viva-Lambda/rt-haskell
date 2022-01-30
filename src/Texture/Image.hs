@@ -2,11 +2,17 @@
 -- image texture
 module Texture.Image where
 
+-- math related
 import Math3D.Vector
 import Math3D.CommonOps
+-- color related
+import Color.ColorInterface
+--
 import Texture.Texture
+--
 import Utility.Utils
 
+-- thirdparty
 import GHC.Float hiding (clamp)
 import Data.Word
 import Data.Bitmap.Pure.Pixels
@@ -71,7 +77,7 @@ instance Texture ImageT where
         let (ImgT {imgTWidth = a, imgTHeight = b, bytesPerScanline = bps,
                      bytesPerPixel = bpp, imgData = imap}) = imgt
         in if null imap
-           then fromList2Vec 0.0 [1.0, 1.0]
+           then ColorInt {stype = RGB, colorData = fromList2Vec 0.0 [1.0, 1.0]}
            else let uu = clamp u 0.0 1.0
                     vv = 1.0 - (clamp v 0.0 1.0)
                     -- vv = clamp v 0.0 1.0
@@ -93,5 +99,5 @@ instance Texture ImageT where
                           -- in VList [imap DMap.! ii | ii <- iis]
                           in fromList2Vec val vals
                     cval = multiplyS pix cscale
-                in cval
+                in ColorInt { stype = RGB, colorData = cval }
                 -- in error $ show imgt

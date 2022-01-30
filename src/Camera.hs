@@ -102,9 +102,9 @@ mkCamera =
 
 getRay :: RandomGen g => g -> Camera -> Double -> Double -> RandomResult Ray g
 getRay gen Cam {corigin = cameraOrigin, horizontal = cameraH,
-            vertical = cameraV, lowerLeftCorner = llCorner,
-            camU = cu, camW = cw, camV = cv, lensRadius = lr,
-            time0 = t0, time1 = t1
+                vertical = cameraV, lowerLeftCorner = llCorner,
+                camU = cu, camW = cw, camV = cv, lensRadius = lr,
+                time0 = t0, time1 = t1
             } s t =
     let RandResult (uvec, g) = randomUnitDisk gen
         rd = multiplyS uvec lr
@@ -117,4 +117,8 @@ getRay gen Cam {corigin = cameraOrigin, horizontal = cameraH,
         rdir3 = subtract rdir2 cameraOrigin
         rdir4 = subtract rdir3 offset
         RandResult (timeD, g2) = randomDouble g (t0, t1)
-    in RandResult (Rd {origin = rorigin, direction = rdir4, rtime = timeD}, g2)
+        RandResult (wlength, g3) = randomWord g (visible_lambda_start, visible_lambda_end)
+    in RandResult (Rd {origin = rorigin,
+                       direction = rdir4,
+                       rtime = timeD,
+                       wavelength = wlength}, g3)

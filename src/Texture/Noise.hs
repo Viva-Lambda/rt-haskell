@@ -4,6 +4,11 @@ module Texture.Noise where
 
 import Math3D.Vector
 import Math3D.CommonOps
+
+-- color related
+import Color.ColorInterface
+
+-- thirdparty
 import Random
 import System.Random
 import Texture.Texture
@@ -223,4 +228,5 @@ instance Texture PerlinNoise where
             pnoiseS = 10 * pnoise
             nval = 1 + sin ( pzscale + pnoiseS )
             nvalHalf = 0.5 * nval
-        in fromList2Vec nvalHalf [nvalHalf, nvalHalf]
+        in ColorInt {stype = RGB,
+                     colorData = fromList2Vec nvalHalf [nvalHalf, nvalHalf]}

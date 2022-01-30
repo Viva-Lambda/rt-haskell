@@ -6,7 +6,7 @@ module Main where
 
 import Render
 import Color.Pixel
-import Color.Color
+import Color.ColorIO
 import System.Random
 import Prelude hiding(subtract)
 import Data.Time.Clock

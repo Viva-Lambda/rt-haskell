@@ -55,5 +55,32 @@ minNL a = let (m:ms) = nl2List a in minimum (m:ms)
 maxNL :: Ord a => NonEmptyList a -> a
 maxNL a = let (m:ms) = nl2List a in maximum (m:ms) 
 
+minmaxByNL :: (a -> a -> Ordering) -> Bool -> NonEmptyList a -> a
+minmaxByNL f b m = let ms = nl2List m in if b
+                                         then maximumBy f ms
+                                         else minimumBy f ms
+
+maximumByNL :: (a -> a -> Ordering) -> NonEmptyList a -> a
+maximumByNL f m = minmaxByNL f True m
+
+minimumByNL :: (a -> a -> Ordering) -> NonEmptyList a -> a
+minimumByNL f m = minmaxByNL f False m
+
 reverseNL :: NonEmptyList a -> NonEmptyList a
 reverseNL a = let (m:ms) = reverse $ nl2List a in fromList2NL m ms
+
+elemNL :: Eq a => a -> NonEmptyList a -> Bool
+elemNL m b = let ms = nl2List b in m `elem` ms
+
+findNL :: (a -> Bool) -> NonEmptyList a -> Maybe a
+findNL f m = let ms = nl2List m in find f ms
+
+partitionNL :: (a -> Bool) -> NonEmptyList a -> ([a], [a])
+partitionNL f m = let ms = nl2List m in partition f ms
+
+
+instance Eq a => Eq (NonEmptyList a) where
+    a == b = (nl2List a) == (nl2List b)
+
+instance Show a => Show (NonEmptyList a) where
+    show a = show (nl2List a)
