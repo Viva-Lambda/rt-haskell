@@ -18,9 +18,9 @@ import Material.Material
 import Random
 
 
-data Sphere  = SphereObj {sphereCenter :: Vector,
-                          sphereRadius :: Double, 
-                          sphereMat :: Material}
+data Sphere = SphereObj {sphereCenter :: Vector,
+                         sphereRadius :: Double, 
+                         sphereMat :: Material}
 
 getSphereUV :: Vector -> (Double, Double)
 getSphereUV v =
@@ -43,16 +43,18 @@ instance Show Sphere where
 instance Hittable Sphere where
     {-# INLINE hit #-}
     hit !(SphereObj {sphereCenter = sc,
-                    sphereRadius = sr,
-                    sphereMat = sm}) g !(Rd {origin = ro, 
-                                           direction = rd,
-                                           rtime = rt}) !tmin !tmax !hrec =
+                     sphereRadius = sr,
+                     sphereMat = sm}) g !(Rd {origin = ro,
+                                             direction = rd,
+                                             rtime = rt,
+                                             wavelength = rwave }) !tmin !tmax !hrec =
         let oc = subtract ro sc
             a = lengthSquared rd
             hb = dot oc rd
             c = (lengthSquared oc) - (sr * sr)
             discriminant = hb * hb - a * c
-            ry = Rd {origin = ro, direction = rd, rtime = rt}
+            ry = Rd {origin = ro, direction = rd,
+                     rtime = rt, wavelength = rwave}
         in if discriminant < 0
            then (hrec, False, g)
            else let sqd = sqrt discriminant
@@ -89,9 +91,10 @@ instance Hittable Sphere where
             aBound = AaBbox { aabbMin = cv1, aabbMax = cv2 }
         in (aBound, True)
 
-    pdf_value a g orig v = 
+    pdf_value a g orig v =
         let hr = emptyRec
-            ry = Rd {origin = orig, direction = v, rtime = 0.0}
+            ry = Rd {origin = orig, direction = v, 
+                     rtime = 0.0, wavelength = 0}
             (ahit, isHit, g1) = hit a g ry 0.001 (infty) hr
         in if not isHit
            then RandResult (0.0, g1)

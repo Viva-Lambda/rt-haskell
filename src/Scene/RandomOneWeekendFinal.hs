@@ -14,7 +14,7 @@ import Prelude hiding(subtract)
 -- scene defaults
 import Scene.Scene
 
-import Color.ColorInterface
+import Color.Pixel
 --
 import Hittable.HittableList
 import Hittable.HittableObj
@@ -153,7 +153,7 @@ randomOneWeekendFinalScene g b =
         cam_aperture = 0.1,
         scene_obj = hl,
         sample_obj = sobjs,
-        back_ground = fromRGB 0.7 0.8 1.0
+        back_ground = PixSpecTrichroma (0.7,0.8,1.0)
     }
 
 randomOneWeekendFinalSceneStatic ::RandomGen g => g -> Scene

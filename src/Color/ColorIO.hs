@@ -26,7 +26,12 @@ pixSpectrum2RGB pspec sample_nb =
          PixSpecSampled s -> 
             if (all isNaN (vec2List (powers (sampled s))))
             then zeroV3
-            else toRGB $! mfn (sampled s)
+            else let scaledwp = mfn (sampled s)
+                     scaledSpectrum = SSpec { 
+                         spectrumType = spectrumType s,
+                         sampled = scaledwp
+                         }
+                 in toRGB $! scaledSpectrum
          PixSpecTrichroma (r,g,b) ->
             if (all isNaN [r,g,b])
             then zeroV3

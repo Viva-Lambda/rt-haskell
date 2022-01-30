@@ -259,3 +259,6 @@ clampV v mn mx =
     in fromList2Vec n ns
     where clampvals [] = []
           clampvals (e:es) = clamp e mn mx : clampvals es
+
+sumD :: Vector -> Double
+sumD v = foldl1 (+) $! vec2List v

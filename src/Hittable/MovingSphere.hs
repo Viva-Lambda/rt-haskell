@@ -73,7 +73,8 @@ instance Show MovingSphere where
 
 instance Hittable MovingSphere where
     {-# INLINE hit #-}
-    hit !s g !(Rd {origin = ro, rtime = t0, direction = rd}) !tmin !tmax !hrec =
+    hit !s g !(Rd {origin = ro, rtime = t0,
+                   direction = rd, wavelength = rwave}) !tmin !tmax !hrec =
         let sr = msphereRadius s
             sm = msphereMat s
             sc = (getMSphereCenter s t0)
@@ -82,7 +83,8 @@ instance Hittable MovingSphere where
             hb = dot oc rd
             c = (lengthSquared oc) - (sr * sr)
             discriminant = hb * hb - a * c
-            ry = Rd {origin = ro, direction = rd, rtime = t0}
+            ry = Rd {origin = ro, direction = rd, rtime = t0,
+                     wavelength = rwave}
         in if discriminant < 0
            then (hrec, False, g)
            else let sqd = sqrt discriminant
@@ -123,7 +125,8 @@ instance Hittable MovingSphere where
 
     pdf_value a g orig v = 
         let hr = emptyRec
-            ry = Rd {origin = orig, direction = v, rtime = 0.0}
+            ry = Rd {origin = orig, direction = v,
+                     rtime = 0.0, wavelength = 0}
             (ahit, isHit, g1) = hit a g ry 0.001 (infty) hr
         in if not isHit
            then RandResult (0.0, g1)

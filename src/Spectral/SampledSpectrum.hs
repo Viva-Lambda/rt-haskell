@@ -20,6 +20,7 @@ import Utility.HelperTypes
 
 -- third party
 import GHC.Float hiding (clamp)
+import Debug.Trace
 
 data SpectrumType = REFLECTANCE
                   | ILLUMINANT
@@ -35,6 +36,12 @@ data SampledSpectrum = SSpec {
 zeroLikeSpectrum :: SampledSpectrum -> SampledSpectrum
 zeroLikeSpectrum a = SSpec {spectrumType = spectrumType a,
                             sampled = zeroLike $! sampled a}
+
+zeroSampledSpectrum :: SampledSpectrum
+zeroSampledSpectrum = SSpec {
+        spectrumType = REFLECTANCE,
+        sampled = SampledWP (fromList2NL (0, -1.0) [])
+    }
 
 -- create spd from rgb values
 fromRGB :: Double -> Double -> Double -> SpectrumType -> SampledWavePower
@@ -111,6 +118,37 @@ illuminantFromRGB :: Double -> Double -> Double -> SampledSpectrum
 illuminantFromRGB r g b = fromRGBModel r g b ILLUMINANT
 
 -- instances
+spectrumTypeCheck :: SampledSpectrum -> SampledSpectrum -> (Bool, String)
+spectrumTypeCheck a b = ((spectrumType a) == (spectrumType b),
+                         "Spectrum types of sampled spectrums are not the same")
+
+instance BinaryOps SampledSpectrum where
+    elementwiseOp str f a b =
+        let (isSame, s) = spectrumTypeCheck a b
+        in if isSame == False
+           then traceStack (s ++ " :: " ++ str) zeroSampledSpectrum
+           else let ap = sampled a
+                    bp = sampled b
+                    ndata = elementwiseOp str f ap bp
+                in SSpec { spectrumType = spectrumType a, 
+                           sampled = ndata }
+
+    elementwiseScalarOp str f a = let ap = sampled a
+                                      ndata = elementwiseScalarOp str f ap
+                                  in SSpec { spectrumType = spectrumType a,
+                                             sampled = ndata }
+    -- division
+    divide a b =
+        let (isSame, str) = spectrumTypeCheck a b
+        in if isSame == False
+           then traceStack (str) zeroSampledSpectrum
+           else let ap = sampled a
+                    bp = sampled b
+                    ndata = divide ap bp
+                in SSpec {
+                    spectrumType = spectrumType a,
+                    sampled = ndata
+                }
 
 --
 instance Colorable SampledSpectrum where

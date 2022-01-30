@@ -5,6 +5,7 @@ import Scene.Scene
 
 
 import Color.ColorInterface
+import Color.Pixel
 
 -- math3d
 import Math3D.Vector
@@ -53,6 +54,6 @@ twoCheckeredSpheres =
         cam_aperture = 0.0,
         scene_obj = hs,
         sample_obj = HList {objects = NList (HittableCons sp1) []},
-        back_ground = fromRGB 0.7 0.8 1.0
+        back_ground = PixSpecTrichroma (0.7, 0.8, 1.0)
     }
 

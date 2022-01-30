@@ -282,7 +282,8 @@ instance Hittable AaRect where
 
     pdf_value a g orig v =
         let hr = emptyRec
-            ry = Rd {origin = orig, direction = v, rtime = 0.0}
+            ry = Rd {origin = orig, direction = v, 
+                     rtime = 0.0, wavelength = 0}
             (ahit, isHit, g1) = hit a g ry 0.001 (infty) hr
         in if not isHit
            then RandResult (0.0, g1)

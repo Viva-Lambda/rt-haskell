@@ -8,7 +8,7 @@ import Math3D.Vector
 import Math3D.CommonOps
 
 -- color
-import Color.ColorInterface
+import Color.Pixel
 
 -- hittable
 import Hittable.HittableList
@@ -53,5 +53,5 @@ diffuseSphere =
         cam_aperture = 0.1,
         scene_obj = sobj,
         sample_obj = sobj,
-        back_ground = fromRGB 0.7 0.8 1.0
+        back_ground = PixSpecTrichroma (0.7,0.8,1.0)
          }

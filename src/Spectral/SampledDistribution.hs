@@ -49,7 +49,7 @@ wavesCheck a b =
 
 -- common operations
 instance BinaryOps SampledWavePower where
-    elementwiseOp str f a b = 
+    elementwiseOp str f a b =
         let (areWavelengthsNotSame, str2, aw, bw) = wavesCheck a b
         in if areWavelengthsNotSame
            then traceStack (str2 ++ " :: " ++ str) (zeroLike a)

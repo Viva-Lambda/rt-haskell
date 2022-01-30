@@ -5,7 +5,7 @@ module Scene.NextWeekFinal(nextWeekFinal) where
 -- scene default values
 import Scene.Scene
 
-import Color.ColorInterface
+import Color.Pixel
 -- 
 import System.Random
 import Random
@@ -173,5 +173,5 @@ nextWeekFinal gen img =
         cam_aperture = 0.0,
         scene_obj = hs,
         sample_obj = HList {objects = NList light [dieSp1,boundary1,tboxes]},
-        back_ground = fromRGB 0.0 0.0 0.0
+        back_ground = PixSpecTrichroma (0.0,0.0,0.0)
     }

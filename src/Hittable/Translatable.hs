@@ -36,8 +36,10 @@ instance Eq Translatable where
 instance Hittable Translatable where
     hit (Translate a offset) g !(Rd {origin = ro, 
                                      direction = rd,
-                                     rtime = rt}) !tmin !tmax !hrec =
-        let ry = Rd {origin = subtract ro offset, direction = rd, rtime = rt}
+                                     rtime = rt,
+                                     wavelength = rwave}) !tmin !tmax !hrec =
+        let ry = Rd { origin = subtract ro offset, direction = rd,
+                      rtime = rt, wavelength = rwave }
             (srec, isHit, g1) = hit a g ry tmin tmax hrec
         in if not isHit
            then (srec, isHit, g1)

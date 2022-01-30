@@ -1,11 +1,13 @@
--- perlin sphere scene
-module Scene.PerlinSphere(twoPerlinSpheres) where
+-- Spectral Checker scene
+module Scene.CheckerScene(twoCheckeredSpheres) where
 
 import Scene.Scene
 
+
+import Color.ColorInterface
 import Color.Pixel
 
--- math
+-- math3d
 import Math3D.Vector
 import Math3D.CommonOps
 
@@ -13,33 +15,29 @@ import Math3D.CommonOps
 import Hittable.HittableList
 import Hittable.HittableObj
 import Hittable.Sphere
-import Hittable.MovingSphere
 
 -- texture
-import Texture.SolidColor
 import Texture.TextureObj
-import Texture.Noise
+import Texture.SolidColor
+import Texture.Checker
 
 -- material
 import Material.Material
 
--- random
-import System.Random
-import GHC.Float
-import Random
-
+-- utility
 import Utility.HelperTypes
 
-
-twoPerlinSpheres :: RandomGen g => g -> Scene
-twoPerlinSpheres g =
-    let ptex = TextureCons $! mkPerlinNoise g 4.0
-        lmb = LambMat $! LambT ptex
-        sp1 = SphereObj {sphereCenter = fromList2Vec 0.0 [-1000.0, 0.0],
-                         sphereRadius = 1000,
+twoCheckeredSpheres :: Scene
+twoCheckeredSpheres =
+    let s1 = SolidV $! fromList2Vec 0.2 [0.3, 0.1]
+        s2 = SolidV $! fromList2Vec 0.9 [ 0.9, 0.8]
+        tobj = TextureCons $! CheckT s1 s2
+        lmb = LambMat $! LambT tobj
+        sp1 = SphereObj {sphereCenter = fromList2Vec 0.0 [-10.0, 0.0],
+                         sphereRadius = 10,
                          sphereMat = lmb}
-        sp2 = SphereObj {sphereCenter = fromList2Vec 0.0 [2.0, 0.0],
-                         sphereRadius = 2,
+        sp2 = SphereObj {sphereCenter = fromList2Vec 0.0 [10.0, 0.0],
+                         sphereRadius = 10,
                          sphereMat = lmb}
         hs = HList {objects = NList (HittableCons sp1) [HittableCons sp2]}
     in SceneVals {
@@ -56,6 +54,6 @@ twoPerlinSpheres g =
         cam_aperture = 0.0,
         scene_obj = hs,
         sample_obj = HList {objects = NList (HittableCons sp1) []},
-        back_ground = PixSpecTrichroma (0.7,0.8,1.0)
+        back_ground = PixSpecTrichroma (0.7, 0.8, 1.0)
     }
 

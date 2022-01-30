@@ -5,7 +5,7 @@ module Scene.CornellSphere(cornellSphere) where
 -- scene default values
 import Scene.Scene
 
-import Color.ColorInterface
+import Color.Pixel
 -- 
 import System.Random
 import Random
@@ -94,5 +94,5 @@ cornellSphere gen =
         cam_aperture = 0.0,
         scene_obj = hs,
         sample_obj = HList {objects = NList lightR [b2, b1trans]},
-        back_ground = fromRGB 0.0 0.0 0.0
+        back_ground = PixSpecTrichroma (0.0, 0.0, 0.0)
     }

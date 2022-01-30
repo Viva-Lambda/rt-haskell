@@ -6,6 +6,7 @@ module Scene.CornellBox(cornellBox) where
 import Scene.Scene
 
 import Color.ColorInterface
+import Color.Pixel
 -- 
 import System.Random
 import Random
@@ -91,5 +92,5 @@ cornellBox gen =
         cam_aperture = 0.0,
         scene_obj = hs,
         sample_obj = HList {objects = NList lightR []},
-        back_ground = fromRGB 0.0 0.0 0.0
+        back_ground = PixSpecTrichroma(0.0, 0.0, 0.0)
     }

@@ -11,6 +11,10 @@ import Math3D.Ray
 import Math3D.Vector
 import Math3D.CommonOps
 
+-- spectral handling
+import Spectral.SampledDistribution
+import Spectral.SampledSpectrum
+
 -- color handling
 import Color.Pixel
 import Color.ColorInterface
@@ -55,11 +59,11 @@ rayColor !rayr !world lights !background !depth =
              ray = liftRandVal rayr
              gen = liftRandGen rayr
              (hithrec, isHit, g1) = hit world gen ray 0.001 infty hrec
-             HRec{point = recp,
-                  pnormal = recnorm,
-                  hUV_u = uu,
-                  hUV_v = vv,
-                  matPtr = m} = hithrec
+             HRec { point = recp,
+                    pnormal = recnorm,
+                    hUV_u = uu,
+                    hUV_v = vv,
+                    matPtr = m } = hithrec
          in if isHit
             then let sout = scatter g1 m ray hithrec
                      (g2, srec, isScattering) = sout
@@ -82,7 +86,11 @@ rayColor !rayr !world lights !background !depth =
         hpdf = HitPdf lights (point hithrec);
         mpdf = MixPdf (NList cospdf [PdfCons hpdf]);
         RandResult (rdir, g3) = generate hpdf g2;
-        rout = Rd {origin = point hithrec, direction = toUnit rdir, rtime = rtime ray};
+        rout = Rd {origin = point hithrec, 
+                   direction = toUnit rdir, 
+                   rtime = rtime ray,
+                   wavelength = wavelength ray
+                   };
         RandResult (pval, g4) = pvalue hpdf g3 (direction rout);
         routr = RandResult (rout, g4);
         spdf = scattering_pdf mptr ray hithrec rout;
@@ -130,11 +138,44 @@ mkColor :: RandomGen g => (Int, Int) -> g -> Camera -> Scene -> RandomResult Pix
 mkColor coord rng cmr scene =
     let imwimh = (img_width scene, img_height scene)
         rayr = mkPixelRay imwimh coord rng cmr
+        RandResult (ray, rgen) = rayr
         sceneObjects = scene_obj scene
         sampleObjects = sample_obj scene
         back = back_ground scene
         depth = bounce_depth scene
-    in rayColor rayr sceneObjects sampleObjects back depth
+        rcolor = case back of
+                    PixSpecTrichroma _ ->
+                        let backColor = toColorInterface back (wavelength ray)
+                            RandResult (sceneColor, g1) = rayColor rayr sceneObjects sampleObjects backColor depth
+                        in case stype sceneColor of
+                                RGB -> let [r, g, b] = vec2List $! colorData sceneColor
+                                       in (PixSpecTrichroma (r, g, b), g1)
+                                --
+                                _ -> traceStack
+                                        "Scene color model had change in evaluation"
+                                        (zeroPixelSpectrum, g1)
+                    PixSpecSampled s ->
+                        let fn acc wave =
+                                let (lst, gen) = acc
+                                    r = RandResult (ray, gen)
+                                    backPower = toColorInterface back (wavelength ray)
+                                    RandResult (scenePower, g1) =
+                                        rayColor r sceneObjects sampleObjects backPower depth
+                                in case stype scenePower of
+                                     RGB -> traceStack
+                                                "Scene color model had change in evaluation"
+                                                ([], g1)
+                                     _ -> (lst ++ [(wave, colorData scenePower)], g1)
+                            (wavePowers, ngen) = foldl fn ([], rgen) [visible_lambda_start..visible_lambda_end]
+                            ((w:ws), powerVecs) = unzip wavePowers
+                            --
+                            (p:ps) = map sumD powerVecs
+                            sampledWPower = fromWavesPowers 
+                                                (fromList2NL p ps)
+                                                (fromList2NL w ws)
+                            spect = fromSampledWave sampledWPower REFLECTANCE
+                        in (PixSpecSampled spect, ngen)
+    in RandResult rcolor
 
 foldPixels :: RandomGen g => g -> [(Int, Int)] -> Camera -> Scene -> [Pixel]
 foldPixels gen lst cMra scne =

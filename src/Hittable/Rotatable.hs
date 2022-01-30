@@ -124,7 +124,8 @@ instance Hittable Rotatable where
             rd = direction ry
             rro = rotateByMatrix ro rotmat -- rotated origin
             rrd = rotateByMatrix rd rotmat -- rotated direction
-            nry = Rd {origin = rro, direction = rrd, rtime = rtime ry}
+            nry = Rd { origin = rro, direction = rrd,
+                       rtime = rtime ry, wavelength = wavelength ry }
             (srec, isHit, g1) = hit a g nry tmin tmax hrec
         in if not isHit
            then (srec, isHit, g1)

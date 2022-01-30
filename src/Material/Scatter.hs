@@ -89,16 +89,20 @@ instance Scatterer Lambertian where
                     mkSRecord 
                         (Rd {origin = recp,
                              direction = recn,
-                             rtime = rtime inray})
+                             rtime = rtime inray,
+                             wavelength = wavelength inray
+                             })
                         (False)
                         (color t hu hv recp)
                         (PdfCons $! CosNormalPdf recn), True
                         )
                    else (g, 
                     mkSRecord 
-                        (Rd {origin = recp, 
-                                   direction = sdir,
-                                   rtime = rtime inray})
+                        (Rd {origin = recp,
+                             direction = sdir,
+                             rtime = rtime inray,
+                             wavelength = wavelength inray
+                             })
                         (False)
                         (color t hu hv recp)
                         (PdfCons $! CosNormalPdf recn), True
@@ -134,7 +138,9 @@ instance Scatterer Metal where
                     mkSRecord 
                         (Rd {origin = recp, 
                              direction = rdir, 
-                             rtime = rtime inray})
+                             rtime = rtime inray,
+                             wavelength = wavelength inray
+                             })
                         (True)
                         (color a hu hv recp) 
                         (emptyPdfObj),
@@ -167,9 +173,10 @@ instance Scatterer Dielectric where
                     rdir = if canNotRefract || (schlickVal > rval)
                            then reflect udir (pnormal hrec)
                            else refract udir (pnormal hrec) refratio
-                    outray = Rd {origin = point hrec,
-                                 direction = rdir,
-                                 rtime = rtime inray
+                    outray = Rd { origin = point hrec,
+                                  direction = rdir,
+                                  rtime = rtime inray,
+                                  wavelength = wavelength inray
                                  }
                 in (g,
                     mkSRecord 
@@ -198,9 +205,11 @@ instance Scatterer Isotropic where
                     recp = point hrec
                     hu = hUV_u hrec
                     hv = hUV_v hrec
-                    outray = Rd {origin = recp, 
-                                 direction = uvec, 
-                                 rtime = rtime inray}
+                    outray = Rd {origin = recp,
+                                 direction = uvec,
+                                 rtime = rtime inray,
+                                 wavelength = wavelength inray
+                                 }
                     atten = color a hu hv recp
                 in (g,
                     mkSRecord
@@ -212,5 +221,3 @@ instance Scatterer Isotropic where
 
             IsotColor c -> let mt = TextureCons $ SolidV c
                            in scatter gen (IsotTexture mt) inray hrec
-
-
