@@ -41,7 +41,10 @@ emptyModelLike a = case model a of
 
 colorModelCheck :: ColorRecord -> ColorRecord -> (Bool, String)
 colorModelCheck a b =
-    ((stype a) == (stype b), "Color Models of interfaces are not the same")
+    let msg1 = "Color Models of interfaces are not the same: "
+        msg2 = show (stype a)
+        msg3 = show (stype b)
+    in ((stype a) == (stype b), msg1 ++ msg2 ++ " " ++ msg3 )
 
 instance BinaryOps ColorRecord where
     elementwiseOp str f a b =

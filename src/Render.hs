@@ -149,7 +149,9 @@ mkColor coord rng cmr scene =
                             RandResult (sceneColor, g1) = rayColor rayr sceneObjects sampleObjects backColor depth
                         in case stype sceneColor of
                                 RGB -> let [r, g, b] = vec2List $! colorData sceneColor
-                                       in (PixSpecTrichroma (r, g, b), g1)
+                                       in if (all isNaN [r, g, b])
+                                          then (PixSpecTrichroma (0.0, 0.0, 0.0), g1)
+                                          else (PixSpecTrichroma (r, g, b), g1)
                                 --
                                 _ -> traceStack
                                         "Scene color model had change in evaluation"
@@ -165,7 +167,12 @@ mkColor coord rng cmr scene =
                                      RGB -> traceStack
                                                 "Scene color model had change in evaluation"
                                                 ([], g1)
-                                     _ -> (lst ++ [(wave, colorData scenePower)], g1)
+                                     _ -> let cval = colorData scenePower
+                                     -- since scenePower is a vector with 
+                                     -- a single element
+                                          in if isNaN (vget cval 0)
+                                             then (lst ++ [(wave, zeroLikeVector cval)], g1)
+                                             else (lst ++ [(wave, cval)], g1)
                             (wavePowers, ngen) = foldl fn ([], rgen) [visible_lambda_start..visible_lambda_end]
                             ((w:ws), powerVecs) = unzip wavePowers
                             --

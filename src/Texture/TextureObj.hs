@@ -11,11 +11,12 @@ import Texture.Checker
 import Texture.Noise
 import Texture.Texture
 import Texture.Image
+import Texture.Spectral
 
 data TextureObj where 
     TextureCons :: Texture a => a -> TextureObj
 
 instance Texture TextureObj where
-    color b hu hv hp =
+    color b hu hv hp w =
         case b of
-            (TextureCons a) -> color a hu hv hp
+            (TextureCons a) -> color a hu hv hp w

@@ -24,18 +24,13 @@ pixSpectrum2RGB pspec sample_nb =
         mfn v = multiplyS v scale
     in case pspec of
          PixSpecSampled s -> 
-            if (all isNaN (vec2List (powers (sampled s))))
-            then zeroV3
-            else let scaledwp = mfn (sampled s)
-                     scaledSpectrum = SSpec { 
+            let scaledwp = mfn (sampled s)
+                scaledSpectrum = SSpec { 
                          spectrumType = spectrumType s,
                          sampled = scaledwp
                          }
-                 in toRGB $! scaledSpectrum
-         PixSpecTrichroma (r,g,b) ->
-            if (all isNaN [r,g,b])
-            then zeroV3
-            else mfn (fromList2Vec r [g, b])
+            in toRGB $! scaledSpectrum
+         PixSpecTrichroma (r,g,b) -> mfn (fromList2Vec r [g, b])
 
 writeColor :: PixelSpectrum -> Int -> String
 writeColor pspec sample_nb =

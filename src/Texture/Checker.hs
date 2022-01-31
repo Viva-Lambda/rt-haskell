@@ -11,12 +11,12 @@ data Checker where
 
 
 instance Texture Checker where
-    color (CheckT a b) hu hv hp = 
+    color (CheckT a b) hu hv hp w = 
         let xv = vget hp 0
             yv = vget hp 1
             zv = vget hp 2
             sinval = sin xv * sin yv * sin zv
             cval = if sinval < 0
-                   then color a hu hv hp
-                   else color b hu hv hp
+                   then color a hu hv hp w
+                   else color b hu hv hp w
         in cval

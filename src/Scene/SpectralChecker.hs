@@ -1,11 +1,15 @@
 -- Spectral Checker scene
-module Scene.SpectralCheckerScene(twoCheckeredSpheres) where
+module Scene.SpectralChecker(twoCheckeredSpheresSpectral) where
 
 import Scene.Scene
 
 
 import Color.ColorInterface
 import Color.Pixel
+
+-- spectral handling
+import Spectral.SampledDistribution
+import Spectral.SampledSpectrum
 
 -- math3d
 import Math3D.Vector
@@ -20,6 +24,7 @@ import Hittable.Sphere
 import Texture.TextureObj
 import Texture.SolidColor
 import Texture.Checker
+import Texture.Spectral
 
 -- material
 import Material.Material
@@ -27,10 +32,11 @@ import Material.Material
 -- utility
 import Utility.HelperTypes
 
-twoCheckeredSpheres :: Scene
-twoCheckeredSpheres =
-    let s1 = SolidD 0.2 0.3 0.1
-        s2 = SolidD 0.9 0.9 0.8
+twoCheckeredSpheresSpectral :: Scene
+twoCheckeredSpheresSpectral =
+    let s1 = SpectT $! fromRGBModel 0.2 0.3 0.1 REFLECTANCE
+        s2 = SpectT $! fromRGBModel 0.9 0.9 0.8 REFLECTANCE
+        backSpectrum = fromRGBModel 0.7 0.8 1.0 REFLECTANCE
         tobj = TextureCons $! CheckT s1 s2
         lmb = LambMat $! LambT tobj
         sp1 = SphereObj {sphereCenter = fromList2Vec 0.0 [-10.0, 0.0],
@@ -54,6 +60,6 @@ twoCheckeredSpheres =
         cam_aperture = 0.0,
         scene_obj = hs,
         sample_obj = HList {objects = NList (HittableCons sp1) []},
-        back_ground = PixSpecTrichroma (0.7, 0.8, 1.0)
+        back_ground = PixSpecSampled backSpectrum
     }
 
