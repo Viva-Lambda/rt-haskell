@@ -152,7 +152,7 @@ instance BinaryOps SampledSpectrum where
 
 --
 instance Colorable SampledSpectrum where
-    toXYZ (SSpec {spectrumType = t, 
+    toXYZ (SSpec {spectrumType = _, 
                   sampled = a}
             ) = let wstart = minWavelength a
                     wend = maxWavelength a

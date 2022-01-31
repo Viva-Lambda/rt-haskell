@@ -51,7 +51,7 @@ import Prelude hiding(subtract)
 import Scene.Scene
 
 
-rayColor :: RandomGen g => RandomResult Ray g -> HittableList -> HittableList -> ColorInterface -> Int -> RandomResult ColorInterface g
+rayColor :: RandomGen g => RandomResult Ray g -> HittableList -> HittableList -> ColorRecord -> Int -> RandomResult ColorRecord g
 rayColor !rayr !world lights !background !depth =
     if depth <= 0
     then RandResult (emptyModelLike background, liftRandGen rayr)
@@ -67,7 +67,7 @@ rayColor !rayr !world lights !background !depth =
          in if isHit
             then let sout = scatter g1 m ray hithrec
                      (g2, srec, isScattering) = sout
-                     l_e = emitted m uu vv recp
+                     l_e = emitted m uu vv recp (wavelength ray)
                  in if not isScattering
                     then RandResult (l_e, g2)
                     else let isSpec = isSpecularSR srec
@@ -145,7 +145,7 @@ mkColor coord rng cmr scene =
         depth = bounce_depth scene
         rcolor = case back of
                     PixSpecTrichroma _ ->
-                        let backColor = toColorInterface back (wavelength ray)
+                        let backColor = toColorRecord back (wavelength ray)
                             RandResult (sceneColor, g1) = rayColor rayr sceneObjects sampleObjects backColor depth
                         in case stype sceneColor of
                                 RGB -> let [r, g, b] = vec2List $! colorData sceneColor
@@ -158,7 +158,7 @@ mkColor coord rng cmr scene =
                         let fn acc wave =
                                 let (lst, gen) = acc
                                     r = RandResult (ray, gen)
-                                    backPower = toColorInterface back (wavelength ray)
+                                    backPower = toColorRecord back (wavelength ray)
                                     RandResult (scenePower, g1) =
                                         rayColor r sceneObjects sampleObjects backPower depth
                                 in case stype scenePower of

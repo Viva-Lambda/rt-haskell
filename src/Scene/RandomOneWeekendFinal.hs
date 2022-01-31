@@ -55,7 +55,11 @@ mkRndMat gen !a !b !isMoving =
                      RandResult (nlst2, g5) = randFoldlFixedRange2 g3 fnlst2
                      (rv1:rv2:_) = nl2List nlst2
                      diffAlbedo = multiply rv1 rv2
-                     laMat = LambMat $! LambC diffAlbedo
+                     r = vget diffAlbedo 0
+                     g = vget diffAlbedo 1
+                     b = vget diffAlbedo 2
+                     st1 = TextureCons $! SolidD r g b
+                     laMat = LambMat $! LambT st1
                 in if isMoving
                    then let RandResult (rv3, g6) = randomDouble g5 (0.0, 0.5)
                         in (Just $! HittableCons MovSphereObj {
@@ -72,7 +76,11 @@ mkRndMat gen !a !b !isMoving =
             else if chooseMat >= 0.8 && chooseMat < 0.9
                  then let RandResult (rv1, g4) = randomVec (0.5, 1.0) g3
                           RandResult (fz, g5) = randomDouble g4 (0.0, 0.5)
-                          metMat = MetalMat $! MetC rv1 fz
+                          r = vget rv1 0
+                          g = vget rv1 1
+                          b = vget rv1 2
+                          st1 = TextureCons $! SolidD r g b
+                          metMat = MetalMat $! MetT st1 fz
                       in (Just $! HittableCons SphereObj {
                                     sphereCenter = center,
                                     sphereRadius = 0.2,
@@ -97,14 +105,17 @@ world gen !isM = let as = [0..7]
                      bs = [0..7]
                      coords = [(a - 3, b - 3) | a <- as, b <- bs]
                      objs = mkRndMats gen isM coords
-                     groundMat = LambMat $! LambC (singularV 3 0.5 )
+                     groundTexture = TextureCons $! SolidD 0.5 0.5 0.5
+                     groundMat = LambMat $! LambT groundTexture
                      ground = HittableCons SphereObj {
                                     sphereCenter = fromList2Vec 0.0 [-1000.0, 0.0],
                                     sphereRadius = 1000.0,
                                     sphereMat = groundMat}
                      dielM1 = DielMat $! DielRefIndices [1.5]
-                     lambM2 = LambMat $! LambC (fromList2Vec 0.4 [ 0.2, 0.1])
-                     metalM3 = MetalMat $! MetC ( fromList2Vec 0.7 [ 0.6, 0.5] ) 0.0
+                     lambM2Texture = TextureCons $! SolidD 0.4 0.2 0.1
+                     lambM2 = LambMat $! LambT lambM2Texture
+                     metalM3Texture = TextureCons $! SolidD 0.7 0.6 0.5
+                     metalM3 = MetalMat $! MetT metalM3Texture 0.0
                      dielObj = HittableCons $! SphereObj {
                             sphereCenter =fromList2Vec 0.0 [ 1.0, 0.0],
                             sphereRadius = 1.0,

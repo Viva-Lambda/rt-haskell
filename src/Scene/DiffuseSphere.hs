@@ -28,16 +28,18 @@ import Utility.HelperTypes
 
 diffuseSphere :: Scene
 diffuseSphere =
-    let sobj = HList {objects = NList (
+    let st1 = TextureCons $! SolidD 0.4 0.2 0.1
+        st2 = TextureCons $! SolidD 0.5 0.5 0.5
+        sobj = HList {objects = NList (
             HittableCons $! SphereObj {
                             sphereCenter = fromList2Vec (-4.0) [1.0, 0.0],
                             sphereRadius = 1.0,
-                            sphereMat = LambMat $! LambC (fromList2Vec 0.4 [0.2, 0.1])
+                            sphereMat = LambMat $! LambT st1
                         }) [
             HittableCons $ SphereObj {
                             sphereCenter = fromList2Vec 0.0 [-1000.0, 0.0],
                             sphereRadius = 1000.0,
-                            sphereMat =  LambMat $! LambC (fromList2Vec 0.5 [0.5, 0.5])
+                            sphereMat =  LambMat $! LambT st2
                         } ]}
     in SceneVals {
         img_width = imageWidth,

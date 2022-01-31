@@ -73,11 +73,11 @@ bitmapToImageT !b =
 
 
 instance Texture ImageT where
-    color !imgt !u !v p =
+    color !imgt !u !v p _ =
         let (ImgT {imgTWidth = a, imgTHeight = b, bytesPerScanline = bps,
                      bytesPerPixel = bpp, imgData = imap}) = imgt
         in if null imap
-           then ColorInt {stype = RGB, colorData = fromList2Vec 0.0 [1.0, 1.0]}
+           then ColorRec { model = ColorRGB $! fromList2Vec 0.0 [1.0, 1.0] }
            else let uu = clamp u 0.0 1.0
                     vv = 1.0 - (clamp v 0.0 1.0)
                     -- vv = clamp v 0.0 1.0
@@ -99,5 +99,5 @@ instance Texture ImageT where
                           -- in VList [imap DMap.! ii | ii <- iis]
                           in fromList2Vec val vals
                     cval = multiplyS pix cscale
-                in ColorInt { stype = RGB, colorData = cval }
+                in ColorRec { model = ColorRGB cval }
                 -- in error $ show imgt

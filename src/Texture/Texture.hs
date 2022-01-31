@@ -5,4 +5,5 @@ import Math3D.Vector
 import Color.ColorInterface
 
 class Texture a where
-    color :: a -> Double -> Double -> Vector -> ColorInterface
+    -- object -> u -> v -> hit point -> wave length -> Color information
+    color :: a -> Double -> Double -> Vector -> Word -> ColorRecord

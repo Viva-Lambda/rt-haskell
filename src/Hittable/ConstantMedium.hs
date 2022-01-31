@@ -52,11 +52,6 @@ mkConstantMedium :: (Eq a, Show a, Hittable a, Texture b) => a -> Double -> b ->
 mkConstantMedium !boundary !density !tex =
     ConsMedium boundary (IsotMat $ IsotTexture (TextureCons tex)) ((-1.0) / density)
 
-mkConstantMediumColor :: (Eq a, Show a, Hittable a) => a -> Double -> Vector -> ConstantMedium
-mkConstantMediumColor boundary !density color =
-    ConsMedium boundary (IsotMat $ IsotColor color) ((-1.0) / density)
-
-
 instance Hittable ConstantMedium where
     {-# INLINE hit #-}
     boundingBox !a !tmn !tmx !ab =

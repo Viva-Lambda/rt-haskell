@@ -5,7 +5,11 @@ module Material.Material where
 
 import Math3D.Vector
 import Math3D.Ray
+
 import Texture.TextureObj
+
+-- color related
+import Color.ColorInterface
 
 -- materials
 
@@ -16,7 +20,7 @@ data Material = LambMat Lambertian
                 | IsotMat Isotropic
                 | NoMat
 
-type Color = Vector
+type Color = ColorRecord
 
 -- data Lambertian = Lamb {lalbedo :: Color} deriving (Eq, Show)
 
@@ -24,7 +28,7 @@ type Color = Vector
 -- data Lambertian = Lamb {lalbedo :: TextureObj}
 
 data Lambertian where
-    LambC :: Color -> Lambertian
+    -- LambC :: Color -> Lambertian
     LambT :: TextureObj -> Lambertian
 
 
@@ -32,7 +36,7 @@ data Lambertian where
 -- data Metal = Met {malbedo :: TextureObj, fuzz :: Double }
 
 data Metal where
-    MetC :: Color -> Double -> Metal
+    -- MetC :: Color -> Double -> Metal
     MetT :: TextureObj -> Double -> Metal
 
 -- dielectric material
@@ -48,11 +52,11 @@ schlickRef cosi ref_idx =
 
 data DiffuseLight where 
     DLightEmitTextureCons :: TextureObj -> DiffuseLight
-    DLightColorCons :: Color -> DiffuseLight
+    -- DLightColorCons :: Color -> DiffuseLight
     
 
 -- isotropic material
 
 data Isotropic where
     IsotTexture :: TextureObj -> Isotropic
-    IsotColor :: Color -> Isotropic
+    -- IsotColor :: Color -> Isotropic

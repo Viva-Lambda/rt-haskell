@@ -39,7 +39,8 @@ simpleLight g =
         sp2 = SphereObj {sphereCenter = fromList2Vec 0.0 [2.0, 0.0],
                          sphereRadius = 2,
                          sphereMat = lmb}
-        lmat = LightMat $! DLightColorCons (fromList2Vec 4.5 [4.5, 4.5])
+        st1 = TextureCons $! SolidD 4.5 4.5 4.5
+        lmat = LightMat $! DLightEmitTextureCons st1
         dlight = HittableCons $! mkXyRect 3.0 5.0 1.0 3.0 (-2.0) lmat
         sp3 = SphereObj {sphereCenter = fromList2Vec 0.0 [8.0, 0.0],
                          sphereRadius = 2,

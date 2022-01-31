@@ -220,7 +220,7 @@ mkPerlinNoise :: RandomGen g => g -> Double -> PerlinNoise
 mkPerlinNoise !g !scale = snd $ mkPerlinNoiseWithSeed g scale
 
 instance Texture PerlinNoise where
-    color !(PerN {noiseScale = s, noiseGen = p}) !hu !hv !hp =
+    color !(PerN {noiseScale = s, noiseGen = p}) !hu !hv !hp _ =
         let pz = vget hp 2
             pzscale = s * pz
             depth = 7
@@ -228,5 +228,4 @@ instance Texture PerlinNoise where
             pnoiseS = 10 * pnoise
             nval = 1 + sin ( pzscale + pnoiseS )
             nvalHalf = 0.5 * nval
-        in ColorInt {stype = RGB,
-                     colorData = fromList2Vec nvalHalf [nvalHalf, nvalHalf]}
+        in ColorRec {model = ColorRGB $! fromList2Vec nvalHalf [nvalHalf, nvalHalf]}

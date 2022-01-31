@@ -45,10 +45,18 @@ cornellSmoke gen =
         -- set up camera
         sceneC = mkCamTime cfrom cto camVUp cvfov aspectRatio 0.0 camFocDistance
 
-        whiteMat = LambMat $! LambC (fromList2Vec 0.75 [0.75, 0.75])
-        redMat = LambMat $! LambC (fromList2Vec 0.65 [0.05, 0.05])
-        greenMat = LambMat $! LambC (fromList2Vec 0.12 [0.45, 0.15])
-        lightMat = LightMat $! DLightColorCons (fromList2Vec 15.0 [15.0, 15.0])
+        whitishTexture = TextureCons $! SolidD 0.75 0.3 0.6
+        whiteTexture = TextureCons $! SolidD 0.75 0.75 0.75
+        redTexture = TextureCons $! SolidD 0.65 0.05 0.05
+        greenTexture = TextureCons $! SolidD 0.12 0.45 0.15
+        highWhiteTexture = TextureCons $! SolidD 15.0 15.0 15.0
+        blackTexture = TextureCons $! SolidD 0.0 0.0 0.0
+
+        whiteMat = LambMat $! LambT whiteTexture
+        redMat = LambMat $! LambT redTexture
+        greenMat = LambMat $! LambT greenTexture
+        lightMat = LightMat $! DLightEmitTextureCons highWhiteTexture
+
         -- cornell walls
         c1 = 0.0
         c2 = 555.0
@@ -73,8 +81,8 @@ cornellSmoke gen =
         b2 = mkBox (zeroV3) (fromList2Vec 165.0 [ 165.0, 165.0]) whiteMat
         b2rot = mkRotatable b2 (-18.0) RY
         b2trans = Translate b2rot (fromList2Vec 130.0 [0.0, 65.0])
-        b1smoke = mkConstantMediumColor b1trans 0.1 (fromList2Vec 0.7 [0.4, 0.6]) -- white
-        b2smoke = mkConstantMediumColor b2trans 0.01 (singularV 3 0.0) -- black
+        b1smoke = mkConstantMedium b1trans 0.1  whitishTexture-- white
+        b2smoke = mkConstantMedium b2trans 0.01 blackTexture -- black
 
         hs = HList {objects = NList (HittableCons b1smoke) [HittableCons $ b2smoke,
                                                       yzGreenWall, yzRedWall,

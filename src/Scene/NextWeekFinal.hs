@@ -48,7 +48,8 @@ import Utility.HelperTypes
 
 mkBoxes :: RandomGen g => g -> (g, [HittableObj])
 mkBoxes g =
-    let gmat = LambMat $! LambC (fromList2Vec 0.48 [ 0.83, 0.53])
+    let gTexture = TextureCons $! SolidD 0.48 0.83 0.53
+        gmat = LambMat $! LambT gTexture
         bcoords = zip (map int2Double [0..20]) (map int2Double [0..20])
         mkbox acc (i, j) = let w = 100.0
                                x0 = -1000.0 + (i * w)
@@ -67,7 +68,8 @@ mkBoxes g =
 mkMovSphere :: HittableObj
 mkMovSphere = let c1 = fromList2Vec 400.0 [ 400.0, 200.0]
                   c2 = add c1 (fromList2Vec 30.0 [ 0.0, 0.0])
-                  lmat = LambMat $! LambC (fromList2Vec 0.78 [0.3, 0.1])
+                  ltex = TextureCons $! SolidD 0.78 0.3 0.1
+                  lmat = LambMat $! LambT ltex
               in HittableCons $! MovSphereObj {msphereCenter1 = c1,
                                                msphereCenter2 = c2,
                                                msphereRadius = 50.0,
@@ -87,7 +89,7 @@ earthImg bmp =
 noiseSphere :: RandomGen g => g -> (g, HittableObj)
 noiseSphere g1 =
     let (g2, noiseT) = mkPerlinNoiseWithSeed g1 0.1
-        ptex =TextureCons noiseT
+        ptex = TextureCons noiseT
         lmb = LambMat $! LambT ptex 
     in (g2, HittableCons $! SphereObj {
             sphereCenter = fromList2Vec 220.0 [280.0, 300.0],
@@ -98,7 +100,8 @@ noiseSphere g1 =
 mkTransformedBoxes :: RandomGen g => g -> (g, HittableObj)
 mkTransformedBoxes g =
     --
-    let whmat = LambMat $! LambC (fromList2Vec 0.75 [ 0.7, 0.8])
+    let whiteTexture = TextureCons $! SolidD 0.75 0.75 0.75
+        whmat = LambMat $! LambT whiteTexture
         foldlfn acc _ = let (g1, lst) = acc
                             RandResult (rvec, g2) = randomVec (0.0, 165.0) g1
                             sp = HittableCons $! SphereObj {
@@ -118,8 +121,11 @@ nextWeekFinal :: RandomGen g => g -> Bitmap Word8 -> Scene
 nextWeekFinal gen img =
     let (g1, boxes) = mkBoxes gen
         mbvh = mkBvh boxes g1 0 (length boxes) 0.0 1.0
-        lightMat = LightMat $! DLightColorCons (fromList2Vec 15.0 [15.0, 15.0])
+        highWhiteTexture = TextureCons $! SolidD 15.0 15.0 15.0
+        lightMat = LightMat $! DLightEmitTextureCons highWhiteTexture
         light = HittableCons $! mkXzRect 123.0 423.0 147.0 412.0 554.0 lightMat
+        --
+        metTexture = TextureCons $! SolidD 0.8 0.8 0.9
         msphere = mkMovSphere
         dieSp1 = HittableCons $! SphereObj {
                                 sphereCenter = fromList2Vec 260.0 [150.0, 45.0],
@@ -129,14 +135,15 @@ nextWeekFinal gen img =
         dieSp2 = HittableCons $! SphereObj {
                         sphereCenter = fromList2Vec 0.0 [150.0, 145.0],
                         sphereRadius = 50.0,
-                        sphereMat = MetalMat $! MetC (fromList2Vec 0.8 [0.8, 0.9]) 1.0
+                        sphereMat = MetalMat $! MetT metTexture 1.0
                         }
         boundary1 = HittableCons $! SphereObj {
                         sphereCenter = fromList2Vec 360.0 [150.0, 145.0],
                         sphereRadius = 70.0,
                         sphereMat = DielMat $! DielRefIndices [1.5]
                         }
-        cmed1 = HittableCons $! mkConstantMediumColor boundary1 0.2 (fromList2Vec 0.2 [ 0.4, 0.9])
+        cmed1Texture = TextureCons $! SolidD 0.2 0.4 0.9
+        cmed1 = HittableCons $! mkConstantMedium boundary1 0.2 cmed1Texture
 
         boundary2 = HittableCons $! SphereObj {
                         sphereCenter = zeroV3,
@@ -144,7 +151,8 @@ nextWeekFinal gen img =
                         sphereMat = DielMat $! DielRefIndices [1.5]
                         }
 
-        cmed2 = HittableCons $! mkConstantMediumColor boundary2 0.00001 (fromList2Vec 1.0 [1.0, 1.0])
+        cmed2Texture = TextureCons $! SolidD 1.0 1.0 1.0
+        cmed2 = HittableCons $! mkConstantMedium boundary2 0.00001 cmed2Texture
         eimg = earthImg img
         (g2, noiseS) = noiseSphere g1
         (g3, tboxes) = mkTransformedBoxes g2

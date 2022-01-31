@@ -87,18 +87,16 @@ instance BinaryOps PixelSpectrum where
                             PixSpecSampled s2 -> PixSpecSampled $! divide s1 s2
 
 
-toColorInterface :: PixelSpectrum -> Word -> ColorInterface
-toColorInterface a wave = case a of
-                             PixSpecTrichroma (r,g,b) -> ColorInt {
-                                stype = RGB,
-                                colorData = fromList2Vec r [g, b]
-                                }
-                             PixSpecSampled s -> 
-                                let v = evaluateWave wave (sampled s)
-                                in ColorInt {
-                                    stype = Spectral $! spectrumType s,
-                                    colorData = fromList2Vec v []
-                                }
+toColorRecord :: PixelSpectrum -> Word -> ColorRecord
+toColorRecord a wave = case a of
+                         PixSpecTrichroma (r,g,b) -> ColorRec {
+                            model = ColorRGB $! fromList2Vec r [g, b]
+                            }
+                         PixSpecSampled s -> 
+                            let v = evaluateWave wave (sampled s)
+                            in ColorRec {
+                                model = ColorSpec (spectrumType s, (wave, v))
+                            }
 
 data Pixel = Pix {x :: Int, y :: Int,
                   color :: PixelSpectrum} deriving (Eq, Show)

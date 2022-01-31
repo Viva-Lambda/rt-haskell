@@ -45,12 +45,20 @@ cornellSphere gen =
         -- set up camera
         sceneC = mkCamTime cfrom cto camVUp cvfov aspectRatio 0.0 camFocDistance
 
-        whiteMat = LambMat $! LambC (fromList2Vec 0.75 [ 0.75, 0.75])
-        redMat = LambMat $! LambC (fromList2Vec 0.65 [ 0.05, 0.05])
-        greenMat = LambMat $! LambC (fromList2Vec 0.12 [ 0.45, 0.15])
-        lightMat = LightMat $! DLightColorCons (fromList2Vec 15.0 [ 15.0, 15.0])
-        metMat = MetalMat $! MetC (fromList2Vec 0.8 [ 0.7, 0.75]) 0.001
+        whitishTexture = TextureCons $! SolidD 0.75 0.8 0.6
+        whiteTexture = TextureCons $! SolidD 0.75 0.75 0.75
+        redTexture = TextureCons $! SolidD 0.65 0.05 0.05
+        greenTexture = TextureCons $! SolidD 0.12 0.45 0.15
+        highWhiteTexture = TextureCons $! SolidD 15.0 15.0 15.0
+        blackTexture = TextureCons $! SolidD 0.0 0.0 0.0
+
+        whiteMat = LambMat $! LambT whiteTexture
+        redMat = LambMat $! LambT redTexture
+        greenMat = LambMat $! LambT greenTexture
+        lightMat = LightMat $! DLightEmitTextureCons highWhiteTexture
+        metMat = MetalMat $! MetT whitishTexture 0.001
         dieMt = DielMat $! DielRefIndices [1.5]
+
         -- cornell walls
         c1 = 0.0
         c2 = 555.0

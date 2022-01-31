@@ -29,8 +29,8 @@ import Utility.HelperTypes
 
 twoCheckeredSpheres :: Scene
 twoCheckeredSpheres =
-    let s1 = SolidV $! fromList2Vec 0.2 [0.3, 0.1]
-        s2 = SolidV $! fromList2Vec 0.9 [ 0.9, 0.8]
+    let s1 = SolidD 0.2 0.3 0.1
+        s2 = SolidD 0.9 0.9 0.8
         tobj = TextureCons $! CheckT s1 s2
         lmb = LambMat $! LambT tobj
         sp1 = SphereObj {sphereCenter = fromList2Vec 0.0 [-10.0, 0.0],

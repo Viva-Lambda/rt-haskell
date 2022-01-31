@@ -6,26 +6,26 @@ import Math3D.Vector
 
 -- color
 import Color.ColorInterface
+
+-- spectral
+import Spectral.SampledSpectrum
 -- texture
 import Texture.Texture
 
-data SolidColor = SolidV Vector
+data SolidColor = SolidP Double
                 | SolidD Double Double Double
 
 instance Texture SolidColor where
-    color (SolidV a) _ _ _ = if (vsize a) == 3
-                             then ColorInt { stype = RGB, colorData = a}
-                             else fromPowers a
+    color (SolidP a) _ _ _ w = ColorRec { model = ColorSpec (ILLUMINANT, (w, a))}
 
-    color (SolidD a b c) _ _ _ = ColorInt {stype = RGB,
-                                           colorData = fromList2Vec a [b, c]}
+    color (SolidD a b c) _ _ _ _ = ColorRec {model = ColorRGB $! fromList2Vec a [b, c]}
 
 instance Eq SolidColor where
-    (SolidV v) == (SolidD a b c) = v == (fromList2Vec a [b,c])
-    (SolidV a) == (SolidV b ) = a == b
-    (SolidD a b c) == (SolidV v) = v == (fromList2Vec a [b,c])
+    (SolidP v) == (SolidD a b c) = False
+    (SolidP a) == (SolidP b ) = a == b
+    (SolidD a b c) == (SolidP v) = False
     (SolidD a b c) == (SolidD d e f) = (a == d) && (b == e) && (c == f)
 
 instance Show SolidColor where
-    show (SolidV a) = "Solid Color: " ++ show a
-    show (SolidD a b c) = "Solid Color: " ++ (show $ fromList2Vec a [b, c])
+    show (SolidP a) = "Solid Color Power: " ++ show a
+    show (SolidD a b c) = "Solid Color Vector: " ++ (show $ fromList2Vec a [b, c])

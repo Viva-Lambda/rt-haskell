@@ -15,14 +15,14 @@ import Pdf.PdfObj
 import Pdf.Pdf
 
 data ScatterRecord where 
-        ScatterRec :: Ray -> Bool -> ColorInterface -> PdfObj -> ScatterRecord
+        ScatterRec :: Ray -> Bool -> ColorRecord -> PdfObj -> ScatterRecord
 
 
-mkSRecord :: Pdf a => Ray -> Bool -> ColorInterface -> a -> ScatterRecord
+mkSRecord :: Pdf a => Ray -> Bool -> ColorRecord -> a -> ScatterRecord
 mkSRecord r b v a = ScatterRec r b v (PdfCons a)
 
 emptySRecord :: PdfObj -> Int -> ScatterRecord
-emptySRecord pobj size = mkSRecord (zeroRay size) False emptyRGBModel pobj
+emptySRecord pobj size = mkSRecord (zeroRay size) False emptyRGBRecord pobj
 
 emptySRec :: PdfObj -> ScatterRecord
 emptySRec pobj = emptySRecord pobj 3
@@ -35,7 +35,7 @@ isSpecularSR :: ScatterRecord -> Bool
 isSpecularSR a = case a of
                     (ScatterRec _ b _ _) -> b
 
-attenuationSR :: ScatterRecord -> ColorInterface
+attenuationSR :: ScatterRecord -> ColorRecord
 attenuationSR a = case a of
                     (ScatterRec _ _ b _) -> b
 
