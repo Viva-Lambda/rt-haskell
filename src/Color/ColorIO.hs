@@ -27,7 +27,7 @@ nanError = let m1 = "NanError :: Pixel spectrum"
            in m3
 
 nanCheck :: Bool -> Vector -> Vector
-nanCheck isAll v = if isAll 
+nanCheck isAll v = if isAll
                    then if all isNaN (vec2List v)
                         then traceStack (nanError ++ show v) v
                         else v
