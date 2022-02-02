@@ -41,9 +41,9 @@ twoCheckeredSpheres =
                          sphereMat = lmb}
         hs = HList {objects = NList (HittableCons sp1) [HittableCons sp2]}
     in SceneVals {
-        img_width = imageWidth,
+        img_width = 256,
         aspect_ratio = aspectRatio,
-        img_height = imageHeight,
+        img_height = getImgHeight 256 aspectRatio,
         nb_samples = nbSamples,
         bounce_depth = bounceDepth,
         cam_look_from = camLookFrom,
@@ -53,7 +53,7 @@ twoCheckeredSpheres =
         cam_focus_distance = camFocDistance,
         cam_aperture = 0.0,
         scene_obj = hs,
-        sample_obj = HList {objects = NList (HittableCons sp1) []},
+        sample_obj = hs,
         back_ground = PixSpecTrichroma (0.7, 0.8, 1.0)
     }
 

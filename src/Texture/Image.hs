@@ -20,6 +20,7 @@ import Data.Bitmap.Base
 import Codec.Image.STB
 import qualified  Data.Map as DMap
 import Data.List
+import Debug.Trace
 
 type Row = Int
 type Column = Int
@@ -84,6 +85,7 @@ instance Texture ImageT where
                     -- uu = 1.0 - (clamp u 0.0 1.0)
                     i_ = double2Int $ uu * (int2Double a)
                     j_ = double2Int $ vv * (int2Double b)
+                    --
                     i = if i_ >= a
                         then a - 1 
                         else i_
@@ -95,7 +97,22 @@ instance Texture ImageT where
                               coeff = (j * bps) + (i * bpp)
                               iis = [coeff + c | c <- cs]
                               -- vals = map pixToDouble [imap !! ii | ii <- iis]
-                              (val:vals) = map pixToDouble (imap !! (j * a + i))
+                              pixIndex = let pindex = j * a + i
+                                             msg = "negative index row: " ++ show j
+                                             msg2 = " image width " ++ show a
+                                             msg3 = " image height " ++ show b
+                                             msg4 = " column index " ++ show i
+                                             msg5 = " uu " ++ show uu
+                                             msg6 = " vv " ++ show vv
+                                             msg7 = " u " ++ show u
+                                             msg8 = " v " ++ show v
+                                             msg9 = msg ++ msg2 ++ msg3 ++ msg4
+                                             msg10 = msg5 ++ msg6 ++ msg7
+                                             msg11 = msg8 ++ msg9 ++ msg10
+                                         in if pindex < 0
+                                            then traceStack msg11 0
+                                            else pindex
+                              (val:vals) = map pixToDouble (imap !! pixIndex)
                           -- in VList [imap DMap.! ii | ii <- iis]
                           in fromList2Vec val vals
                     cval = multiplyS pix cscale

@@ -83,7 +83,7 @@ averageSpectrum a waveStart waveEnd =
 resampleWavePower :: NonEmptyList Double -> NonEmptyList Word -> Word -> Word -> Word -> SampledWavePower
 resampleWavePower pwrs wvs waveStart waveEnd outSize =
     let wsize = lengthNL wvs
-        wdelta = (word2Double (waveEnd - waveStart)) / (int2Double (wsize - 1))
+        wdelta = (word2Double (waveEnd - waveStart)) / (word2Double (outSize - 1))
         -- clamp wave length fn
         wlStartClamp index = if index == (-1)
                              then double2Word ((word2Double waveStart) - wdelta)
@@ -91,9 +91,9 @@ resampleWavePower pwrs wvs waveStart waveEnd outSize =
                                   then double2Word ((word2Double waveEnd) + wdelta)
                                   else getNL wvs index
         -- clamp power fn
-        powerClamp index = clamp index 0 (wsize - 1)
+        powerClamp index = getNL pwrs (clamp index 0 (wsize - 1))
         -- resampling fn
-        sampler waveVal =
+        samplingFn waveVal =
             let halfDelta = wdelta / 2.0
                 waveValD = word2Double waveVal
                 waveValDDiff = waveValD - wdelta
@@ -136,8 +136,8 @@ resampleWavePower pwrs wvs waveStart waveEnd outSize =
                                  then let wst = word2Double $! wlStartClamp starti
                                           wnd = word2Double $! wlStartClamp endi
                                           t = (waveValD - wst) / (wnd - wst)
-                                          pwrCS = int2Double $ powerClamp starti
-                                          pwrCE = int2Double $ powerClamp endi
+                                          pwrCS = powerClamp starti
+                                          pwrCE = powerClamp endi
                                       in mix t pwrCS pwrCE
                                  else let wvds = double2Word $ waveValD - halfDelta
                                           wvde = double2Word $ waveValD + halfDelta
@@ -147,7 +147,7 @@ resampleWavePower pwrs wvs waveStart waveEnd outSize =
                               ot = (word2Double oset) / (word2Double (outSize - 1))
                               nwave = mix ot (word2Double waveStart) (word2Double waveEnd)
                               nw = double2Word nwave
-                              npwr = sampler nw
+                              npwr = samplingFn nw
                           in (opwrs ++ [npwr], owvs ++ [nw])
         ((npwr:npwrs), (nwave:nwaves)) = foldl foldfn ([], []) [0..(outSize - 1)]
     in fromWavesPowers (fromList2NL npwr npwrs) (fromList2NL nwave nwaves)

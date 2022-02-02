@@ -173,9 +173,10 @@ instance Colorable SampledSpectrum where
                 in fromList2Vec (x * waveScale) [y * waveScale, z * waveScale]
     toRGB a = 
         let xyzval = toXYZ a
-            rgbval = xyz2rgb_pbr xyzval
-            --rgbval = xyz2rgb_cie xyzval
-            --rgbval = xyz2rgb_srgb xyzval
+            rgbval = xyzval
+            -- rgbval = xyz2rgb_pbr xyzval
+            -- rgbval = xyz2rgb_cie xyzval
+            -- rgbval = xyz2rgb_srgb xyzval
             msg x r = let str = "xyz or rgb value contains nans :: XYZ "
                           str2 = str ++ show x
                           str3 = str2 ++ " RGB " ++ show r

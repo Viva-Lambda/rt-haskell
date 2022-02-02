@@ -56,9 +56,15 @@ pixSpectrum2RGB pspec sample_nb =
 writeColor :: PixelSpectrum -> Int -> String
 writeColor pspec sample_nb =
     let sv = pixSpectrum2RGB pspec sample_nb
-        -- now to change to rgb
-        svgamma = nanCheck False $! vecScalarOp sqrt sv
-        nsv = nanCheck False $! clampV svgamma 0.0 0.999
-        nv = nanCheck False $! multiplyS nsv 256.0
-        nvints = vecToInt nv
-    in unwords $! map show nvints
+        nvints = case pspec of
+            PixSpecTrichroma _ ->
+                let svgamma = nanCheck False $! vecScalarOp sqrt sv
+                    nsv = nanCheck False $! clampV svgamma 0.0 0.999
+                    nv = nanCheck False $! multiplyS nsv 256.0
+                in vecToInt nv
+            PixSpecSampled _ ->
+                let nsv = nanCheck False $! clampV sv 0.0 0.999
+                    nv = nanCheck False $! multiplyS nsv 256.0
+                in vecToInt nv
+    -- in unwords $! map show nvints
+    in traceStack (show sv) ""
