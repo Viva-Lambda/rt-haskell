@@ -30,8 +30,6 @@ instance Eq Translatable where
                     case b of
                         Translate an boff ->
                             (an == an) && (aoff == boff)
-                        _ -> False
-                _ -> False
 
 instance Hittable Translatable where
     hit (Translate a offset) g !(Rd {origin = ro, 

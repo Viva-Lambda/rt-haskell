@@ -9,6 +9,7 @@ import Math3D.CommonOps
 
 -- color
 import Color.ColorInterface
+import Spectral.SampledSpectrum
 
 --
 import Random
@@ -36,33 +37,41 @@ import System.Random
 
 type Attenuation = ColorRecord
 type ScatteredRay = Ray
-type SOutput = (Attenuation, ScatteredRay, Bool)
 
 class Scatterer a where
-    scatter :: RandomGen g => g -> a -> Ray -> HitRecord -> (g, ScatterRecord, Bool)
-    emitted :: a -> Double -> Double -> Vector -> Word -> ColorRecord
+    scatter :: RandomGen g => g -> a -> Ray -> HitRecord -> ColorFlag -> (g, ScatterRecord, Bool)
+    emitted :: a -> Double -> Double -> Vector -> Word -> ColorFlag -> ColorRecord
     scattering_pdf :: a -> Ray -> HitRecord -> Ray -> Double
 
 
--- scatter :: RandomGen g => g -> a -> Ray -> HitRecord -> Attenuation -> 
--- ScatteredRay -> (Attenuation, ScatteredRay, Bool)
+emptyEmitted :: Word -> ColorFlag -> ColorRecord
+emptyEmitted w cflag =
+    case cflag of
+       RGB -> ColorRec {model = ColorRGB zeroV3}
+       Spectral REFLECTANCE -> ColorRec {
+            model = ColorSpec (ILLUMINANT, (w, 0.0))
+            }
+       Spectral ILLUMINANT -> ColorRec {
+            model = ColorSpec (ILLUMINANT, (w, 0.0))
+            }
+
 
 instance Scatterer Material where
-    scatter gen a r h = 
+    scatter gen a r h f = 
         case a of
             NoMat -> (gen, emptySRec emptyPdfObj, False)
-            (LambMat la) -> scatter gen la r h
-            (MetalMat m) -> scatter gen m r h
-            (DielMat m) -> scatter gen m r h
-            (LightMat m) -> scatter gen m r h
-            (IsotMat m) -> scatter gen m r h
+            (LambMat la) -> scatter gen la r h f
+            (MetalMat m) -> scatter gen m r h f
+            (DielMat m) -> scatter gen m r h f
+            (LightMat m) -> scatter gen m r h f
+            (IsotMat m) -> scatter gen m r h f
 
-    emitted a u v p w =
+    emitted a u v p w cflag =
         case a of
-            (LightMat m) -> emitted m u v p w
-            _ -> ColorRec {model = ColorRGB zeroV3}
+            (LightMat m) -> emitted m u v p w cflag
+            _ -> emptyEmitted w cflag
 
-    scattering_pdf a r hrec sr = 
+    scattering_pdf a r hrec sr =
         case a of
             NoMat -> 0.0
             LambMat la -> scattering_pdf la r hrec sr
@@ -73,9 +82,9 @@ instance Scatterer Material where
 
 
 instance Scatterer Lambertian where
-    emitted _ _ _ _ _ = ColorRec {model = ColorRGB zeroV3}
+    emitted _ _ _ _ w cflag = emptyEmitted w cflag
 
-    scatter !gen !a !inray !hrec =
+    scatter !gen !a !inray !hrec _ =
         case a of
             LambT t ->
                 let recp = point hrec
@@ -119,8 +128,9 @@ instance Scatterer Lambertian where
 
 
 instance Scatterer Metal where
-    emitted _ _ _ _ _ = ColorRec {model = ColorRGB zeroV3}
-    scatter !gen !c !inray !hrec =
+    emitted _ _ _ _ w cflag = emptyEmitted w cflag
+
+    scatter !gen !c !inray !hrec _ =
         case c of
             (MetT a b) -> 
                 let recp = point hrec
@@ -148,8 +158,8 @@ instance Scatterer Metal where
 
 instance Scatterer Dielectric where
     scattering_pdf _ _ _ _ = 0.0
-    emitted _ _ _ _ _ = ColorRec {model = ColorRGB zeroV3}
-    scatter !gen !a !inray !hrec =
+    emitted _ _ _ _ w cflag = emptyEmitted w cflag
+    scatter !gen !a !inray !hrec _ =
         case a of
             (DielRefIndices rs) ->
                 let atten = ColorRec {model = ColorRGB $! fromList2Vec 1.0 [1.0, 1.0]}
@@ -182,15 +192,15 @@ instance Scatterer Dielectric where
 
 instance Scatterer DiffuseLight where
     scattering_pdf _ _ _ _ = 0.0
-    scatter !gen !a !inray !hrec = (gen, emptySRec emptyPdfObj, False)
-    emitted b u v p wave = 
+    scatter !gen !a !inray !hrec _ = (gen, emptySRec emptyPdfObj, False)
+    emitted b u v p wave _ =
         case b of
             DLightEmitTextureCons a -> color a u v p wave
 
 instance Scatterer Isotropic where
     scattering_pdf _ _ _ _ = 0.0
-    emitted _ _ _ _ _ = ColorRec {model = ColorRGB zeroV3}
-    scatter !gen !b !inray !hrec =
+    emitted _ _ _ _ w cflag = emptyEmitted w cflag
+    scatter !gen !b !inray !hrec _ =
         case b of
             IsotTexture a ->
                 let RandResult (uvec, g) = randomUnitSphere gen

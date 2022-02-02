@@ -74,8 +74,6 @@ instance Eq Rotatable where
                 case b of
                     (Rotate an bngle bxis _ _) ->
                       (an == an) && (angle == bngle) && (axis == bxis)
-                    _ -> False
-            _ -> False
 
 innerRotatable :: Int -> Int -> Int -> Aabb -> Matrix -> Vector -> Vector -> (Vector, Vector)
 innerRotatable i j k bbox rotmat minv maxv =

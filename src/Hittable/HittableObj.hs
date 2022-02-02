@@ -25,8 +25,6 @@ instance Eq HittableObj where
             HittableCons a1 ->
                 case b of
                     HittableCons a1 -> a1 == a1
-                    _ -> False
-            _ -> False
 
 instance Show HittableObj where
     show a =

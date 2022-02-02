@@ -37,39 +37,56 @@ colorData a = case model a of
 emptyModelLike :: ColorRecord -> ColorRecord
 emptyModelLike a = case model a of
                         ColorRGB v -> ColorRec {model = ColorRGB $! zeroLikeVector v}
-                        ColorSpec (s, _) -> ColorRec {model = ColorSpec (s, (0, -1.0)) }
+                        ColorSpec (s, (w, _)) -> ColorRec {model = ColorSpec (s, (w, 0.0)) }
 
 colorModelCheck :: ColorRecord -> ColorRecord -> (Bool, String)
 colorModelCheck a b =
-    let msg1 = "Color Models of interfaces are not the same: "
+    let sa = stype a
+        sb = stype b
+        isEqual = case sa of
+                    RGB -> case sb of
+                                RGB -> True
+                                _ -> False
+                    Spectral _ -> case sb of
+                                    Spectral _ -> True
+                                    _ -> False
+        msg1 = "Color Models of interfaces are not the same: "
         msg2 = show (stype a)
         msg3 = show (stype b)
-    in ((stype a) == (stype b), msg1 ++ msg2 ++ " " ++ msg3 )
+    in (isEqual, msg1 ++ msg2 ++ " " ++ msg3 )
+
+wavelengthStr :: Word -> Word -> String
+wavelengthStr a b =
+    let msg1 = "wavelengths are not same" 
+        msg2 = " for given spectral powers"
+        msg3 = ", this library is not"
+        msg4 = " equiped to cover such cases"
+        msg5 = " for sampled spectrums."
+        msg6 = msg1 ++ msg2 ++ msg3 ++ msg4 ++ msg5
+        msg7 = msg6 ++ " First wavelength " ++ show a
+        msg8 = msg7 ++ ", second wavelength " ++ show b
+    in msg8
+
 
 instance BinaryOps ColorRecord where
     elementwiseOp str f a b =
         let (isSame, s) = colorModelCheck a b
         in if isSame == False
-           then traceStack (s ++ " :: " ++ str) emptyRGBRecord
+           then traceStack (s ++ " :: " ++ str) (emptyModelLike a)
            else case model a of
                     ColorRGB av ->
                         case model b of
-                            ColorRGB bv -> 
+                            ColorRGB bv ->
                                 ColorRec {model = (ColorRGB $! vecArithmeticOp str f av bv)}
-                            _ -> traceStack (s ++ " :: " ++ str) emptyRGBRecord
+                            _ -> traceStack (s ++ " :: " ++ str) (emptyModelLike a)
                     ColorSpec (sa, (aw, apower)) ->
                         case model b of
                             ColorSpec (sb, (bw, bpower)) ->
                                 if aw == bw
                                 then ColorRec { model = ColorSpec (sa, (aw, f apower bpower)) }
-                                else let msg1 = "wavelengths are not same" 
-                                         msg2 = " for given spectral powers"
-                                         msg3 = ", this library is not"
-                                         msg4 = " equiped to cover such cases"
-                                         msg5 = " for sampled spectrums."
-                                         msg = msg1 ++ msg2 ++ msg3 ++ msg4
-                                     in traceStack (msg ++ msg5) emptyRGBRecord
-                            _ -> traceStack (s ++ " :: " ++ str) emptyRGBRecord
+                                else let msg = wavelengthStr aw bw
+                                     in traceStack (msg ++ " " ++ str) (emptyModelLike a)
+                            _ -> traceStack (s ++ " :: " ++ str) (emptyModelLike a)
 
     elementwiseScalarOp str f a = 
         case model a of
@@ -80,13 +97,13 @@ instance BinaryOps ColorRecord where
     divide a b =
         let (isSame, str) = colorModelCheck a b
         in if isSame == False
-           then traceStack (str) emptyRGBRecord
+           then traceStack (str) (emptyModelLike a)
            else case model a of
                     ColorRGB av ->
                         case model b of
                             ColorRGB bv -> 
                                 ColorRec {model = ColorRGB $! divide av bv }
-                            _ -> traceStack str emptyRGBRecord
+                            _ -> traceStack str (emptyModelLike a)
                     ColorSpec (sa, (aw, apower)) ->
                         case model b of
                             ColorSpec (sb, (bw, bpower)) ->
@@ -95,15 +112,10 @@ instance BinaryOps ColorRecord where
                                      then ColorRec {model = ColorSpec (sa, (aw, apower / bpower)) }
                                      else traceStack 
                                             "zero division in color models"
-                                            emptyRGBRecord
-                                else let msg1 = "wavelengths are not same" 
-                                         msg2 = " for given spectral powers"
-                                         msg3 = ", this library is not"
-                                         msg4 = " equiped to cover such cases"
-                                         msg5 = " for sampled spectrums."
-                                         msg = msg1 ++ msg2 ++ msg3 ++ msg4
-                                     in traceStack (msg ++ msg5) emptyRGBRecord
-                            _ -> traceStack str emptyRGBRecord
+                                            (emptyModelLike a)
+                                else let msg = wavelengthStr aw bw
+                                     in traceStack msg (emptyModelLike a)
+                            _ -> traceStack str (emptyModelLike a)
 
 
 fromRGB :: Double -> Double -> Double -> ColorRecord

@@ -33,8 +33,9 @@ fromList2NL a b = NList a b
 
 getNL :: NonEmptyList a -> Int -> a
 getNL a index = if (index >= lengthNL a) || (index < 0)
-                then let m = "IndexError :: index out of bounds " ++ show index 
-                     in traceStack m (headNL a)
+                then let m = "IndexError :: index: " ++ show index ++ " out of bounds "
+                         m2 = "number of elements " ++ show (lengthNL a)
+                     in traceStack (m ++ m2) (headNL a)
                 else (nl2List a) !! index
 
 mapNL :: (a -> b) -> NonEmptyList a -> NonEmptyList b

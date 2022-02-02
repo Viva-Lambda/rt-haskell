@@ -14,23 +14,34 @@ import Spectral.SampledDistribution
 
 import Utility.Utils
 
+import Debug.Trace
+
 -- print vector
 vecToInt :: Vector -> [Int]
 vecToInt v = map double2Int (vec2List v)
+
+nanError :: String
+nanError = let m1 = "NanError :: Pixel spectrum"
+               m2 = m1 ++ " contains"
+               m3 = m2 ++ " only nan values. This should not be the case."
+           in m3
 
 pixSpectrum2RGB :: PixelSpectrum -> Int -> Vector
 pixSpectrum2RGB pspec sample_nb =
     let scale = 1.0 / (int2Double sample_nb)
         mfn v = multiplyS v scale
-    in case pspec of
-         PixSpecSampled s -> 
-            let scaledwp = mfn (sampled s)
-                scaledSpectrum = SSpec { 
-                         spectrumType = spectrumType s,
-                         sampled = scaledwp
-                         }
-            in toRGB $! scaledSpectrum
-         PixSpecTrichroma (r,g,b) -> mfn (fromList2Vec r [g, b])
+        cdata = pixelSpectrumData pspec
+    in if all isNaN (vec2List cdata)
+       then traceStack nanError zeroV3
+       else case pspec of
+                 PixSpecSampled s -> 
+                    let scaledwp = mfn (sampled s)
+                        scaledSpectrum = SSpec { 
+                                 spectrumType = spectrumType s,
+                                 sampled = scaledwp
+                                 }
+                    in toRGB $! scaledSpectrum
+                 PixSpecTrichroma (r,g,b) -> mfn (fromList2Vec r [g, b])
 
 writeColor :: PixelSpectrum -> Int -> String
 writeColor pspec sample_nb =

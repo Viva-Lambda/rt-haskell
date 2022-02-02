@@ -7,6 +7,7 @@ import Math3D.Vector
 import Math3D.Ray
 
 import Texture.TextureObj
+import Texture.Spectral
 
 -- color related
 import Color.ColorInterface
@@ -18,6 +19,7 @@ data Material = LambMat Lambertian
                 | DielMat Dielectric
                 | LightMat DiffuseLight
                 | IsotMat Isotropic
+                | SpectralMat SpectralMaterial
                 | NoMat
 
 type Color = ColorRecord
@@ -60,3 +62,9 @@ data DiffuseLight where
 data Isotropic where
     IsotTexture :: TextureObj -> Isotropic
     -- IsotColor :: Color -> Isotropic
+
+data SpectralMaterial where
+    SpectralLamb :: SpectralTexture -> SpectralMaterial
+    SpectralMetal :: SpectralTexture -> Double -> SpectralMaterial
+    SpectralLight :: SpectralTexture -> SpectralMaterial
+    SpectralIsotropic :: SpectralTexture -> SpectralMaterial

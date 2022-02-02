@@ -47,11 +47,11 @@ twoCheckeredSpheresSpectral =
                          sphereMat = lmb}
         hs = HList {objects = NList (HittableCons sp1) [HittableCons sp2]}
     in SceneVals {
-        img_width = imageWidth,
+        img_width = 128,
         aspect_ratio = aspectRatio,
-        img_height = imageHeight,
-        nb_samples = nbSamples,
-        bounce_depth = bounceDepth,
+        img_height = getImgHeight 128 aspectRatio,
+        nb_samples = 3,
+        bounce_depth = 2,
         cam_look_from = camLookFrom,
         cam_look_to = camLookTo,
         cam_vfov = camVFov,

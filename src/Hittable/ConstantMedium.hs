@@ -36,8 +36,6 @@ instance Eq ConstantMedium where
             (ConsMedium a1 _ d1) ->
                 case b of
                     (ConsMedium a1 _ d2) -> a1 == a1 && (d1 == d2)
-                    _ -> False
-            _ -> False
 
 instance Show ConstantMedium where
     show a =

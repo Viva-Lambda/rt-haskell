@@ -35,6 +35,9 @@ aspectRatio = 16.0 / 9.0
 imageHeight :: Int
 imageHeight = double2Int $! (int2Double imageWidth) / aspectRatio
 
+getImgHeight :: Int -> Double -> Int
+getImgHeight w a = double2Int $! (int2Double w) / a
+
 nbSamples :: Int
 nbSamples = 50
 

@@ -20,6 +20,12 @@ data PixelSpectrum = PixSpecTrichroma (Double, Double, Double)
 zeroPixelSpectrum :: PixelSpectrum
 zeroPixelSpectrum = PixSpecTrichroma (0.0, 0.0, 0.0)
 
+pixelSpectrumData :: PixelSpectrum -> Vector
+pixelSpectrumData a =
+    case a of
+        PixSpecTrichroma (r, g, b) -> fromList2Vec r [g, b]
+        PixSpecSampled s -> (powers . sampled) s
+
 pixelCheck :: PixelSpectrum -> PixelSpectrum -> (Bool, String)
 pixelCheck a c =
     case a of

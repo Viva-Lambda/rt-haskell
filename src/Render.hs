@@ -65,9 +65,10 @@ rayColor !rayr !world lights !background !depth =
                     hUV_v = vv,
                     matPtr = m } = hithrec
          in if isHit
-            then let sout = scatter g1 m ray hithrec
+            then let sout = scatter g1 m ray hithrec (stype background)
                      (g2, srec, isScattering) = sout
-                     l_e = emitted m uu vv recp (wavelength ray)
+                     -- possible bug location
+                     l_e = emitted m uu vv recp (wavelength ray) (stype background)
                  in if not isScattering
                     then RandResult (l_e, g2)
                     else let isSpec = isSpecularSR srec
@@ -160,9 +161,15 @@ mkColor coord rng cmr scene =
                         let fn acc wave =
                                 let (lst, gen) = acc
                                     r = RandResult (ray, gen)
-                                    backPower = toColorRecord back (wavelength ray)
+                                    backPower = toColorRecord back wave
+                                    rayr2 = RandResult (Rd{
+                                        origin = origin ray,
+                                        direction = direction ray,
+                                        rtime = rtime ray,
+                                        wavelength = wave
+                                        }, gen)
                                     RandResult (scenePower, g1) =
-                                        rayColor r sceneObjects sampleObjects backPower depth
+                                        rayColor rayr2 sceneObjects sampleObjects backPower depth
                                 in case stype scenePower of
                                      RGB -> traceStack
                                                 "Scene color model had change in evaluation"
@@ -170,10 +177,13 @@ mkColor coord rng cmr scene =
                                      _ -> let cval = colorData scenePower
                                      -- since scenePower is a vector with 
                                      -- a single element
-                                          in if isNaN (vget cval 0)
+                                          in if (all isNaN (vec2List cval))
                                              then (lst ++ [(wave, zeroLikeVector cval)], g1)
                                              else (lst ++ [(wave, cval)], g1)
-                            (wavePowers, ngen) = foldl fn ([], rgen) [visible_lambda_start..visible_lambda_end]
+                            sampleStep = 5
+                            waveRange = [visible_lambda_start,
+                                        (visible_lambda_start + sampleStep)..visible_lambda_end]
+                            (wavePowers, ngen) = foldl fn ([], rgen) waveRange
                             ((w:ws), powerVecs) = unzip wavePowers
                             --
                             (p:ps) = map sumD powerVecs
@@ -208,4 +218,3 @@ mkPixelRay !(imw, imh) !(j,i) gen !cm =
         u = (udouble + (int2Double i)) / (int2Double (imw - 1))
         v = (vdouble + (int2Double j)) / (int2Double (imh - 1))
     in getRay g2 cm u v
-
