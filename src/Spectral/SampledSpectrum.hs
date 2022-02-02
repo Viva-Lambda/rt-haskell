@@ -171,4 +171,16 @@ instance Colorable SampledSpectrum where
                     ciey = cieYIntegral * (word2Double wsize)
                     waveScale = (word2Double (wend - wstart)) / ciey
                 in fromList2Vec (x * waveScale) [y * waveScale, z * waveScale]
-    toRGB a = xyz2rgb_pbr $! toXYZ a
+    toRGB a = 
+        let xyzval = toXYZ a
+            rgbval = xyz2rgb_pbr xyzval
+            --rgbval = xyz2rgb_cie xyzval
+            --rgbval = xyz2rgb_srgb xyzval
+            msg x r = let str = "xyz or rgb value contains nans :: XYZ "
+                          str2 = str ++ show x
+                          str3 = str2 ++ " RGB " ++ show r
+                      in str3
+            check vec = any isNaN (vec2List vec)
+        in if (check xyzval) || (check rgbval)
+           then traceStack (msg xyzval rgbval) zeroV3
+           else rgbval

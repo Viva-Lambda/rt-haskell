@@ -20,7 +20,8 @@ xyzRgb_transform xyz (row1, row2, row3, row4) =
         v = fromList2Vec x [y, z, 0.0]
         mvec = matFromVector (fromList2NL v [])
         mat = matmul mvec m4
-    in VList $! mdata mat
+        [r,g,b,w] = nl2List $! mdata mat
+    in fromList2Vec r [g, b]
 
 
 xyz2rgb_cie :: Vector -> Vector

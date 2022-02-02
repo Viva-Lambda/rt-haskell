@@ -45,14 +45,14 @@ class Scatterer a where
 
 
 emptyEmitted :: Word -> ColorFlag -> ColorRecord
-emptyEmitted w cflag =
+emptyEmitted wavelen cflag =
     case cflag of
        RGB -> ColorRec {model = ColorRGB zeroV3}
        Spectral REFLECTANCE -> ColorRec {
-            model = ColorSpec (ILLUMINANT, (w, 0.0))
+            model = ColorSpec (ILLUMINANT, (wavelen, 0.0))
             }
        Spectral ILLUMINANT -> ColorRec {
-            model = ColorSpec (ILLUMINANT, (w, 0.0))
+            model = ColorSpec (ILLUMINANT, (wavelen, 0.0))
             }
 
 

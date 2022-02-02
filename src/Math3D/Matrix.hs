@@ -39,7 +39,7 @@ matFromVector vvs =
     -- let myStrList = lines myStr -- \n
     -- in [splitOn ',' myStr | myStr <- myStrList]
     let !(v:vs) = nl2List vvs
-        sizes = [(vsize v_) == (vsize v) | v_ <- vs]
+        sizes = [(vsize v_) == (vsize v) | v_ <- (v:vs)]
         allSameLength = foldl1 (==) sizes
     in if not allSameLength
        then traceStack "All vectors must have same length" (mzero 1 1)
