@@ -85,55 +85,49 @@ mkBvh :: (Show a, Eq a, Hittable a, RandomGen g) => [a] -> g -> Int -> Int -> Do
 mkBvh !objects !gen !start !end !time0 !time1 =
     let resAxis = randomDouble gen (0.0, 2.0)
         RandResult (axis, g1) = rfmap double2Int resAxis
-        compareFn = if axis == 0
-                    then box_x_compare
-                    else if axis == 1
-                         then box_y_compare
-                         else box_z_compare
+        compareFn | axis == 0 = box_x_compare
+                  | axis == 1 = box_y_compare
+                  | otherwise = box_z_compare
         object_span = end - start
-        (leftObj, rightObj) = if object_span == 1 -- there is a single object
-                              then let fobj = objects !! start
-                                       (fBox, _) = boundingBox fobj 0.0 1.0 zeroAabb3
-                                   in (BLeaf fobj fBox, BLeaf fobj fBox)
-                              -- there are two objects
-                              else if object_span == 2 
-                                   then let fobj = objects !! start
-                                            sobj = objects !! (start + 1)
-                                            (fBox, _) = boundingBox fobj 0.0 1.0 zeroAabb3
-                                            (sBox, _) = boundingBox sobj 0.0 1.0 zeroAabb3
-                                        in case compareFn fobj sobj of
+        (leftObj, rightObj) 
+            -- there is a single object
+            | object_span == 1 = let fobj = objects !! start
+                                     (fBox, _) = boundingBox fobj 0.0 1.0 zeroAabb3
+                                 in (BLeaf fobj fBox, BLeaf fobj fBox)
+            -- there are two objects
+            | object_span == 2 = let fobj = objects !! start
+                                     sobj = objects !! (start + 1)
+                                     (fBox, _) = boundingBox fobj 0.0 1.0 zeroAabb3
+                                     (sBox, _) = boundingBox sobj 0.0 1.0 zeroAabb3
+                                  in case compareFn fobj sobj of
                                                 LT -> (BLeaf fobj fBox, 
                                                        BLeaf sobj sBox)
                                                 GT -> (BLeaf sobj sBox, 
                                                        BLeaf fobj fBox)
                                                 EQ -> (BLeaf sobj sBox,
                                                        BLeaf fobj fBox)
-                                   -- there are multiple objects
-                                   else let {
-        -- let's sort the given range
-        indicesList = [0..(length objects)];
-        objEnum = zip indicesList objects;
-        lstComp = \(fInd, fObj) (sInd, sObj) -> 
-                    if fInd < start
-                    then EQ
-                    else if sInd > end
-                         then EQ
-                         else compareFn fObj sObj;
+            -- there are multiple objects
+            | otherwise = let  -- let's sort the given range
+                               indicesList = [0..(length objects)]
+                               objEnum = zip indicesList objects
+                               lstComp (fInd, fObj) (sInd, sObj)
+                                    | fInd < start = EQ
+                                    | sInd > end = EQ
+                                    | otherwise = compareFn fObj sObj
 
-        -- sortedEnumObjs :: [((Int, a), (Int, a))]
-        sortedEnumObjs = sortBy lstComp objEnum;
-        (indices, sortedObjs) = unzip sortedEnumObjs;
+                               -- sortedEnumObjs :: [((Int, a), (Int, a))]
+                               sortedEnumObjs = sortBy lstComp objEnum;
+                               (indices, sortedObjs) = unzip sortedEnumObjs;
 
-        spdouble = int2Double object_span;
-        stdouble = int2Double start;
-        middle = stdouble + (spdouble / 2);
-        mid = double2Int middle;
-        left = mkBvh sortedObjs g1 start mid time0 time1;
-        right = mkBvh sortedObjs g1 mid end time0 time1;
-        (lbox, _) = boundingBox left time0 time1 zeroAabb3;
-        (rbox, _) = boundingBox right time0 time1 zeroAabb3;
-                                            }
-                                        in (left, right)
+                               spdouble = int2Double object_span;
+                               stdouble = int2Double start;
+                               middle = stdouble + (spdouble / 2);
+                               mid = double2Int middle;
+                               left = mkBvh sortedObjs g1 start mid time0 time1;
+                               right = mkBvh sortedObjs g1 mid end time0 time1;
+                               (lbox, _) = boundingBox left time0 time1 zeroAabb3;
+                               (rbox, _) = boundingBox right time0 time1 zeroAabb3;
+                          in (left, right)
         -- we have the left and right branch, now aabb
         (leftBox, isLBox) = boundingBox leftObj time0 time1 zeroAabb3
         (rightBox, isRBox) = boundingBox rightObj time0 time1 zeroAabb3

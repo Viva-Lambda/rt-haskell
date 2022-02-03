@@ -18,6 +18,7 @@ import Utility.HelperTypes
 import Random
 import Prelude hiding(subtract)
 import Data.List
+import Debug.Trace
 
 data AlignmentAxis = AaX
                    | AaY
@@ -48,15 +49,15 @@ data AaRect = Quad {
 
 corners :: AaRect -> (Vector, Vector, Vector, Vector)
 corners a =
-    let (Quad {quadMat = _,
-                quadNormal = _,
-                quadDistance = k,
-                quadInfo = qi,
-                quadAlignedAxisA1 = a1,
-                quadAlignedAxisA2 = a2,
-                quadAlignedAxisB1 = b1,
-                quadAlignedAxisB2 = b2
-                }) = a
+    let Quad {quadMat = _,
+              quadNormal = _,
+              quadDistance = k,
+              quadInfo = qi,
+              quadAlignedAxisA1 = a1,
+              quadAlignedAxisA2 = a2,
+              quadAlignedAxisB1 = b1,
+              quadAlignedAxisB2 = b2
+             } = a
     in case notAligned qi of
            AaZ -> (fromList2Vec a1 [b1, k], fromList2Vec a1 [ b2, k],
                    fromList2Vec a2 [b2, k], fromList2Vec a2 [ b1, k])
@@ -91,21 +92,17 @@ fromCornersNormal (p1, p2, p3, p4, n) =
         yvals = map getY [p1, p2, p3, p4]
         zvals = map getZ [p1, p2, p3, p4]
         -- find distance
-        k = if allEqual xvals
-            then head xvals
-            else if allEqual yvals
-                 then head yvals
-                 else head zvals
+        k | allEqual xvals = head xvals
+          | allEqual yvals = head yvals
+          | otherwise = head zvals
         -- filter out distance from x,y,z vals
         nxvals = takeWhile (/= k) xvals
         nyvals = takeWhile (/= k) yvals
         nzvals = takeWhile (/= k) zvals
         -- get a and b values 
-        (alst, blst) = if null nxvals
-                       then (nyvals, nzvals)
-                       else if null nyvals
-                            then (nxvals, nzvals)
-                            else (nxvals, nyvals)
+        (alst, blst) | null nxvals = (nyvals, nzvals)
+                     | null nyvals = (nxvals, nzvals)
+                     | otherwise = (nxvals, nyvals)
         -- get min max for values
         (amin, amax) = (minimum alst, maximum alst)
         (bmin, bmax) = (minimum blst, maximum blst)
@@ -118,16 +115,17 @@ mkAaRect :: AAxisValue -> AAxisValue -> AAxisValue ->
             AAxisValue -> AADistance -> Material -> Vector -> AaRect
 
 mkAaRect a0 a1 b0 b1 dist mat normal =
-    let qinfo = if (vget normal 2) == 1.0 -- z value
-                then QInfo {aligned1 = AaX, aligned2 = AaY,
-                               notAligned = AaZ}
-                else if (vget normal 0) == 1.0 -- x value
-                     then QInfo {aligned1 = AaY, aligned2 = AaZ,
-                                    notAligned = AaX}
-                     else if (vget normal 1) == 1.0 -- y value
-                          then QInfo {aligned1 = AaX, aligned2 = AaZ,
-                                         notAligned = AaY}
-                          else error "only 3d vectors are supported for location"
+         -- z value
+    let qinfo | vget normal 2 == 1.0 = QInfo {aligned1 = AaX, aligned2 = AaY,
+                                              notAligned = AaZ}
+              | vget normal 0 == 1.0 = QInfo {aligned1 = AaY, aligned2 = AaZ,
+                                              notAligned = AaX}
+              | vget normal 1 == 1.0 = QInfo {aligned1 = AaX, aligned2 = AaZ,
+                                              notAligned = AaY}
+              | otherwise = traceStack
+                                "only 3d vectors are supported for location"
+                                QInfo {aligned1 = AaX, aligned2 = AaZ,
+                                       notAligned = AaY}
     in Quad {
         quadMat = mat,
         quadNormal = normal,
@@ -160,7 +158,7 @@ getRectPdfValue :: Vector -> Vector -> Double -> Double -> Double
 getRectPdfValue dir normal dist area =
     let dsqr = dist * dist
         dsqr2 = dsqr * (lengthSquared dir)
-        cosine = abs $ ((dot dir normal) / (magnitude dir))
+        cosine = abs (dot dir normal / (magnitude dir))
     in dsqr2 / (cosine * area)
 
 
@@ -206,15 +204,15 @@ instance Eq AaRect where
         in disteq && qinfoeq && normaleq && alignedeq
 
 instance Show AaRect where
-    show (Quad {quadMat = m,
-                quadNormal = qn,
-                quadDistance = qd,
-                quadInfo = qi,
-                quadAlignedAxisA1 = qa1,
-                quadAlignedAxisA2 = qa2,
-                quadAlignedAxisB1 = qb1,
-                quadAlignedAxisB2 = qb2
-                }) =
+    show Quad {quadMat = m,
+               quadNormal = qn,
+               quadDistance = qd,
+               quadInfo = qi,
+               quadAlignedAxisA1 = qa1,
+               quadAlignedAxisA2 = qa2,
+               quadAlignedAxisB1 = qb1,
+               quadAlignedAxisB2 = qb2
+               } =
         let -- mstr = "Material: " ++ show m
             normstr = " Normal: " ++ show qn
             dstr = " Distance: " ++ show qd
@@ -225,18 +223,16 @@ instance Show AaRect where
 
 instance Hittable AaRect where
     hit a g inray tmin tmax hrec =
-        let (Quad {quadMat = m,
-                quadNormal = anormal,
-                quadDistance = k,
-                quadInfo = axinfo,
-                quadAlignedAxisA1 = a1,
-                quadAlignedAxisA2 = a2,
-                quadAlignedAxisB1 = b1,
-                quadAlignedAxisB2 = b2
-                }) = a
-            (Rd {origin = ro,
-               direction = rd,
-               rtime = rt}) = inray 
+        let Quad {quadMat = m,
+                  quadNormal = anormal,
+                  quadDistance = k,
+                  quadInfo = axinfo,
+                  quadAlignedAxisA1 = a1,
+                  quadAlignedAxisA2 = a2,
+                  quadAlignedAxisB1 = b1,
+                  quadAlignedAxisB2 = b2
+                } = a
+            Rd {origin = ro, direction = rd, rtime = rt} = inray 
             --
             notAlignedOrigDist = k - (vget ro (aAxis2Int $ notAligned axinfo))
             t = notAlignedOrigDist / (vget rd (aAxis2Int $ notAligned axinfo))
@@ -262,15 +258,15 @@ instance Hittable AaRect where
                         in (setFaceNormal hr inray anormal, True, g)
 
     boundingBox a tmn tmx ab =
-        let (Quad {quadMat = m,
-                   quadNormal = anormal,
-                   quadDistance = k,
-                   quadInfo = axinfo,
-                   quadAlignedAxisA1 = a1,
-                   quadAlignedAxisA2 = a2,
-                   quadAlignedAxisB1 = b1,
-                   quadAlignedAxisB2 = b2
-                }) = a
+        let Quad {quadMat = m,
+                  quadNormal = anormal,
+                  quadDistance = k,
+                  quadInfo = axinfo,
+                  quadAlignedAxisA1 = a1,
+                  quadAlignedAxisA2 = a2,
+                  quadAlignedAxisB1 = b1,
+                  quadAlignedAxisB2 = b2
+                } = a
             (p1, p2) = case notAligned axinfo of
                             AaZ -> (fromList2Vec a1 [b1, k - 0.0001],
                                     fromList2Vec a2 [b2, k + 0.0001])
@@ -307,8 +303,8 @@ instance Hittable AaRect where
             b1 = quadAlignedAxisB1 a
             b2 = quadAlignedAxisB2 a
             mkv g1 x1 x2 y1 y2 = 
-                let RandResult (x, g2) = randomDouble g1 ((minimum [x1, x2]), (maximum [x1, x2]))
-                    RandResult (y, g3) = randomDouble g2 ((minimum [y1, y2]), (maximum [y1, y2]))
+                let RandResult (x, g2) = randomDouble g1 (minimum [x1, x2], maximum [x1, x2])
+                    RandResult (y, g3) = randomDouble g2 (minimum [y1, y2], maximum [y1, y2])
                 in (g3, x, y)
 
         in case notAligned qi of

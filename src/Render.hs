@@ -50,7 +50,10 @@ import Prelude hiding(subtract)
 -- scene
 import Scene.Scene
 
-
+-- L = Le + Lr
+-- L_1 = Le + \int brdf * L_0
+-- L_2 = Le + \int brdf * L_1
+-- L_2 = Le + \int brdf * (Le_1 + \int brdf * L_0)
 rayColor :: RandomGen g => RandomResult Ray g -> HittableList -> HittableList -> ColorRecord -> Int -> RandomResult ColorRecord g
 rayColor !rayr !world lights !background !depth =
     if depth <= 0
@@ -150,7 +153,7 @@ mkColor coord rng cmr scene =
                             RandResult (sceneColor, g1) = rayColor rayr sceneObjects sampleObjects backColor depth
                         in case stype sceneColor of
                                 RGB -> let [r, g, b] = vec2List $! colorData sceneColor
-                                       in if (all isNaN [r, g, b])
+                                       in if all isNaN [r, g, b]
                                           then (PixSpecTrichroma (0.0, 0.0, 0.0), g1)
                                           else (PixSpecTrichroma (r, g, b), g1)
                                 --
@@ -177,14 +180,14 @@ mkColor coord rng cmr scene =
                                      _ -> let cval = colorData scenePower
                                      -- since scenePower is a vector with 
                                      -- a single element
-                                          in if (all isNaN (vec2List cval))
+                                          in if all isNaN (vec2List cval)
                                              then (lst ++ [(wave, zeroLikeVector cval)], g1)
                                              else (lst ++ [(wave, cval)], g1)
                             sampleStep = 5
                             waveRange = [visible_lambda_start,
                                         (visible_lambda_start + sampleStep)..visible_lambda_end]
                             (wavePowers, ngen) = foldl fn ([], rgen) waveRange
-                            ((w:ws), powerVecs) = unzip wavePowers
+                            (w:ws, powerVecs) = unzip wavePowers
                             --
                             (p:ps) = map sumD powerVecs
                             sampledWPower = fromWavesPowers 
@@ -215,6 +218,6 @@ mkPixelRay !(imw, imh) !(j,i) gen !cm =
     let fnlst = fromList2NL randval [randval]
         RandResult (lst, g2) = rfmap nl2List (randFoldlFixedRange2 gen fnlst)
         (udouble:vdouble:_) = lst
-        u = (udouble + (int2Double i)) / (int2Double (imw - 1))
-        v = (vdouble + (int2Double j)) / (int2Double (imh - 1))
+        u = (udouble + int2Double i) / int2Double (imw - 1)
+        v = (vdouble + int2Double j) / int2Double (imh - 1)
     in getRay g2 cm u v

@@ -43,13 +43,13 @@ liftRandGen :: RandomGen g => RandomResult a g -> g
 liftRandGen a = case a of
                     RandResult (_, b) -> b
 
-randFoldl :: RandomGen g => g -> NonEmptyList ((g -> (a, a) -> RandomResult a g), (a, a)) -> RandomResult (NonEmptyList a) g
+randFoldl :: RandomGen g => g -> NonEmptyList (g -> (a, a) -> RandomResult a g, (a, a)) -> RandomResult (NonEmptyList a) g
 randFoldl gen foldableFns =
     let foldfn acc fn = let (lst, g) = acc
                             (f, (mn, mx)) = fn
                             RandResult (b, g2) = f g (mn, mx)
                         in (lst ++ [b], g2)
-        ((m:ms), g) = foldl foldfn ([], gen) (nl2List foldableFns)
+        (m:ms, g) = foldl foldfn ([], gen) (nl2List foldableFns)
     in RandResult (fromList2NL m ms, g)
 
 randFoldlFixedRange :: RandomGen g => g -> (a, a) -> NonEmptyList (g -> (a, a) -> RandomResult a g) -> RandomResult (NonEmptyList a) g
@@ -58,7 +58,7 @@ randFoldlFixedRange gen r foldableFns =
     let foldfn acc fn = let (lst, g) = acc
                             RandResult (b, g2) = fn g r
                         in (lst ++ [b], g2)
-        ((m:ms), g) = foldl foldfn ([], gen) (nl2List foldableFns)
+        (m:ms, g) = foldl foldfn ([], gen) (nl2List foldableFns)
     in RandResult (fromList2NL m ms, g)
 
 
@@ -68,7 +68,7 @@ randFoldlFixedRange2 gen foldableFns =
     let foldfn acc fn = let (lst, g) = acc
                             RandResult (b, g2) = fn g
                         in (lst ++ [b], g2)
-        ((m:ms), g) = foldl foldfn ([], gen) (nl2List foldableFns)
+        (m:ms, g) = foldl foldfn ([], gen) (nl2List foldableFns)
     in RandResult (fromList2NL m ms, g)
 
 
@@ -81,17 +81,17 @@ randMap gen f ranges =
                    in case rval of
                         (RandResult (b, g2)) -> (alst ++ [b], g2)
         (vals, g2) = foldl fn ([], gen) rs
-    in RandResult ((NList (head vals) (tail vals)), g2)
+    in RandResult (NList (head vals) (tail vals), g2)
 
 
 randomDouble :: RandomGen g => g -> (Double, Double) -> RandomResult Double g
-randomDouble gen a = randomFn gen a
+randomDouble = randomFn 
 
 randomInt :: RandomGen g => g -> (Int, Int) -> RandomResult Int g
-randomInt gen a = randomFn gen a
+randomInt = randomFn
 
 randomWord :: RandomGen g => g -> (Word, Word) -> RandomResult Word g
-randomWord gen a = randomFn gen a
+randomWord = randomFn
 
 randval :: RandomGen g => g -> RandomResult Double g
 randval g = randomDouble g (0.0, 1.0)

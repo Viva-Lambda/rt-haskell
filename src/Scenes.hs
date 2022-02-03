@@ -42,7 +42,7 @@ import Scene.CornellSphere
 import Scene.SpectralScene
 
 chooseScene :: RandomGen g => g -> [Bitmap Word8] -> Int -> (Int, Scene)
-chooseScene g s choice =
+chooseScene g !s choice =
     case choice of
         0 -> (nb_samples diffuseSphere, diffuseSphere)
         1 -> let sc = randomOneWeekendFinalSceneStatic g in (nb_samples sc, sc) 

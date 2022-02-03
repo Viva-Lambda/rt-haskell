@@ -42,7 +42,7 @@ pixelCheck a c =
 instance BinaryOps PixelSpectrum where
     elementwiseOp str f a b =
         let (isSame, s) = pixelCheck a b
-        in if isSame == False
+        in if not isSame
            then traceStack (s ++ " :: " ++ str) zeroPixelSpectrum
            else case a of
                     PixSpecTrichroma (r1, g1, b1) ->
@@ -73,8 +73,8 @@ instance BinaryOps PixelSpectrum where
     -- division
     divide a b =
         let (isSame, str) = pixelCheck a b
-        in if isSame == False
-           then traceStack (str) zeroPixelSpectrum
+        in if not isSame
+           then traceStack str zeroPixelSpectrum
            else case a of
                     PixSpecTrichroma (r1, g1, b1) ->
                         case b of

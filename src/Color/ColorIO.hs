@@ -27,18 +27,17 @@ nanError = let m1 = "NanError :: Pixel spectrum"
            in m3
 
 nanCheck :: Bool -> Vector -> Vector
-nanCheck isAll v = if isAll
-                   then if all isNaN (vec2List v)
-                        then traceStack (nanError ++ show v) v
-                        else v
-                   else if any isNaN (vec2List v)
-                        then traceStack (nanError ++ show v) v
-                        else v
-                
+nanCheck isAll v
+    | isAll = if all isNaN (vec2List v)
+              then traceStack (nanError ++ show v) v
+              else v
+    | any isNaN (vec2List v) = traceStack (nanError ++ show v) v
+    | otherwise = v
+
 
 pixSpectrum2RGB :: PixelSpectrum -> Int -> Vector
 pixSpectrum2RGB pspec sample_nb =
-    let scale = 1.0 / (int2Double sample_nb)
+    let scale = 1.0 / int2Double sample_nb
         mfn v = multiplyS v scale
         cdata = pixelSpectrumData pspec
     in if any isNaN (vec2List cdata)

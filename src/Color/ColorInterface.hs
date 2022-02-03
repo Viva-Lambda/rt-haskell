@@ -71,13 +71,13 @@ wavelengthStr a b =
 instance BinaryOps ColorRecord where
     elementwiseOp str f a b =
         let (isSame, s) = colorModelCheck a b
-        in if isSame == False
+        in if not isSame
            then traceStack (s ++ " :: " ++ str) (emptyModelLike a)
            else case model a of
                     ColorRGB av ->
                         case model b of
                             ColorRGB bv ->
-                                ColorRec {model = (ColorRGB $! vecArithmeticOp str f av bv)}
+                                ColorRec {model = ColorRGB $! vecArithmeticOp str f av bv}
                             _ -> traceStack (s ++ " :: " ++ str) (emptyModelLike a)
                     ColorSpec (sa, (aw, apower)) ->
                         case model b of
@@ -96,8 +96,8 @@ instance BinaryOps ColorRecord where
     -- division
     divide a b =
         let (isSame, str) = colorModelCheck a b
-        in if isSame == False
-           then traceStack (str) (emptyModelLike a)
+        in if not isSame
+           then traceStack str (emptyModelLike a)
            else case model a of
                     ColorRGB av ->
                         case model b of

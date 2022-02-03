@@ -47,6 +47,11 @@ wavesCheck a b =
     in (aw /= bw, "wavelengths differ for sampled power distributions", aw, bw)
 
 
+sortSampledWavePower :: SampledWavePower -> SampledWavePower
+sortSampledWavePower a = let SampledWP b = a
+                             (m:ms) = sortOn fst (nl2List b)
+                         in SampledWP $! fromList2NL m ms
+
 -- common operations
 instance BinaryOps SampledWavePower where
     elementwiseOp str f a b =

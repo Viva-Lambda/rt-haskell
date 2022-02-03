@@ -22,9 +22,7 @@ compHitAabb i (AaBbox {aabbMin = a, aabbMax = b}) ray tmin tmax =
         tsecond = if tfirst == t1 then t0 else t1
         t_min = if tfirst > tmin then tfirst else tmin
         t_max = if tsecond < tmax then tsecond else tmax
-    in if t_max <= t_min
-       then False
-       else True
+    in not (t_max <= t_min)
 
 aabbHit :: Aabb -> Ray -> Double -> Double -> Bool
 aabbHit ab ray t_min t_max =
