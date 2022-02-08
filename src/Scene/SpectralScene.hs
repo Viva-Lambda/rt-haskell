@@ -75,11 +75,13 @@ cornellBoxSpectral gen =
         loc = getCameraLocatingParams gen sceneC
         (_, _, time) = loc
         b1 = mkBox (zeroV3) (fromList2Vec 165.0 [ 330.0, 165.0]) whiteMat
-        b1rot = mkRotatable b1 45.0 RY
-        b1trans = HittableCons $! Translate b1rot (fromList2Vec 265.0 [0.0, 295.0])
+        b1rot = mkRotatable b1 45.0 RY (show b1)
+        b1off = fromList2Vec 265.0 [0.0, 295.0]
+        b1trans = HittableCons $! Translate b1rot b1off (show b1rot)
         b2 = mkBox (zeroV3) (fromList2Vec 165.0 [ 165.0, 165.0]) whiteMat
-        b2rot = mkRotatable b2 (-18.0) RY
-        b2trans = HittableCons $! Translate b2rot (fromList2Vec 130.0 [0.0, 65.0])
+        b2rot = mkRotatable b2 (-18.0) RY (show b2)
+        b2off = fromList2Vec 130.0 [0.0, 65.0]
+        b2trans = HittableCons $! Translate b2rot b2off (show b2rot)
 
         hs = HList {objects = NList (b1trans) [b2trans, yzGreenWall, yzRedWall,
                                                xzWhiteWall1, xzWhiteWall2,

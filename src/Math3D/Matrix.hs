@@ -38,8 +38,8 @@ matFromVector :: NonEmptyList Vector -> Matrix
 matFromVector vvs =
     -- let myStrList = lines myStr -- \n
     -- in [splitOn ',' myStr | myStr <- myStrList]
-    let !(v:vs) = nl2List vvs
-        sizes = [(vsize v_) == (vsize v) | v_ <- (v:vs)]
+    let (v:vs) = nl2List vvs
+        sizes = [(vsize v_) == (vsize v) | v_ <- v:vs]
         allSameLength = foldl1 (==) sizes
     in if not allSameLength
        then traceStack "All vectors must have same length" (mzero 1 1)
@@ -79,7 +79,7 @@ mRowNb mat =
     in double2Int $! m1 / m2
 
 mColNb :: Matrix -> Int
-mColNb mat = mstride mat
+mColNb = mstride
 
 mgetColumn :: Matrix -> Int -> Vector
 mgetColumn mat index = 
@@ -126,15 +126,14 @@ matError !v m =
     in msg
 
 matArithmeticOp :: String -> (Double -> Double -> Double) -> Matrix -> Matrix -> Matrix
-matArithmeticOp opname f !v !e =
-    if (msize v) /= (msize e)
-    then error $ sizeError v e opname
-    else if (mstride v) /= (mstride e) 
-         then error $ sizeError v e opname
-         else let ds = nl2List $! mdata v
-                  es = nl2List $! mdata e 
-                  (m:ms) = zipWith f ds es
-              in MList {mdata = fromList2NL m ms, mstride = mstride v}
+matArithmeticOp opname f !v !e
+    | (msize v) /= (msize e) = traceStack (sizeError v e opname) (mzero 2 2)
+    | (mstride v) /= (mstride e) = traceStack (sizeError v e opname) (mzero 2 2)
+    | otherwise =
+        let ds = nl2List $! mdata v
+            es = nl2List $! mdata e 
+            (m:ms) = zipWith f ds es
+        in MList {mdata = fromList2NL m ms, mstride = mstride v}
 
 matScalarOp :: String -> (Double -> Double) -> Matrix -> Matrix
 matScalarOp _ f !v =

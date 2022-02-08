@@ -65,5 +65,5 @@ writeColor pspec sample_nb =
                 let nsv = nanCheck False $! clampV sv 0.0 0.999
                     nv = nanCheck False $! multiplyS nsv 256.0
                 in vecToInt nv
-    -- in unwords $! map show nvints
-    in traceStack (show sv) ""
+    in unwords $! map show nvints
+    -- in traceStack (show sv) ""

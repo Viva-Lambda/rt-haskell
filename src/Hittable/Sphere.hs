@@ -62,27 +62,29 @@ instance Hittable Sphere where
                     nroot = (-hb + sqd) / a
                     cond1 = root < tmin || tmax < root
                     cond2 = nroot < tmin || tmax < nroot
-                in if cond1
-                   then if cond2
-                        then (hrec, False, g)
-                        else let hpoint = at ry nroot
-                                 hnorm = divideS (subtract hpoint sc) sr
-                                 (hu, hv) = getSphereUV hnorm
-                                 hr = HRec {hdist = nroot, point = hpoint,
+                    result 
+                        | cond1 && cond2 = (hrec, False, g)
+                        | cond1 && (not cond2) =
+                            let hpoint = at ry nroot
+                                hnorm = divideS (subtract hpoint sc) sr
+                                (hu, hv) = getSphereUV hnorm
+                                hr = HRec {hdist = nroot, point = hpoint,
                                             pnormal = hnorm,
                                             matPtr = sm,
                                             hUV_u = hu,
                                             hUV_v = hv,
                                             isFront = False}
                              in (setFaceNormal hr ry hnorm, True, g)
-                   else let hpoint = at ry root
-                            hnorm = divideS (subtract hpoint sc) sr
-                            (hu, hv) = getSphereUV hnorm
-                            hr = HRec {hdist = root, point = hpoint,
+                        | otherwise =
+                            let hpoint = at ry root
+                                hnorm = divideS (subtract hpoint sc) sr
+                                (hu, hv) = getSphereUV hnorm
+                                hr = HRec {hdist = root, point = hpoint,
                                        pnormal = hnorm, matPtr = sm,
                                        hUV_u = hu, hUV_v = hv,
                                        isFront = False}
-                        in (setFaceNormal hr ry hnorm, True, g)
+                            in (setFaceNormal hr ry hnorm, True, g)
+                in result
 
     boundingBox !(SphereObj {sphereCenter = sc, sphereRadius = sr,
                             sphereMat = _}) !tmn !tmx !ab =

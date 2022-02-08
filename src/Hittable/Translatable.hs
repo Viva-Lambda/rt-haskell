@@ -17,22 +17,21 @@ import Prelude hiding(subtract)
 
 
 data Translatable where
-    Translate :: (Show a, Hittable a, Eq a) => a -> Vector -> Translatable
+    Translate :: (Show a, Hittable a, Eq a) => a -> Vector -> String -> Translatable
 
 instance Show Translatable where
-    show (Translate a offset) = 
+    show (Translate a offset _) = 
         let msg1 = "<Translatable: " ++ show a ++ " offset " ++ show offset
         in msg1 ++ " >"
 
 instance Eq Translatable where
     a == b = case a of
-                Translate an aoff ->
+                Translate _ _ an ->
                     case b of
-                        Translate an boff ->
-                            (an == an) && (aoff == boff)
+                        Translate _ _ bn -> (an == bn)
 
 instance Hittable Translatable where
-    hit (Translate a offset) g !(Rd {origin = ro, 
+    hit (Translate a offset _) g !(Rd {origin = ro, 
                                      direction = rd,
                                      rtime = rt,
                                      wavelength = rwave}) !tmin !tmax !hrec =
@@ -51,7 +50,7 @@ instance Hittable Translatable where
                                   isFront = h7}
                 in (setFaceNormal nsrec ry h3, True, g1)
 
-    boundingBox (Translate a offset) tmn tmx ab =
+    boundingBox (Translate a offset _) tmn tmx ab =
         let (abound, isBox) = boundingBox a tmn tmx ab
         in if not isBox
            then (abound, isBox)
@@ -61,7 +60,7 @@ instance Hittable Translatable where
 
     pdf_value a g orig v = 
         case a of 
-            Translate b oset -> pdf_value b g (subtract orig oset) v
+            Translate b oset _ -> pdf_value b g (subtract orig oset) v
     hrandom a g orig = 
         case a of
-            Translate b oset -> hrandom b g (subtract orig oset)
+            Translate b oset _ -> hrandom b g (subtract orig oset)

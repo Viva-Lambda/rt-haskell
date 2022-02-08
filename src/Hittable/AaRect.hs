@@ -237,25 +237,34 @@ instance Hittable AaRect where
             notAlignedOrigDist = k - (vget ro (aAxis2Int $ notAligned axinfo))
             t = notAlignedOrigDist / (vget rd (aAxis2Int $ notAligned axinfo))
             distCheck = t < tmin || t > tmax
-        in if distCheck
-           then (hrec, False, g)
-           else let adist1 = vget ro (aAxis2Int $ aligned1 axinfo)
-                    adist2 = vget rd (aAxis2Int $ aligned1 axinfo)
-                    adist = adist1 + t * adist2
-                    bdist1 = vget ro (aAxis2Int $ aligned2 axinfo)
-                    bdist2 = vget rd (aAxis2Int $ aligned2 axinfo)
-                    bdist = bdist1 + t * bdist2
-                    acheck = a1 < adist && adist < a2
-                    bcheck = b1 < bdist && bdist < b2
-                in if not (acheck && bcheck)
-                   then (hrec, False, g)
-                   else let ru = (adist - a1) / (a2 - a1)
-                            rv = (bdist - b1) / (b2 - b1)
-                            rp = at inray t
-                            hr = HRec {hdist = t, point = rp, pnormal = anormal,
-                                       matPtr = m, hUV_u = ru, hUV_v = rv,
-                                       isFront = False}
-                        in (setFaceNormal hr inray anormal, True, g)
+            result 
+                | distCheck = (hrec, False, g)
+                | not $ abcheck axinfo t ro rd a1 a2 b1 b2 = (hrec, False, g)
+                | otherwise =
+                    let ru = ((adist axinfo t ro rd) - a1) / (a2 - a1)
+                        rv = ((bdist axinfo t ro rd) - b1) / (b2 - b1)
+                        rp = at inray t
+                        hr = HRec {hdist = t, point = rp, pnormal = anormal,
+                                   matPtr = m, hUV_u = ru, hUV_v = rv,
+                                   isFront = False}
+                    in (setFaceNormal hr inray anormal, True, g)
+        in result
+        where 
+            adist axinfo t ro rd = let adist1 = vget ro (aAxis2Int $ aligned1 axinfo)
+                                       adist2 = vget rd (aAxis2Int $ aligned1 axinfo)
+                                   in adist1 + t * adist2
+
+            bdist axinfo t ro rd = let bdist1 = vget ro (aAxis2Int $ aligned2 axinfo)
+                                       bdist2 = vget rd (aAxis2Int $ aligned2 axinfo)
+                                   in bdist1 + t * bdist2
+
+            abcheck axinfo t ro rd a1 a2 b1 b2 =
+                    let ad = adist axinfo t ro rd
+                        bd = bdist axinfo t ro rd
+                        acheck = a1 < ad && ad < a2
+                        bcheck = b1 < bd && bd < b2
+                    in (acheck && bcheck)
+
 
     boundingBox a tmn tmx ab =
         let Quad {quadMat = m,

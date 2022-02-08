@@ -53,7 +53,7 @@ localVec ob t =
         ux = multiplyS u $ vget t 0
         vy = multiplyS v $ vget t 1
         wz = multiplyS w $ vget t 2
-    in (add wz (add ux vy))
+    in add wz (add ux vy)
 
 localXyz :: OrthoNormalBase -> Double -> Double -> Double -> Vector
 localXyz ob x y z = localVec ob ( VList (fromList2NL x [y, z]) )

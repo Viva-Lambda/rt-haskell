@@ -28,8 +28,7 @@ areWavesSorted wavesnl =
 -- average spectrum
 averagePowerWaves :: NonEmptyList Double -> NonEmptyList Word -> Word -> Word -> Double
 averagePowerWaves powers waves waveLStart waveLEnd =
-    let 
-        maxWave = lastNL waves
+    let maxWave = lastNL waves
         minWave = headNL waves
         isSmaller = waveLStart == minWave
         isBigger = waveLEnd == maxWave
@@ -64,7 +63,7 @@ averagePowerWaves powers waves waveLStart waveLEnd =
                             t4 = getNL powers j
                             t5 = getNL powers (j + 1)
                         in mix t3 t4 t5
-                    -- 
+                    --
                     forsum ix sval =
                         let cond1 = (ix + 1) < (lengthNL waves)
                             cond2 = waveLEnd >= (getNL waves ix)
@@ -81,9 +80,10 @@ averagePowerWaves powers waves waveLStart waveLEnd =
                 in npsum / (word2Double (waveLEnd - waveLStart))
     -- first checks
     in average
+
 --
 averageSpectrum :: SampledWavePower -> Word -> Word -> Double
-averageSpectrum b waveStart waveEnd = 
+averageSpectrum b waveStart waveEnd =
     let a = sortSampledWavePower b
         (VList ps) = powers a
     in averagePowerWaves ps (wavelengths a) waveStart waveEnd
@@ -120,20 +120,20 @@ resampleWavePower pwrs wvs lambdaMin lambdaMax outSize =
                                      else let intervalFn i = 
                                                 (word2Double (getNL wvs i)) <= waveValDDiff
                                           in findInterval wsize intervalFn
-                            endi = if waveValDSum > (word2Double (lastNL wvs))
-                                   then wsize
-                                   else let estart = if starti > 0
-                                                     then starti
-                                                     else 0
-                                            -- burada kaldin TODO
-                                            fix e = let ef = e < wsize
-                                                        wf = waveValDSum
-                                                        wl = word2Double $ getNL wvs e
-                                                        cond = ef && (wf > wl)
-                                                    in if cond
-                                                       then fix (e + 1)
-                                                       else e
-                                        in fix estart
+                            endi
+                                | waveValDSum > (word2Double (lastNL wvs)) = wsize
+                                | otherwise =
+                                    let estart = if starti > 0
+                                                 then starti
+                                                 else 0
+                                        fix e = let ef = e < wsize
+                                                    wf = waveValDSum
+                                                    wl = word2Double $ getNL wvs e
+                                                    cond = ef && (wf > wl)
+                                                in if cond
+                                                   then fix (e + 1)
+                                                   else e
+                                    in fix estart
                                      --
                             cond1 = (endi - starti) == 2
                             cond2 = (wlStartClamp starti) <= (double2Word waveValDDiff)
@@ -155,13 +155,13 @@ resampleWavePower pwrs wvs lambdaMin lambdaMax outSize =
                         in result
 
             in samplingResult
-        foldfn acc oset = let (opwrs, owvs) = acc
-                              ot = (word2Double oset) / (word2Double (outSize - 1))
-                              nwave = mix ot (word2Double lambdaMin) (word2Double lambdaMax)
-                              nw = double2Word nwave
-                              npwr = resamplingFn nw
-                          in (opwrs ++ [npwr], owvs ++ [nw])
-        ((npwr:npwrs), (nwave:nwaves)) = foldl foldfn ([], []) [0..(outSize - 1)]
+        --
+        mapfn oset = let firstT = (word2Double oset) / (word2Double (outSize - 1))
+                         nwave = mix firstT (word2Double lambdaMin) (word2Double lambdaMax)
+                         nw = double2Word nwave
+                         npwr = resamplingFn nw
+                     in (npwr, nw)
+        ((npwr:npwrs), (nwave:nwaves)) = unzip $! map mapfn [0..(outSize - 1)]
     in fromWavesPowers (fromList2NL npwr npwrs) (fromList2NL nwave nwaves)
 
 
@@ -210,6 +210,7 @@ resampleFromOutSize a outSize =
 resampleCurrentWavePower :: SampledWavePower -> SampledWavePower
 resampleCurrentWavePower a = resampleFromSampledWavePower a a
 
+-- TODO: burada kaldin: -> pbr spectrum.cpp Init()
 rgb2Spect :: NonEmptyList Double -> NonEmptyList Double -> SampledWavePower
 rgb2Spect rgbWavesD rgbSpect =
     let sizeCheck = (lengthNL rgbWavesD) == (lengthNL rgbSpect)

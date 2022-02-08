@@ -50,13 +50,11 @@ type ImLoad = Either String Image
 -- 4: perlin noise sphere
 -- 5: image texture
 
-traceScene :: RandomGen g => g-> ImLoad -> Int -> IO (Int, (Int, Int), [Pixel])
+traceScene :: RandomGen g => g-> MayImage -> Int -> IO (Int, (Int, Int), [Pixel])
 traceScene g imD sceneChoice =
     let imval = case imD of
-                    Left e -> if sceneChoice == 7
-                              then error e
-                              else []
-                    Right e -> [e]
+                    Nothing -> []
+                    Just e -> [e]
         (smpl, scne) = chooseScene g imval sceneChoice
         imw = img_width scne
         imh = img_height scne
@@ -67,13 +65,32 @@ traceScene g imD sceneChoice =
         ps = renderScene pixCoords g scne
     in return (smpl, (imw, imh), ps)
 
+type MayImage = Maybe Image
+
+loadImages :: Int -> [String] -> IO MayImage
+loadImages choice paths =
+    let choiceResult = case choice of
+                            -- earth scene
+                            5 -> loadImage (head paths)
+                            -- nextweek final scene
+                            9 -> loadImage (head paths);
+                            -- demotic cornell box scene
+                            12 -> loadImage (last paths); 
+                            _ -> return (Left "no image");
+    in do 
+        ioResult <- choiceResult;
+        case ioResult of
+            Right a -> return (Just a)
+            Left _ -> return Nothing
+
 
 printColor :: IO ()
 printColor = do
     tstart <- getCurrentTime
     g <- newStdGen
-    imD <- loadImage "./earthmap.jpg"
-    (smpl, (imw, imh), ps) <- traceScene g imD 11
+    choice <- return 12
+    imD <- loadImages choice ["./earthmap.jpg", "./demotic.jpg"]
+    (smpl, (imw, imh), ps) <- traceScene g imD choice
     -- print pixCoords
     _ <- printPPMHeader imw imh
     _ <- printPixels ps smpl
@@ -82,9 +99,6 @@ printColor = do
          secs = diff
         }
     hPutStrLn stderr ("duration in seconds: " ++ show secs )
-    case imD of
-        Left e -> error e
-        Right e -> error ( show e )
 
 
 

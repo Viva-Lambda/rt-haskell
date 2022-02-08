@@ -59,10 +59,10 @@ rotateByMatrix (VList ps) rotmat =
 
 
 data Rotatable where
-    Rotate :: (Show a, Hittable a, Eq a) => a -> Double -> RotationAxis -> Bool -> Aabb -> Rotatable
+    Rotate :: (Show a, Hittable a, Eq a) => a -> Double -> RotationAxis -> Bool -> Aabb -> String -> Rotatable
 
 instance Show Rotatable where 
-    show (Rotate a angle axis _ _) =
+    show (Rotate a angle axis _ _ _) =
         let msg1 = "<Rotatable: " ++ show a ++ " angle: " ++ show angle
             msg2 = msg1 ++ " axis " ++ show axis ++ ">"
         in msg1 ++ msg2
@@ -70,10 +70,10 @@ instance Show Rotatable where
 instance Eq Rotatable where
     a == b =
         case a of
-            (Rotate an angle axis _ _) -> 
+            (Rotate _ angle axis _ _ an) -> 
                 case b of
-                    (Rotate an bngle bxis _ _) ->
-                      (an == an) && (angle == bngle) && (axis == bxis)
+                    (Rotate _ bngle bxis _ _ bn) ->
+                      (an == bn) && (angle == bngle) && (axis == bxis)
 
 innerRotatable :: Int -> Int -> Int -> Aabb -> Matrix -> Vector -> Vector -> (Vector, Vector)
 innerRotatable i j k bbox rotmat minv maxv =
@@ -94,7 +94,7 @@ innerRotatable i j k bbox rotmat minv maxv =
         (n:ns) = f maximum mxvs
     in (fromList2Vec m ms, fromList2Vec n ns)
 
-mkRotatable :: (Show a, Hittable a, Eq a) => a -> Double -> RotationAxis -> Rotatable
+mkRotatable :: (Show a, Hittable a, Eq a) => a -> Double -> RotationAxis -> String -> Rotatable
 mkRotatable ptr angle axis =
     let (ab, hasAb) = boundingBox ptr 0 1 zeroAabb3
         rotmat = toMatrix axis angle
@@ -113,7 +113,7 @@ mkRotatable ptr angle axis =
 
 
 instance Hittable Rotatable where
-    hit (Rotate a angle axis _ _) g ry tmin tmax hrec =
+    hit (Rotate a angle axis _ _ _) g ry tmin tmax hrec =
         --
         let theta = degrees_to_radians angle
             rotmat = toMatrix axis theta
@@ -140,11 +140,11 @@ instance Hittable Rotatable where
 
     -- there is a problem here the bounding box does not care about the time
     -- TODO
-    boundingBox (Rotate a angle axis hasBox bbox) tmn tmx ab = (bbox, hasBox)
+    boundingBox (Rotate a angle axis hasBox bbox _) tmn tmx ab = (bbox, hasBox)
 
     pdf_value a g orig v =
         case a of
-            (Rotate b angle axis _ _) ->
+            (Rotate b angle axis _ _ _) ->
                 let theta = degrees_to_radians angle
                     rotmat = toMatrix axis theta
                     invrot = toMatrix axis (-theta)
@@ -154,7 +154,7 @@ instance Hittable Rotatable where
             
     hrandom a g orig =
         case a of
-            (Rotate b angle axis _ _) ->
+            (Rotate b angle axis _ _ _) ->
                 let theta = degrees_to_radians angle
                     rotmat = toMatrix axis theta
                     invrot = toMatrix axis (-theta)

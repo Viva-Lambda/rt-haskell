@@ -113,7 +113,8 @@ mkTransformedBoxes g =
         (g1, boxes) = foldl foldlfn (g, []) [0..999]
         bvhboxes = mkBvh boxes g1 0 (length boxes) 0.0 1.0
         rotatedBoxes = mkRotatable bvhboxes 15.0 RY
-        transBoxes = Translate bvhboxes (fromList2Vec (-100.0) [270.0, 395.0])
+        transOff = fromList2Vec (-100.0) [270.0, 395.0]
+        transBoxes = Translate bvhboxes transOff (show bvhboxes)
     in (g1, HittableCons transBoxes)
 
 

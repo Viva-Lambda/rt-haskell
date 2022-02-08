@@ -32,6 +32,9 @@ import Scene.CornellBox
 -- cornell smoke
 import Scene.CornellSmoke
 
+-- cornell image
+import Scene.CornellImage
+
 -- next week final scene
 import Scene.NextWeekFinal
 
@@ -62,5 +65,8 @@ chooseScene g !s choice =
              in (nb_samples sc, sc)
         10 -> let sc = cornellSphere g in (nb_samples sc, sc)
         11 -> let sc = cornellBoxSpectral g in (nb_samples sc, sc)
+        12 -> let sc = if null s
+                       then diffuseSphere
+                       else cornellBoxDemotic g (head s) in (nb_samples sc, sc)
         _ -> let sc = diffuseSphere in (nb_samples sc, sc)
 

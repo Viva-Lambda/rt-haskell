@@ -15,12 +15,12 @@ class Eq a => BinaryOps a where
     multiply !a !b = elementwiseOp "multiply" (*) a b
     divide :: a -> a -> a
     addS :: a -> Double -> a
-    addS !a !s = let f = \d -> d + s in elementwiseScalarOp "add" f a
+    addS !a !s = let f d = d + s in elementwiseScalarOp "add" f a
     subtractS :: a -> Double -> a
-    subtractS !a !s = let f = \d -> d - s in elementwiseScalarOp "subtract" f a
+    subtractS !a !s = let f d =  d - s in elementwiseScalarOp "subtract" f a
     multiplyS :: a -> Double -> a
-    multiplyS !a !s = let f = \d -> d * s in elementwiseScalarOp "multiply" f a
+    multiplyS !a !s = let f d = d * s in elementwiseScalarOp "multiply" f a
     divideS :: a -> Double -> a
     divideS !a !s = if s == 0.0
                     then traceStack "ZeroDivisionError :: performing zero division" a
-                    else let f = \d -> d / s in elementwiseScalarOp "divide" f a
+                    else let f d = d / s in elementwiseScalarOp "divide" f a

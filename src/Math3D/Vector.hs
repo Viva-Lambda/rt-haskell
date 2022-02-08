@@ -94,10 +94,10 @@ vecScalarOp :: (Double -> Double) -> Vector -> Vector
 vecScalarOp f !v = let (b:bs) = map f (vec2List v) in fromList2Vec b bs
 
 nearZeroVec :: Vector -> Bool
-nearZeroVec !(VList v) =
+nearZeroVec (VList v) =
     let vs = nl2List v
         nzero = 1e-10
-    in foldl1 (&&) $! map (< nzero) (map abs vs)
+    in foldl1 (&&) $! map ((< nzero) . abs) vs
 
 instance BinaryOps Vector where
     elementwiseOp str f a b = vecArithmeticOp str f a b
@@ -258,7 +258,7 @@ clampV v mn mx =
         (n:ns) = clampvals vs
     in fromList2Vec n ns
     where clampvals [] = []
-          clampvals (e:es) = clamp e mn mx : clampvals es
+          clampvals es = map (\e -> clamp e mn mx) es
 
 sumD :: Vector -> Double
 sumD v = foldl1 (+) $! vec2List v
