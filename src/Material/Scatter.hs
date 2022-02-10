@@ -14,6 +14,7 @@ import Spectral.SampledSpectrum
 --
 import Random
 import Utility.Utils
+import Utility.BaseEnum
 
 --
 import Hittable.HitRecord
@@ -40,11 +41,11 @@ type ScatteredRay = Ray
 
 class Scatterer a where
     scatter :: RandomGen g => g -> a -> Ray -> HitRecord -> ColorFlag -> (g, ScatterRecord, Bool)
-    emitted :: a -> Double -> Double -> Vector -> Word -> ColorFlag -> ColorRecord
+    emitted :: a -> Double -> Double -> Vector -> WaveVal -> ColorFlag -> ColorRecord
     scattering_pdf :: a -> Ray -> HitRecord -> Ray -> Double
 
 
-emptyEmitted :: Word -> ColorFlag -> ColorRecord
+emptyEmitted :: WaveVal -> ColorFlag -> ColorRecord
 emptyEmitted wavelen cflag =
     case cflag of
        RGB -> ColorRec {model = ColorRGB zeroV3}

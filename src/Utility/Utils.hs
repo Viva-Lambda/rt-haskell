@@ -19,18 +19,6 @@ float_max = 1e37 -- from c++
 float_min :: Double
 float_min = 1e-37 -- from c++
 
-spd_stride :: Word
-spd_stride = 5
-
-spd_nb_sample :: Word
-spd_nb_sample = 30
-
-visible_lambda_start :: Word
-visible_lambda_start = 380
-
-visible_lambda_end :: Word
-visible_lambda_end = 720
-
 degrees_to_radians :: Double -> Double
 degrees_to_radians degrees = degrees * m_pi / 180.0
 
@@ -71,7 +59,7 @@ findInterval size intervalFn =
     in clamp (nfirst - 1) 0 (size - 2)
 
 
-mix :: Double -> Double -> Double -> Double
+mix :: Fractional a => a -> a -> a -> a
 mix t v u = (1.0 - t) * v + t * u
 -- 
 eqReduce :: Eq a => [a] -> ((a -> Bool) -> [a] -> Bool) -> Bool

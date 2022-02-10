@@ -7,6 +7,8 @@ import Math3D.CommonOps
 
 import Spectral.SampledSpectrum
 
+import Utility.BaseEnum
+
 -- thirdparty
 import Debug.Trace
 
@@ -15,7 +17,7 @@ data ColorFlag = RGB
                 deriving (Show, Eq)
 
 data ColorModel = ColorRGB Vector
-                | ColorSpec (SpectrumType, (Word, Double))
+                | ColorSpec (SpectrumType, (WaveVal, PowerVal))
                 deriving (Show, Eq)
 
 data ColorRecord = ColorRec { model :: ColorModel } deriving (Eq, Show)
@@ -55,7 +57,7 @@ colorModelCheck a b =
         msg3 = show (stype b)
     in (isEqual, msg1 ++ msg2 ++ " " ++ msg3 )
 
-wavelengthStr :: Word -> Word -> String
+wavelengthStr :: WaveVal -> WaveVal -> String
 wavelengthStr a b =
     let msg1 = "wavelengths are not same" 
         msg2 = " for given spectral powers"

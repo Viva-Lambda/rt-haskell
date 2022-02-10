@@ -6,6 +6,7 @@ module Spectral.PbrtSpecdata where
 import Math3D.Vector
 import Utility.HelperTypes
 import Utility.Utils
+import Utility.BaseEnum
 
 import GHC.Float
 
@@ -15,7 +16,7 @@ nbCIESamples = 471
 
 
 -- X spectral values for CIE
-cieX :: NonEmptyList Double
+cieX :: NonEmptyList PowerVal
 cieX = fromList2NL 0.0001299000 [
     0.0001458470,   0.0001638021,
     0.0001840037,   0.0002066902,   0.0002321000,
@@ -177,7 +178,7 @@ cieX = fromList2NL 0.0001299000 [
     ]
 
 --
-cieY :: NonEmptyList Double
+cieY :: NonEmptyList PowerVal
 cieY = fromList2NL 0.000003917000 [
     0.000004393581,  0.000004929604,
     0.000005532136,  0.000006208245,  0.000006965000,
@@ -338,7 +339,7 @@ cieY = fromList2NL 0.000003917000 [
     0.0000005198080, 0.0000004846123, 0.0000004518100
     ]
 
-cieZ :: NonEmptyList Double
+cieZ :: NonEmptyList PowerVal
 cieZ = fromList2NL 0.0006061000 [
     0.0006808792,
     0.0007651456,
@@ -813,16 +814,16 @@ cieZ = fromList2NL 0.0006061000 [
     ]
 
 -- cie sampled wavelengths
-cieLambda :: NonEmptyList Word
+cieLambda :: NonEmptyList WaveVal
 cieLambda = fromList2NL 360 [361..830]
 
-cieLambdaReal :: NonEmptyList Double
-cieLambdaReal = mapNL word2Double cieLambda
+cieLambdaPowerVal :: NonEmptyList PowerVal
+cieLambdaPowerVal = mapNL float2Double cieLambda
 
 nbRGBSpecSamples :: Word
 nbRGBSpecSamples = 32
 
-cieYIntegral :: Double
+cieYIntegral :: PowerVal
 cieYIntegral = 106.856895
 
 -- spd stride
@@ -836,7 +837,7 @@ visibleWavelengthEnd :: Word
 visibleWavelengthEnd = 700
 
 -- rgb data
-rgb2SpectLambda :: NonEmptyList Double
+rgb2SpectLambda :: NonEmptyList WaveVal
 rgb2SpectLambda = fromList2NL 380.0 [
     390.967743, 401.935486, 412.903229,
     423.870972, 434.838715, 445.806458, 456.774200,
@@ -848,7 +849,7 @@ rgb2SpectLambda = fromList2NL 380.0 [
     687.096313, 698.064026, 709.031738, 720.000000
     ]
 
-rgbRefl2SpectWhite :: NonEmptyList Double
+rgbRefl2SpectWhite :: NonEmptyList PowerVal
 rgbRefl2SpectWhite = fromList2NL 1.0618958571272863e+00 [
     1.0615019980348779e+00, 1.0614335379927147e+00, 1.0622711654692485e+00,
     1.0622036218416742e+00, 1.0625059965187085e+00,
@@ -867,7 +868,7 @@ rgbRefl2SpectWhite = fromList2NL 1.0618958571272863e+00 [
     1.0601263046243634e+00, 1.0606565756823634e+00
     ]
 
-rgbRefl2SpectCyan :: NonEmptyList Double
+rgbRefl2SpectCyan :: NonEmptyList PowerVal
 rgbRefl2SpectCyan = fromList2NL 1.0414628021426751e+00 [
     1.0328661533771188e+00,
     1.0126146228964314e+00,  1.0350460524836209e+00,
@@ -887,7 +888,7 @@ rgbRefl2SpectCyan = fromList2NL 1.0414628021426751e+00 [
     5.8762925143334985e-03,  2.5259399415550079e-02
     ]
 
-rgbRefl2SpectMagenta :: NonEmptyList Double
+rgbRefl2SpectMagenta :: NonEmptyList PowerVal
 rgbRefl2SpectMagenta = fromList2NL 9.9422138151236850e-01 [
     9.8986937122975682e-01,
     9.8293658286116958e-01,  9.9627868399859310e-01,
@@ -907,7 +908,7 @@ rgbRefl2SpectMagenta = fromList2NL 9.9422138151236850e-01 [
     8.9150987853523145e-01,  8.4866492652845082e-01
     ]
 
-rgbRefl2SpectYellow :: NonEmptyList Double
+rgbRefl2SpectYellow :: NonEmptyList PowerVal
 rgbRefl2SpectYellow = fromList2NL 5.5740622924920873e-03 [
     -4.7982831631446787e-03,
     -5.2536564298613798e-03, -6.4571480044499710e-03,
@@ -927,7 +928,7 @@ rgbRefl2SpectYellow = fromList2NL 5.5740622924920873e-03 [
     1.0435963333422726e+00,  1.0392280772051465e+00
     ]
 
-rgbRefl2SpectRed :: NonEmptyList Double
+rgbRefl2SpectRed :: NonEmptyList PowerVal
 rgbRefl2SpectRed = fromList2NL 1.6575604867086180e-01 [
     1.1846442802747797e-01,
     1.2408293329637447e-01,  1.1371272058349924e-01,
@@ -947,7 +948,7 @@ rgbRefl2SpectRed = fromList2NL 1.6575604867086180e-01 [
     9.3495763980962043e-01,  9.8713907792319400e-01
     ]
 
-rgbRefl2SpectGreen :: NonEmptyList Double
+rgbRefl2SpectGreen :: NonEmptyList PowerVal
 rgbRefl2SpectGreen = fromList2NL 2.6494153587602255e-03 [
     -5.0175013429732242e-03,
     -1.2547236272489583e-02, -9.4554964308388671e-03,
@@ -967,7 +968,7 @@ rgbRefl2SpectGreen = fromList2NL 2.6494153587602255e-03 [
     5.4301225442817177e-03,  -2.7745589759259194e-03
     ]
 
-rgbRefl2SpectBlue :: NonEmptyList Double
+rgbRefl2SpectBlue :: NonEmptyList PowerVal
 rgbRefl2SpectBlue = fromList2NL 9.9209771469720676e-01 [
     9.8876426059369127e-01,
     9.9539040744505636e-01,  9.9529317353008218e-01,
@@ -986,7 +987,7 @@ rgbRefl2SpectBlue = fromList2NL 9.9209771469720676e-01 [
     3.0501024937233868e-02,  2.1243054765241080e-02,
     6.9596532104356399e-03,  4.1733649330980525e-03
     ]
-rgbIllum2SpectWhite :: NonEmptyList Double
+rgbIllum2SpectWhite :: NonEmptyList PowerVal
 rgbIllum2SpectWhite = fromList2NL 1.1565232050369776e+00 [
     1.1567225000119139e+00,
     1.1566203150243823e+00, 1.1555782088080084e+00,
@@ -1005,7 +1006,7 @@ rgbIllum2SpectWhite = fromList2NL 1.1565232050369776e+00 [
     8.7635244612244578e-01, 8.8000368331709111e-01,
     8.8065665428441120e-01, 8.8304706460276905e-01
     ]
-rgbIllum2SpectCyan :: NonEmptyList Double
+rgbIllum2SpectCyan :: NonEmptyList PowerVal
 rgbIllum2SpectCyan = fromList2NL 1.1334479663682135e+00 [
     1.1266762330194116e+00,
     1.1346827504710164e+00,  1.1357395805744794e+00,
@@ -1024,7 +1025,7 @@ rgbIllum2SpectCyan = fromList2NL 1.1334479663682135e+00 [
     -9.4722817708236418e-03, -5.5329541006658815e-03,
     -4.5428914028274488e-03, -1.2541015360921132e-02
     ]
-rgbIllum2SpectMagenta :: NonEmptyList Double
+rgbIllum2SpectMagenta :: NonEmptyList PowerVal
 rgbIllum2SpectMagenta = fromList2NL 1.0371892935878366e+00 [
     1.0587542891035364e+00,
     1.0767271213688903e+00,  1.0762706844110288e+00,
@@ -1043,7 +1044,7 @@ rgbIllum2SpectMagenta = fromList2NL 1.0371892935878366e+00 [
     9.8333849623218872e-01,  1.0707246342802621e+00,
     1.0634247770423768e+00,  1.0150875475729566e+00
     ]
-rgbIllum2SpectYellow :: NonEmptyList Double
+rgbIllum2SpectYellow :: NonEmptyList PowerVal
 rgbIllum2SpectYellow = fromList2NL 2.7756958965811972e-03 [
     3.9673820990646612e-03,
     -1.4606936788606750e-04, 3.6198394557748065e-04,
@@ -1063,7 +1064,7 @@ rgbIllum2SpectYellow = fromList2NL 2.7756958965811972e-03 [
     5.6061186014968556e-01,  5.8228610381018719e-01
     ]
 
-rgbIllum2SpectRed :: NonEmptyList Double
+rgbIllum2SpectRed :: NonEmptyList PowerVal
 rgbIllum2SpectRed = fromList2NL 5.4711187157291841e-02 [
     5.5609066498303397e-02,
     6.0755873790918236e-02,  5.6232948615962369e-02,
@@ -1082,7 +1083,7 @@ rgbIllum2SpectRed = fromList2NL 5.4711187157291841e-02 [
     9.7433478377305371e-01,  9.9134364616871407e-01,
     9.8866287772174755e-01,  9.9713856089735531e-01
     ]
-rgbIllum2SpectGreen :: NonEmptyList Double
+rgbIllum2SpectGreen :: NonEmptyList PowerVal
 rgbIllum2SpectGreen = fromList2NL 2.5168388755514630e-02 [
     3.9427438169423720e-02,
     6.2059571596425793e-03,  7.1120859807429554e-03,
@@ -1101,7 +1102,7 @@ rgbIllum2SpectGreen = fromList2NL 2.5168388755514630e-02 [
     -6.4630764968453287e-03, 1.0250854718507939e-02,
     4.2387394733956134e-02,  2.1252716926861620e-02
     ]
-rgbIllum2SpectBlue :: NonEmptyList Double
+rgbIllum2SpectBlue :: NonEmptyList PowerVal
 rgbIllum2SpectBlue = fromList2NL 1.0570490759328752e+00 [
     1.0538466912851301e+00,
     1.0550494258140670e+00,  1.0530407754701832e+00,
@@ -1126,7 +1127,7 @@ cieIlluminantSample :: Word
 cieIlluminantSample = 97
 
 -- from files.cie.co.at/204.xls
-cieStandardIlluminant_A_Wavelengths :: NonEmptyList Word
+cieStandardIlluminant_A_Wavelengths :: NonEmptyList WaveVal
 cieStandardIlluminant_A_Wavelengths = fromList2NL 300 [
  305, 310, 315, 320, 325, 330, 335, 340, 345,
  350, 355, 360, 365, 370, 375, 380, 385, 390, 395,
@@ -1141,7 +1142,7 @@ cieStandardIlluminant_A_Wavelengths = fromList2NL 300 [
     ]
 
 -- from files.cie.co.at/204.xls
-cieStandardIlluminant_A_Powers :: NonEmptyList Double
+cieStandardIlluminant_A_Powers :: NonEmptyList PowerVal
 cieStandardIlluminant_A_Powers = fromList2NL 0.930483 [
     1.12821, 1.35769, 1.62219, 1.92508, 2.2698,
     2.65981,  3.09861, 3.58968, 4.13648, 4.74238, 5.4107,
@@ -1155,11 +1156,11 @@ cieStandardIlluminant_A_Powers = fromList2NL 0.930483 [
     ]
 
 -- from files.cie.co.at/204.xls
-cieStandardIlluminant_D65_Wavelengths :: NonEmptyList Word
+cieStandardIlluminant_D65_Wavelengths :: NonEmptyList WaveVal
 cieStandardIlluminant_D65_Wavelengths = cieStandardIlluminant_A_Wavelengths
 
 -- from http://www.cie.co.at/publ/abst/datatables15_2004/std65.txt
-cieStandardIlluminant_D65_Powers :: NonEmptyList Double
+cieStandardIlluminant_D65_Powers :: NonEmptyList PowerVal
 cieStandardIlluminant_D65_Powers = fromList2NL 0.0341 [
     1.6643,  3.2945,  11.7652, 20.236,  28.6447,
     37.0535, 38.5011, 39.9488, 42.4302, 44.9117, 45.775,

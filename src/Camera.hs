@@ -9,10 +9,19 @@ import Math3D.Ray
 import Math3D.Transform
 import Math3D.Onb
 
+
+-- spectral
+import Spectral.PbrtSpecdata
+
 import Utility.Utils
+import Utility.BaseEnum
+
+import Random
+
+-- thirdparty
 import Prelude hiding (subtract)
 import System.Random
-import Random
+import GHC.Float
 
 
 data Camera = Cam {
@@ -117,7 +126,9 @@ getRay gen Cam {corigin = cameraOrigin, horizontal = cameraH,
         rdir3 = subtract rdir2 cameraOrigin
         rdir4 = subtract rdir3 offset
         RandResult (timeD, g2) = randomDouble g (t0, t1)
-        RandResult (wlength, g3) = randomWord g (visible_lambda_start, visible_lambda_end)
+        lambdaStart = word2Float visibleWavelengthStart
+        lambdaEnd = word2Float visibleWavelengthEnd
+        RandResult (wlength, g3) = randomWaveVal g (lambdaStart, lambdaEnd)
     in RandResult (Rd {origin = rorigin,
                        direction = rdir4,
                        rtime = timeD,

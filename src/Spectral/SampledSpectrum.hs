@@ -85,7 +85,7 @@ fromRGB r g b t =
                         in multiplyS reflZspd 0.94
         --
                     ILLUMINANT ->
-                        let illumZspd = 
+                        let illumZspd
                                 | cond1 = condfn whitei r g b normalCyanI normalBlueI normalGreenI
                                 | cond2 = condfn whitei g r b normalMagentaI normalBlueI normalRedI
                                 | otherwise = condfn whitei b g r normalYellowI normalGreenI normalRedI
@@ -93,7 +93,9 @@ fromRGB r g b t =
 
     -- clamp spd value
         clampedSpd = clamp spval (0.0, float_max)
-    in resampleFromWaves clampedSpd visible_lambda_start visible_lambda_end spd_nb_sample
+        lambdaStart = word2Float visibleWavelengthStart
+        lambdaEnd = word2Float visibleWavelengthEnd
+    in resampleFromWaves clampedSpd lambdaStart lambdaEnd spectralSampleStride
 
 -- from a given spd
 fromSampledWave :: SampledWavePower -> SpectrumType -> SampledSpectrum
@@ -167,7 +169,7 @@ instance Colorable SampledSpectrum where
                                       in (x + sx * p, y + sy * p, z + sz * p)
                     (x, y, z) = foldlNL foldfn (0.0, 0.0, 0.0) waves
                     ciey = cieYIntegral * (word2Double wsize)
-                    waveScale = (word2Double (wend - wstart)) / ciey
+                    waveScale = (float2Double (wend - wstart)) / ciey
                 in fromList2Vec (x * waveScale) [y * waveScale, z * waveScale]
     toRGB a = 
         let xyzval = toXYZ a

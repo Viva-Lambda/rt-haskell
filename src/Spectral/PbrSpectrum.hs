@@ -104,7 +104,7 @@ resampleWavePower pwrs wvs lambdaMin lambdaMax outSize =
         powerClamp index = getNL pwrs (clamp index 0 (wsize - 1))
         -- resampling fn
         resamplingFn waveVal =
-            let halfDelta = double2Float $! wdelta / 2.0
+            let halfDelta = wdelta / 2.0
                 waveValDDiff = waveVal - wdelta
                 waveValDSum = waveVal + wdelta
                 (v, inRange)
@@ -116,16 +116,16 @@ resampleWavePower pwrs wvs lambdaMin lambdaMax outSize =
                     | inRange = v
                     | otherwise =
                         let starti = if waveValDDiff < (headNL wvs)
-                                     then -1.0
+                                     then -1
                                      else let intervalFn i = 
-                                                (word2Double (getNL wvs i)) <= waveValDDiff
+                                                (getNL wvs i) <= waveValDDiff
                                           in findInterval wsize intervalFn
                             endi
                                 | waveValDSum > (lastNL wvs) = wsize
                                 | otherwise =
                                     let estart = if starti > 0
                                                  then starti
-                                                 else 0.0
+                                                 else 0
                                         fix e = let ef = e < wsize
                                                     wf = waveValDSum
                                                     wl = getNL wvs e
@@ -136,9 +136,9 @@ resampleWavePower pwrs wvs lambdaMin lambdaMax outSize =
                                     in fix estart
                                      --
                             cond1 = (endi - starti) == 2
-                            cond2 = (wlStartClamp starti) <= (double2Word waveValDDiff)
+                            cond2 = (wlStartClamp starti) <= waveValDDiff
                             cond3 = (getNL wvs (starti + 1)) == waveVal
-                            cond4 = (wlStartClamp endi) >= (double2Word waveValDSum)
+                            cond4 = (wlStartClamp endi) >= waveValDSum
                             result 
                                | cond1 && cond2 && cond3 && cond4 = getNL pwrs (starti + 1)
                                | (endi - starti) == 1 = 
@@ -147,7 +147,7 @@ resampleWavePower pwrs wvs lambdaMin lambdaMax outSize =
                                        t = (waveVal - wst) / (wnd - wst)
                                        pwrCS = powerClamp starti
                                        pwrCE = powerClamp endi
-                                   in mix t pwrCS pwrCE
+                                   in mix (float2Double t) pwrCS pwrCE
                                | otherwise =
                                    let wvds = waveVal - halfDelta
                                        wvde = waveVal + halfDelta
@@ -156,11 +156,10 @@ resampleWavePower pwrs wvs lambdaMin lambdaMax outSize =
 
             in samplingResult
         --
-        mapfn oset = let firstT = (word2Double oset) / (word2Double (outSize - 1))
-                         nwave = mix firstT (word2Double lambdaMin) (word2Double lambdaMax)
-                         nw = double2Word nwave
-                         npwr = resamplingFn nw
-                     in (npwr, nw)
+        mapfn oset = let firstT = (word2Float oset) / (word2Float (outSize - 1))
+                         nwave = mix firstT lambdaMin lambdaMax
+                         npwr = resamplingFn nwave
+                     in (npwr, nwave)
         ((npwr:npwrs), (nwave:nwaves)) = unzip $! map mapfn [0..(outSize - 1)]
     in fromWavesPowers (fromList2NL npwr npwrs) (fromList2NL nwave nwaves)
 
@@ -212,18 +211,21 @@ resampleCurrentWavePower a = resampleFromSampledWavePower a a
 
 xyzAverageSpectrum :: CIETrichroma -> SampledWavePower
 xyzAverageSpectrum a =
-    let mapfn i = let nSpectralSamples = word2Double spectralSampleNb
-                      wl0 = mix ((word2Double i) / nSpectralSamples) 
-                              visibleWavelengthStart visibleWavelengthEnd
-                      wl1 = mix ((word2Double (i + 1)) / nSpectralSamples) 
-                              visibleWavelengthStart visibleWavelengthEnd
+    let lambdaStart = word2Float visibleWavelengthStart
+        lambdaEnd = word2Float visibleWavelengthEnd
+        mapfn i = let nSpectralSamples = word2Float spectralSampleNb
+                      wl0 = mix ((word2Float i) / nSpectralSamples)
+                              lambdaStart lambdaEnd
+                      wl1 = mix ((word2Float (i + 1)) / nSpectralSamples) 
+                              lambdaStart lambdaEnd
                       averagefn pwrs = averagePowerWaves pwrs cieLambda wl0 wl1
                   in case a of
                         CIE_X -> averagefn cieX
                         CIE_Y -> averagefn cieY
                         CIE_Z -> averagefn cieZ
-        (w:ws) = [0..spectralSampleNb]
-        (x:xs) = map mapfn (w:ws)
+        lst = [0..spectralSampleNb]
+        (x:xs) = map mapfn lst
+        (w:ws) = map word2Float lst
     in fromWavesPowers (fromList2NL x xs) (fromList2NL w ws)
 
 
@@ -237,12 +239,14 @@ spdZ :: SampledWavePower
 spdZ = xyzAverageSpectrum CIE_Z
 
 rgb2Spect :: Rgb2Spect -> SampledWavePower
-rgb2Spect a = 
-    let mapfn i = let nSpectralSamples = word2Double spectralSampleNb
-                      wl0 = mix ((word2Double i) / nSpectralSamples) 
-                              visibleWavelengthStart visibleWavelengthEnd
-                      wl1 = mix ((word2Double (i + 1)) / nSpectralSamples) 
-                              visibleWavelengthStart visibleWavelengthEnd
+rgb2Spect a =
+    let lambdaStart = word2Float visibleWavelengthStart
+        lambdaEnd = word2Float visibleWavelengthEnd
+        mapfn i = let nSpectralSamples = word2Float spectralSampleNb
+                      wl0 = mix ((word2Float i) / nSpectralSamples) 
+                              lambdaStart lambdaEnd
+                      wl1 = mix ((word2Float (i + 1)) / nSpectralSamples) 
+                              lambdaStart lambdaEnd
                       averagefn pwrs = averagePowerWaves pwrs rgb2SpectLambda wl0 wl1
                   in case a of
                         REFL_WHITE -> averagefn rgbRefl2SpectWhite
@@ -259,8 +263,9 @@ rgb2Spect a =
                         ILLUM_RED -> averagefn rgbIllum2SpectRed
                         ILLUM_GREEN -> averagefn rgbIllum2SpectGreen
                         ILLUM_BLUE -> averagefn rgbIllum2SpectBlue
-        (w:ws) = [0..spectralSampleNb]
-        (x:xs) = map mapfn (w:ws)
+        lst = [0..spectralSampleNb]
+        (x:xs) = map mapfn lst
+        (w:ws) = map word2Float lst
     in fromWavesPowers (fromList2NL x xs) (fromList2NL w ws)
 
 

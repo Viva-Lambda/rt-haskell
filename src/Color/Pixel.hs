@@ -10,6 +10,9 @@ import Color.ColorInterface
 import Spectral.SampledSpectrum
 import Spectral.SampledDistribution
 
+-- basic types and enumerations
+import Utility.BaseEnum
+
 -- 
 import Debug.Trace
 
@@ -93,7 +96,7 @@ instance BinaryOps PixelSpectrum where
                             PixSpecSampled s2 -> PixSpecSampled $! divide s1 s2
 
 
-toColorRecord :: PixelSpectrum -> Word -> ColorRecord
+toColorRecord :: PixelSpectrum -> WaveVal -> ColorRecord
 toColorRecord a wave = case a of
                          PixSpecTrichroma (r,g,b) -> ColorRec {
                             model = ColorRGB $! fromList2Vec r [g, b]

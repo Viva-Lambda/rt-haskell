@@ -9,6 +9,7 @@ import Data.Functor
 
 -- utility functions
 import Utility.HelperTypes
+import Utility.BaseEnum
 
 
 data RandomResult a g where
@@ -92,6 +93,12 @@ randomInt = randomFn
 
 randomWord :: RandomGen g => g -> (Word, Word) -> RandomResult Word g
 randomWord = randomFn
+
+randomWaveVal :: RandomGen g => g -> (WaveVal, WaveVal) -> RandomResult WaveVal g
+randomWaveVal = randomFn
+
+randomPowerVal :: RandomGen g => g -> (PowerVal, PowerVal) -> RandomResult PowerVal g
+randomPowerVal = randomFn
 
 randval :: RandomGen g => g -> RandomResult Double g
 randval g = randomDouble g (0.0, 1.0)

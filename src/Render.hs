@@ -14,6 +14,7 @@ import Math3D.CommonOps
 -- spectral handling
 import Spectral.SampledDistribution
 import Spectral.SampledSpectrum
+import Spectral.PbrtSpecdata
 
 -- color handling
 import Color.Pixel
@@ -183,9 +184,12 @@ mkColor coord rng cmr scene =
                                           in if all isNaN (vec2List cval)
                                              then (lst ++ [(wave, zeroLikeVector cval)], g1)
                                              else (lst ++ [(wave, cval)], g1)
-                            sampleStep = 5
-                            waveRange = [visible_lambda_start,
-                                        (visible_lambda_start + sampleStep)..visible_lambda_end]
+                            sampleStep = spectralSampleStride
+                            lambdaStart = visibleWavelengthStart
+                            lambdaEnd = visibleWavelengthEnd
+                            wrange = [lambdaStart,
+                                        (lambdaEnd + sampleStep)..lambdaEnd]
+                            waveRange = map word2Float wrange
                             (wavePowers, ngen) = foldl fn ([], rgen) waveRange
                             (w:ws, powerVecs) = unzip wavePowers
                             --
