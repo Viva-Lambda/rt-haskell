@@ -8,14 +8,15 @@ import Math3D.CommonOps
 
 import Utility.HelperTypes
 import Utility.Utils as Ut 
+import Utility.BaseEnum
 
 -- third party
 import qualified Data.Map as DMap
-import Data.Word
+import GHC.Float
 import Data.List
 import Debug.Trace
 
-data SampledWavePower = SampledWP (NonEmptyList (Word, Double))
+data SampledWavePower = SampledWP (NonEmptyList (WaveVal, PowerVal))
 
 instance Eq SampledWavePower where
     (SampledWP a) == (SampledWP b) = a == b
@@ -24,7 +25,7 @@ instance Show SampledWavePower where
     show (SampledWP a) = "<SampledWavePower :: " ++ show a
 
 
-wavelengths :: SampledWavePower -> NonEmptyList Word
+wavelengths :: SampledWavePower -> NonEmptyList WaveVal
 wavelengths (SampledWP dmap) = let ((w:ws), _) = unzip (nl2List dmap)
                                in fromList2NL w ws
 
@@ -32,7 +33,7 @@ powers :: SampledWavePower -> Vector
 powers (SampledWP dmap) = let (_, (p:ps)) = unzip (nl2List dmap)
                           in fromList2Vec p ps
 
-fromWavesPowers :: NonEmptyList Double -> NonEmptyList Word -> SampledWavePower
+fromWavesPowers :: NonEmptyList PowerVal -> NonEmptyList WaveVal -> SampledWavePower
 fromWavesPowers pwrs wvs =
     if (lengthNL pwrs) /= (lengthNL wvs)
     then let errmsg = "number of powers do not match to number of waves"
@@ -40,7 +41,7 @@ fromWavesPowers pwrs wvs =
     else let (n:ns) = zip (nl2List wvs) (nl2List pwrs)
          in SampledWP $! fromList2NL n ns
 
-wavesCheck :: SampledWavePower -> SampledWavePower -> (Bool, String, NonEmptyList Word, NonEmptyList Word)
+wavesCheck :: SampledWavePower -> SampledWavePower -> (Bool, String, NonEmptyList WaveVal, NonEmptyList WaveVal)
 wavesCheck a b =
     let aw = wavelengths a
         bw = wavelengths b
@@ -78,22 +79,22 @@ instance BinaryOps SampledWavePower where
                 in fromWavesPowers npwrs aw
 
 
-minmaxPower :: ([Double] -> Double) -> SampledWavePower -> Double
-minmaxWavelength :: ([Word] -> Word) -> SampledWavePower -> Word
+minmaxPower :: ([PowerVal] -> PowerVal) -> SampledWavePower -> PowerVal
+minmaxWavelength :: ([WaveVal] -> WaveVal) -> SampledWavePower -> WaveVal
 
 minmaxPower f dmap = let ps = vec2List (powers dmap) in f ps
 
 minmaxWavelength f dmap = let ps = nl2List (wavelengths dmap) in f ps
 
-maxPower :: SampledWavePower -> Double
+maxPower :: SampledWavePower -> PowerVal
 maxPower a = minmaxPower maximum a
-minPower :: SampledWavePower -> Double
+minPower :: SampledWavePower -> PowerVal
 minPower a = minmaxPower minimum a
 
-maxWavelength :: SampledWavePower -> Word
+maxWavelength :: SampledWavePower -> WaveVal
 maxWavelength a = minmaxWavelength maximum a
 
-minWavelength :: SampledWavePower -> Word
+minWavelength :: SampledWavePower -> WaveVal
 minWavelength a = minmaxWavelength minimum a
 
 zeroLike :: SampledWavePower -> SampledWavePower
@@ -105,7 +106,7 @@ zeroLike a =
 
 
 -- interpolate a spectral power distribution
-interpolate :: SampledWavePower -> (Double, Double) -> SampledWavePower
+interpolate :: SampledWavePower -> (PowerVal, PowerVal) -> SampledWavePower
 interpolate b (mn, mx) =
     let minmaxer f = f [mn, mx]
         amin = minmaxer minimum
@@ -121,7 +122,7 @@ interpolate b (mn, mx) =
 
 -- clamp a spectral power distribution
 
-clamp :: SampledWavePower -> (Double, Double) -> SampledWavePower
+clamp :: SampledWavePower -> (PowerVal, PowerVal) -> SampledWavePower
 clamp a (mn, mx) =
     let ps = powers a
         clamper p = Ut.clamp p mn mx
@@ -133,7 +134,7 @@ clamp a (mn, mx) =
 normalize :: SampledWavePower -> SampledWavePower
 normalize a = interpolate a (0.0, 1.0)
 
-evaluateWave :: Word -> SampledWavePower -> Double
+evaluateWave :: WaveVal -> SampledWavePower -> PowerVal
 
 evaluateWave wave b =
     -- in range

@@ -13,6 +13,7 @@ import GHC.Float
 nbCIESamples :: Word
 nbCIESamples = 471
 
+
 -- X spectral values for CIE
 cieX :: NonEmptyList Double
 cieX = fromList2NL 0.0001299000 [
@@ -828,12 +829,13 @@ cieYIntegral = 106.856895
 spectralSampleStride :: Word
 spectralSampleStride = 5
 spectralSampleNb :: Word
-spectralSampleNb = 30
+spectralSampleNb = 60
 visibleWavelengthStart :: Word
-visibleWavelengthStart = 380
+visibleWavelengthStart = 400
 visibleWavelengthEnd :: Word
-visibleWavelengthEnd = 720
+visibleWavelengthEnd = 700
 
+-- rgb data
 rgb2SpectLambda :: NonEmptyList Double
 rgb2SpectLambda = fromList2NL 380.0 [
     390.967743, 401.935486, 412.903229,

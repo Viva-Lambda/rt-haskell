@@ -78,19 +78,17 @@ fromRGB r g b t =
                     in add zspd3 (multiplyS spec2 (b1 - b2))
         spval = case t of
                     REFLECTANCE ->
-                        let reflZspd = if cond1
-                                       then condfn whiter r g b normalCyanR normalBlueR normalGreenR
-                                       else if cond2
-                                            then condfn whiter g r b normalMagentaR normalBlueR normalRedR
-                                            else condfn whiter b g r normalYellowR normalGreenR normalRedR
+                        let reflZspd
+                                | cond1 = condfn whiter r g b normalCyanR normalBlueR normalGreenR
+                                | cond2 = condfn whiter g r b normalMagentaR normalBlueR normalRedR
+                                | otherwise = condfn whiter b g r normalYellowR normalGreenR normalRedR
                         in multiplyS reflZspd 0.94
         --
                     ILLUMINANT ->
-                        let illumZspd = if cond1
-                                        then condfn whitei r g b normalCyanI normalBlueI normalGreenI
-                                        else if cond2
-                                             then condfn whitei g r b normalMagentaI normalBlueI normalRedI
-                                             else condfn whitei b g r normalYellowI normalGreenI normalRedI
+                        let illumZspd = 
+                                | cond1 = condfn whitei r g b normalCyanI normalBlueI normalGreenI
+                                | cond2 = condfn whitei g r b normalMagentaI normalBlueI normalRedI
+                                | otherwise = condfn whitei b g r normalYellowI normalGreenI normalRedI
                         in multiplyS illumZspd 0.86445
 
     -- clamp spd value
