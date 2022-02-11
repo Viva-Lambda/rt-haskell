@@ -161,5 +161,3 @@ evaluateWave wave b =
                      msg3 = show (minWavelength b)
                      msg4 = show (maxWavelength b)
                  in traceStack (msg ++ msg2 ++ msg3 ++ " and " ++ msg4) 0.0
-
-

@@ -213,11 +213,10 @@ xyzAverageSpectrum :: CIETrichroma -> SampledWavePower
 xyzAverageSpectrum a =
     let lambdaStart = word2Float visibleWavelengthStart
         lambdaEnd = word2Float visibleWavelengthEnd
-        mapfn i = let nSpectralSamples = word2Float spectralSampleNb
-                      wl0 = mix ((word2Float i) / nSpectralSamples)
-                              lambdaStart lambdaEnd
-                      wl1 = mix ((word2Float (i + 1)) / nSpectralSamples) 
-                              lambdaStart lambdaEnd
+        nSpectralSamples = word2Float spectralSampleNb
+        wavefunc i = mix ((word2Float i) / nSpectralSamples) lambdaStart lambdaEnd
+        mapfn i = let wl0 = wavefunc i
+                      wl1 = wavefunc (i + 1)
                       averagefn pwrs = averagePowerWaves pwrs cieLambda wl0 wl1
                   in case a of
                         CIE_X -> averagefn cieX
@@ -225,7 +224,7 @@ xyzAverageSpectrum a =
                         CIE_Z -> averagefn cieZ
         lst = [0..spectralSampleNb]
         (x:xs) = map mapfn lst
-        (w:ws) = map word2Float lst
+        (w:ws) = map wavefunc lst
     in fromWavesPowers (fromList2NL x xs) (fromList2NL w ws)
 
 
@@ -242,11 +241,10 @@ rgb2Spect :: Rgb2Spect -> SampledWavePower
 rgb2Spect a =
     let lambdaStart = word2Float visibleWavelengthStart
         lambdaEnd = word2Float visibleWavelengthEnd
-        mapfn i = let nSpectralSamples = word2Float spectralSampleNb
-                      wl0 = mix ((word2Float i) / nSpectralSamples) 
-                              lambdaStart lambdaEnd
-                      wl1 = mix ((word2Float (i + 1)) / nSpectralSamples) 
-                              lambdaStart lambdaEnd
+        nSpectralSamples = word2Float spectralSampleNb
+        wavefunc i = mix ((word2Float i) / nSpectralSamples) lambdaStart lambdaEnd
+        mapfn i = let wl0 = wavefunc i
+                      wl1 = wavefunc (i + 1)
                       averagefn pwrs = averagePowerWaves pwrs rgb2SpectLambda wl0 wl1
                   in case a of
                         REFL_WHITE -> averagefn rgbRefl2SpectWhite
@@ -265,7 +263,7 @@ rgb2Spect a =
                         ILLUM_BLUE -> averagefn rgbIllum2SpectBlue
         lst = [0..spectralSampleNb]
         (x:xs) = map mapfn lst
-        (w:ws) = map word2Float lst
+        (w:ws) = map wavefunc lst
     in fromWavesPowers (fromList2NL x xs) (fromList2NL w ws)
 
 

@@ -88,7 +88,7 @@ printColor :: IO ()
 printColor = do
     tstart <- getCurrentTime
     g <- newStdGen
-    choice <- return 12
+    choice <- return 11
     imD <- loadImages choice ["./earthmap.jpg", "./demotic.jpg"]
     (smpl, (imw, imh), ps) <- traceScene g imD choice
     -- print pixCoords

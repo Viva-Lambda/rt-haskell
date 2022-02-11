@@ -44,12 +44,13 @@ pixSpectrum2RGB pspec sample_nb =
        then traceStack nanError zeroV3
        else case pspec of
                  PixSpecSampled s -> 
-                    let scaledwp = mfn (sampled s)
+                    let -- scaledwp = mfn (sampled s)
+                        scaledwp = sampled s
                         scaledSpectrum = SSpec { 
                                  spectrumType = spectrumType s,
                                  sampled = scaledwp
                                  }
-                    in toRGB $! scaledSpectrum
+                    in toRGB scaledSpectrum
                  PixSpecTrichroma (r,g,b) -> mfn (fromList2Vec r [g, b])
 
 writeColor :: PixelSpectrum -> Int -> String
@@ -62,7 +63,9 @@ writeColor pspec sample_nb =
                     nv = nanCheck False $! multiplyS nsv 256.0
                 in vecToInt nv
             PixSpecSampled _ ->
-                let nsv = nanCheck False $! clampV sv 0.0 0.999
+                let
+                    -- svgamma = nanCheck False $! vecScalarOp sqrt sv
+                    nsv = nanCheck False $! clampV sv 0.0 0.999
                     nv = nanCheck False $! multiplyS nsv 256.0
                 in vecToInt nv
     in unwords $! map show nvints

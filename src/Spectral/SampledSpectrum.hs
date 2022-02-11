@@ -40,7 +40,7 @@ zeroLikeSpectrum a = SSpec {spectrumType = spectrumType a,
 zeroSampledSpectrum :: SampledSpectrum
 zeroSampledSpectrum = SSpec {
         spectrumType = REFLECTANCE,
-        sampled = SampledWP (fromList2NL (0, -1.0) [])
+        sampled = SampledWP (fromList2NL (0.0, -1.0) [])
     }
 
 -- create spd from rgb values
@@ -48,24 +48,24 @@ fromRGB :: Double -> Double -> Double -> SpectrumType -> SampledWavePower
 fromRGB r g b t =
     let zspd = zeroLike spdRGBRefl2SpectWhite
         --
-        normalWhiteR = normalize spdRGBRefl2SpectWhite
-        normalCyanR = normalize spdRGBRefl2SpectCyan
-        normalBlueR = normalize spdRGBRefl2SpectBlue
-        normalMagentaR = normalize spdRGBRefl2SpectMagenta
-        normalGreenR = normalize spdRGBRefl2SpectGreen
-        normalYellowR = normalize spdRGBRefl2SpectYellow
-        normalRedR = normalize spdRGBRefl2SpectRed
+        whiteR = spdRGBRefl2SpectWhite
+        cyanR = spdRGBRefl2SpectCyan
+        blueR = spdRGBRefl2SpectBlue
+        magentaR = spdRGBRefl2SpectMagenta
+        greenR = spdRGBRefl2SpectGreen
+        yellowR = spdRGBRefl2SpectYellow
+        redR = spdRGBRefl2SpectRed
 
-        normalWhiteI = normalize spdRGBRefl2SpectWhite
-        normalCyanI = normalize spdRGBRefl2SpectCyan
-        normalBlueI = normalize spdRGBRefl2SpectBlue
-        normalMagentaI = normalize spdRGBRefl2SpectMagenta
-        normalGreenI = normalize spdRGBRefl2SpectGreen
-        normalYellowI = normalize spdRGBRefl2SpectYellow
-        normalRedI = normalize spdRGBRefl2SpectRed
+        whiteI = spdRGBIllum2SpectWhite
+        cyanI = spdRGBIllum2SpectCyan
+        blueI = spdRGBIllum2SpectBlue
+        magentaI = spdRGBIllum2SpectMagenta
+        greenI = spdRGBIllum2SpectGreen
+        yellowI = spdRGBIllum2SpectYellow
+        redI = spdRGBIllum2SpectRed
 
-        whiter s = multiplyS normalWhiteR s
-        whitei s = multiplyS normalWhiteI s
+        whiter s = multiplyS whiteR s
+        whitei s = multiplyS whiteI s
         cond1 = r <= g && r <= b
         cond2 = g <= r && g <= b
 
@@ -79,16 +79,16 @@ fromRGB r g b t =
         spval = case t of
                     REFLECTANCE ->
                         let reflZspd
-                                | cond1 = condfn whiter r g b normalCyanR normalBlueR normalGreenR
-                                | cond2 = condfn whiter g r b normalMagentaR normalBlueR normalRedR
-                                | otherwise = condfn whiter b g r normalYellowR normalGreenR normalRedR
+                                | cond1 = condfn whiter r g b cyanR blueR greenR
+                                | cond2 = condfn whiter g r b magentaR blueR redR
+                                | otherwise = condfn whiter b g r yellowR greenR redR
                         in multiplyS reflZspd 0.94
         --
                     ILLUMINANT ->
                         let illumZspd
-                                | cond1 = condfn whitei r g b normalCyanI normalBlueI normalGreenI
-                                | cond2 = condfn whitei g r b normalMagentaI normalBlueI normalRedI
-                                | otherwise = condfn whitei b g r normalYellowI normalGreenI normalRedI
+                                | cond1 = condfn whitei r g b cyanI blueI greenI
+                                | cond2 = condfn whitei g r b magentaI blueI redI
+                                | otherwise = condfn whitei b g r yellowI greenI redI
                         in multiplyS illumZspd 0.86445
 
     -- clamp spd value
@@ -157,24 +157,23 @@ instance Colorable SampledSpectrum where
             ) = let wstart = minWavelength a
                     wend = maxWavelength a
                     waves = wavelengths a
-                    wsize = int2Word $! lengthNL waves
-                    sxNorm = normalize $! resampleFromWaves spdX wstart wend wsize
-                    syNorm = normalize $! resampleFromWaves spdY wstart wend wsize
-                    szNorm = normalize $! resampleFromWaves spdZ wstart wend wsize
+                    wsize = lengthNL waves
                     foldfn acc wave = let (x, y, z) = acc
-                                          sx = evaluateWave wave sxNorm
-                                          sy = evaluateWave wave syNorm
-                                          sz = evaluateWave wave szNorm
+                                          sx = evaluateWave wave spdX
+                                          sy = evaluateWave wave spdY
+                                          sz = evaluateWave wave spdZ
                                           p = evaluateWave wave a
                                       in (x + sx * p, y + sy * p, z + sz * p)
                     (x, y, z) = foldlNL foldfn (0.0, 0.0, 0.0) waves
-                    ciey = cieYIntegral * (word2Double wsize)
-                    waveScale = (float2Double (wend - wstart)) / ciey
+                    ciey = cieYIntegral * (int2Double wsize)
+                    lambdaStart = word2Float visibleWavelengthStart
+                    lambdaEnd = word2Float visibleWavelengthEnd
+                    waveScale = (float2Double (lambdaEnd - lambdaStart)) / ciey
                 in fromList2Vec (x * waveScale) [y * waveScale, z * waveScale]
     toRGB a = 
         let xyzval = toXYZ a
-            rgbval = xyzval
-            -- rgbval = xyz2rgb_pbr xyzval
+            -- rgbval = xyzval
+            rgbval = xyz2rgb_pbr xyzval
             -- rgbval = xyz2rgb_cie xyzval
             -- rgbval = xyz2rgb_srgb xyzval
             msg x r = let str = "xyz or rgb value contains nans :: XYZ "
