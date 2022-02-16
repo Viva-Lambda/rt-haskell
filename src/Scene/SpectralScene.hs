@@ -88,11 +88,11 @@ cornellBoxSpectral gen =
                                                xyWhiteWall, lightR]}
     -- in error $ "\nN: " ++ show b2 ++ "\nR: " ++ show b2rot ++ "\nT: " ++ show b2trans
     in SceneVals {
-        img_width = 256,
+        img_width = 128,
         aspect_ratio = aspectRatio,
-        img_height = getImgHeight 256 aspectRatio,
-        nb_samples = 10,
-        bounce_depth = 5,
+        img_height = getImgHeight 128 aspectRatio,
+        nb_samples = 3,
+        bounce_depth = 2,
         cam_look_from = cfrom,
         cam_look_to = cto,
         cam_vfov = cvfov,

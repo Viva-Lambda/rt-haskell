@@ -188,7 +188,7 @@ mkColor coord rng cmr scene =
                             lambdaStart = visibleWavelengthStart
                             lambdaEnd = visibleWavelengthEnd
                             wrange = [lambdaStart,
-                                        (lambdaEnd + sampleStep)..lambdaEnd]
+                                      (lambdaStart + sampleStep)..lambdaEnd]
                             waveRange = map word2Float wrange
                             (wavePowers, ngen) = foldl fn ([], rgen) waveRange
                             (w:ws, powerVecs) = unzip wavePowers
