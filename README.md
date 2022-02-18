@@ -134,7 +134,9 @@ know when you are doing conversions between spectrum to trichromatic systems.
 Lastly the beware that spectral rendering takes much more time than its rgb
 equivalent. The spectral cornell box whose image can be found in the
 18-spectral branch took `3931.857353s` with 5 samples per pixel and 5 ray
-bounce limit for an image width 320 and aspect ratio 16:9.
+bounce limit for an image width 320 and aspect ratio 16:9. The sampled
+wavelength range is `[380, 720]`, and the sampling step size is 5, so we sampled
+power values for a list of wavelengths such as `[380, 385, ..., 720]`.
 
 ### Rotations
 
