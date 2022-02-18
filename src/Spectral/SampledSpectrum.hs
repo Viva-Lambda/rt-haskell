@@ -75,7 +75,7 @@ fromRGB r g b t =
                then let zspd3 = add zspd2 (multiplyS spec1 (b1 - s))
                     in add zspd3 (multiplyS spec2 (b2 - b1))
                else let zspd3 = add zspd2 (multiplyS spec1 (b2 - s))
-                    in add zspd3 (multiplyS spec2 (b1 - b2))
+                    in add zspd3 (multiplyS spec3 (b1 - b2))
         spval = case t of
                     REFLECTANCE ->
                         let reflZspd
@@ -162,12 +162,16 @@ instance Colorable SampledSpectrum where
                                           sx = evaluateWave wave spdX
                                           sy = evaluateWave wave spdY
                                           sz = evaluateWave wave spdZ
-                                          p = evaluateWave wave a
+                                          -- iv = evaluateWave wave spdIllumD65
+                                          iv = 1.0
+                                          p = iv * (evaluateWave wave a)
                                       in (x + sx * p, y + sy * p, z + sz * p)
                     (x, y, z) = foldlNL foldfn (0.0, 0.0, 0.0) waves
                     ciey = cieYIntegral * (int2Double wsize)
-                    lambdaStart = word2Float visibleWavelengthStart
-                    lambdaEnd = word2Float visibleWavelengthEnd
+                    -- lambdaStart = word2Float visibleWavelengthStart
+                    lambdaStart = wstart
+                    -- lambdaEnd = word2Float visibleWavelengthEnd
+                    lambdaEnd = wend
                     waveScale = (float2Double (lambdaEnd - lambdaStart)) / ciey
                 in fromList2Vec (x * waveScale) [y * waveScale, z * waveScale]
     toRGB a = 

@@ -95,6 +95,11 @@ repository.
 
 ![cornell-box-03](./images/cornellFinal.png)
 
+- Cornell box from 18-spectral
+
+![cornell-box-04](./images/spectral.png)
+
+
 
 ## Some Notes
 
@@ -106,6 +111,30 @@ true, if you can place your random generators efficiently, you can easily
 increase your performance. I simply concentrated on getting the images right.
 Do not be surprised if you find that some other arrangement of RNGs result in
 better performance.
+
+
+### Spectral Rendering
+
+Spectral rendering is done through use of spectral textures. The general idea
+is that material determines the behaviour of the surface distribution function
+and the texture determines its color space.
+You can see how spectral textures are used in `SpectralScene.hs`. The
+rendering function determines that the scene is spectral using the data type
+of the background. If the background is of type `PixSpecSampled` then it
+switches to spectral rendering.
+
+Another point is the setting spectral data from rgb color model. This done
+through the convenience function `fromRGBModel`. You can try specifying
+spectrum data directly as well. A `SampledSpectrum` is simply a non empty list
+of wavelength, power tuple along with a spectrum type specifier. This last
+call is not entirely necessary, since for all the operations between spectrums
+we don't care about the type of the spectrum, but it becomes convenient to
+know when you are doing conversions between spectrum to trichromatic systems.
+
+Lastly the beware that spectral rendering takes much more time than its rgb
+equivalent. The spectral cornell box whose image can be found in the
+18-spectral branch took `3931.857353s` with 5 samples per pixel and 5 ray
+bounce limit for an image width 320 and aspect ratio 16:9.
 
 ### Rotations
 
@@ -123,7 +152,7 @@ I hope to make the tracer as minimal but useful as possible.
 Here is a list of planned features:
 
 - Loading assets with obj files
-- Spectral rendering switch
+- Spectral rendering switch: done
 - BVH acceleration structure: done but not tested.
 - Multithreaded rendering: This is as easy as passing -N3 as option now, since
   most of the code is composed of pure functions.

@@ -94,7 +94,7 @@ averageSpectrum b waveStart waveEnd =
 resampleWavePower :: NonEmptyList PowerVal -> NonEmptyList WaveVal -> WaveVal -> WaveVal -> Word -> SampledWavePower
 resampleWavePower pwrs wvs lambdaMin lambdaMax outSize =
     let wsize = lengthNL wvs
-        wdelta = (lambdaMax - lambdaMin) / (word2Float (outSize - 1))
+        wdelta = (lambdaMax - lambdaMin) / (int2Float (wsize - 1))
         -- clamp wave length fn
         wlStartClamp index
             | index == (-1) = lambdaMin - wdelta
@@ -117,7 +117,7 @@ resampleWavePower pwrs wvs lambdaMin lambdaMax outSize =
                     | otherwise =
                         let starti = if waveValDDiff < (headNL wvs)
                                      then -1
-                                     else let intervalFn i = 
+                                     else let intervalFn i =
                                                 (getNL wvs i) <= waveValDDiff
                                           in findInterval wsize intervalFn
                             endi
@@ -219,23 +219,43 @@ xyzAverageSpectrum a =
                       wl1 = wavefunc (i + 1)
                       averagefn pwrs = averagePowerWaves pwrs cieLambda wl0 wl1
                   in case a of
-                        CIE_X -> averagefn cieX
-                        CIE_Y -> averagefn cieY
-                        CIE_Z -> averagefn cieZ
+                        CIE_X -> (averagefn cieX, wl0)
+                        CIE_Y -> (averagefn cieY, wl0)
+                        CIE_Z -> (averagefn cieZ, wl0)
         lst = [0..spectralSampleNb]
-        (x:xs) = map mapfn lst
-        (w:ws) = map wavefunc lst
+        ((x:xs), (w:ws)) = unzip $! map mapfn lst
     in fromWavesPowers (fromList2NL x xs) (fromList2NL w ws)
 
 
 spdX :: SampledWavePower
 spdX = xyzAverageSpectrum CIE_X
 
+spdCieX :: SampledWavePower
+spdCieX = fromWavesPowers cieX cieLambda
+
+
 spdY :: SampledWavePower
 spdY = xyzAverageSpectrum CIE_Y
 
+spdCieY :: SampledWavePower
+spdCieY = fromWavesPowers cieY cieLambda
+
 spdZ :: SampledWavePower
 spdZ = xyzAverageSpectrum CIE_Z
+
+spdCieZ :: SampledWavePower
+spdCieZ = fromWavesPowers cieZ cieLambda
+
+spdIllumD65 :: SampledWavePower
+spdIllumD65 = fromWavesPowers
+                    cieStandardIlluminant_D65_Powers
+                    cieStandardIlluminant_D65_Wavelengths
+
+spdIllumA :: SampledWavePower
+spdIllumA = fromWavesPowers
+                    cieStandardIlluminant_A_Powers
+                    cieStandardIlluminant_A_Wavelengths
+
 
 rgb2Spect :: Rgb2Spect -> SampledWavePower
 rgb2Spect a =
@@ -266,45 +286,74 @@ rgb2Spect a =
         (w:ws) = map wavefunc lst
     in fromWavesPowers (fromList2NL x xs) (fromList2NL w ws)
 
+rgb_to_spect :: Rgb2Spect -> SampledWavePower
+rgb_to_spect a =
+    let lambdaStart = word2Float visibleWavelengthStart
+        lambdaEnd = word2Float visibleWavelengthEnd
+        nSpectralSamples = word2Float spectralSampleNb
+        wavefunc i = mix ((word2Float i) / nSpectralSamples) lambdaStart lambdaEnd
+        mapfn i = let wl0 = wavefunc i
+                      wl1 = wavefunc (i + 1)
+                      hwl = (wl0 + wl1) / 2.0
+                      averagefn pwrs = averagePowerWaves pwrs rgb2SpectLambda wl0 wl1
+                  in case a of
+                        REFL_WHITE -> (averagefn rgbRefl2SpectWhite, hwl)
+                        REFL_CYAN -> (averagefn rgbRefl2SpectCyan, hwl)
+                        REFL_MAGENTA -> (averagefn rgbRefl2SpectMagenta, hwl)
+                        REFL_YELLOW -> (averagefn rgbRefl2SpectYellow, hwl)
+                        REFL_RED -> (averagefn rgbRefl2SpectRed, hwl)
+                        REFL_GREEN -> (averagefn rgbRefl2SpectGreen, hwl)
+                        REFL_BLUE -> (averagefn rgbRefl2SpectBlue, hwl)
+                        ILLUM_WHITE -> (averagefn rgbIllum2SpectWhite, hwl)
+                        ILLUM_CYAN -> (averagefn rgbIllum2SpectCyan, hwl)
+                        ILLUM_MAGENTA -> (averagefn rgbIllum2SpectMagenta, hwl)
+                        ILLUM_YELLOW -> (averagefn rgbIllum2SpectYellow, hwl)
+                        ILLUM_RED -> (averagefn rgbIllum2SpectRed, hwl)
+                        ILLUM_GREEN -> (averagefn rgbIllum2SpectGreen, hwl)
+                        ILLUM_BLUE -> (averagefn rgbIllum2SpectBlue, hwl)
+        lst = [0..spectralSampleNb]
+        ((x:xs), (w:ws)) = unzip $! map mapfn lst
+    in fromWavesPowers (fromList2NL x xs) (fromList2NL w ws)
+
 
 spdRGBRefl2SpectWhite :: SampledWavePower
-spdRGBRefl2SpectWhite = rgb2Spect REFL_WHITE
+spdRGBRefl2SpectWhite = rgb_to_spect REFL_WHITE
 
 spdRGBRefl2SpectCyan :: SampledWavePower
-spdRGBRefl2SpectCyan = rgb2Spect REFL_CYAN
+spdRGBRefl2SpectCyan = rgb_to_spect REFL_CYAN
 
 spdRGBRefl2SpectMagenta :: SampledWavePower
-spdRGBRefl2SpectMagenta = rgb2Spect REFL_MAGENTA
+spdRGBRefl2SpectMagenta = rgb_to_spect REFL_MAGENTA
 
 spdRGBRefl2SpectYellow :: SampledWavePower
-spdRGBRefl2SpectYellow = rgb2Spect REFL_YELLOW
+spdRGBRefl2SpectYellow = rgb_to_spect REFL_YELLOW
 
 spdRGBRefl2SpectRed :: SampledWavePower
-spdRGBRefl2SpectRed = rgb2Spect REFL_RED
+spdRGBRefl2SpectRed = rgb_to_spect REFL_RED
 
 spdRGBRefl2SpectGreen :: SampledWavePower
-spdRGBRefl2SpectGreen = rgb2Spect REFL_GREEN
+spdRGBRefl2SpectGreen = rgb_to_spect REFL_GREEN
 
 spdRGBRefl2SpectBlue :: SampledWavePower
-spdRGBRefl2SpectBlue = rgb2Spect REFL_BLUE
+spdRGBRefl2SpectBlue = rgb_to_spect REFL_BLUE
 
 spdRGBIllum2SpectWhite :: SampledWavePower
-spdRGBIllum2SpectWhite = rgb2Spect ILLUM_WHITE
+spdRGBIllum2SpectWhite = rgb_to_spect ILLUM_WHITE
 
 spdRGBIllum2SpectCyan :: SampledWavePower
-spdRGBIllum2SpectCyan = rgb2Spect ILLUM_CYAN
+spdRGBIllum2SpectCyan = rgb_to_spect ILLUM_CYAN
 
 spdRGBIllum2SpectBlue :: SampledWavePower
-spdRGBIllum2SpectBlue = rgb2Spect ILLUM_BLUE
+spdRGBIllum2SpectBlue = rgb_to_spect ILLUM_BLUE
 
 spdRGBIllum2SpectGreen :: SampledWavePower
-spdRGBIllum2SpectGreen = rgb2Spect ILLUM_GREEN
+spdRGBIllum2SpectGreen = rgb_to_spect ILLUM_GREEN
 
 spdRGBIllum2SpectRed :: SampledWavePower
-spdRGBIllum2SpectRed = rgb2Spect ILLUM_RED
+spdRGBIllum2SpectRed = rgb_to_spect ILLUM_RED
 
 spdRGBIllum2SpectMagenta :: SampledWavePower
-spdRGBIllum2SpectMagenta = rgb2Spect ILLUM_MAGENTA
+spdRGBIllum2SpectMagenta = rgb_to_spect ILLUM_MAGENTA
 
 spdRGBIllum2SpectYellow :: SampledWavePower
-spdRGBIllum2SpectYellow = rgb2Spect ILLUM_YELLOW
+spdRGBIllum2SpectYellow = rgb_to_spect ILLUM_YELLOW

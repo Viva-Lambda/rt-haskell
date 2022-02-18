@@ -13,6 +13,7 @@ import Spectral.SampledSpectrum
 import Spectral.SampledDistribution
 
 import Utility.Utils
+import Utility.BaseEnum
 
 import Debug.Trace
 
@@ -26,12 +27,19 @@ nanError = let m1 = "NanError :: Pixel spectrum"
                m3 = m2 ++ " only nan values. This should not be the case."
            in m3
 
-nanCheck :: Bool -> Vector -> Vector
-nanCheck isAll v
-    | isAll = if all isNaN (vec2List v)
-              then traceStack (nanError ++ show v) v
-              else v
-    | any isNaN (vec2List v) = traceStack (nanError ++ show v) v
+
+nanCheck :: NaNBehavior -> Vector -> Vector
+nanCheck (REPLACE_NAN e) v = let repNan d = if isNaN d then e else d
+                                 (x:xs) = map repNan (vec2List v)
+                             in fromList2Vec x xs
+
+nanCheck nb v
+    | nb == ALL_NAN = if all isNaN (vec2List v)
+                      then traceStack (nanError ++ show v) v
+                      else v
+    | nb == ANY_NAN = if any isNaN (vec2List v) 
+                      then traceStack (nanError ++ show v) v
+                      else v
     | otherwise = v
 
 
@@ -58,15 +66,16 @@ writeColor pspec sample_nb =
     let sv = pixSpectrum2RGB pspec sample_nb
         nvints = case pspec of
             PixSpecTrichroma _ ->
-                let svgamma = nanCheck False $! vecScalarOp sqrt sv
-                    nsv = nanCheck False $! clampV svgamma 0.0 0.999
-                    nv = nanCheck False $! multiplyS nsv 256.0
+                let svgamma = nanCheck ANY_NAN $! vecScalarOp sqrt sv
+                    nsv = nanCheck ANY_NAN $! clampV svgamma 0.0 0.999
+                    nv = nanCheck ANY_NAN $! multiplyS nsv 256.0
                 in vecToInt nv
             PixSpecSampled _ ->
                 let
-                    -- svgamma = nanCheck False $! vecScalarOp sqrt sv
-                    nsv = nanCheck False $! clampV sv 0.0 0.999
-                    nv = nanCheck False $! multiplyS nsv 256.0
+                    -- svgamma = nanCheck ZERO_NAN $! vecScalarOp sqrt sv
+                    svgamma = sv
+                    nsv = nanCheck ANY_NAN $! clampV svgamma 0.0 0.999
+                    nv = nanCheck ANY_NAN $! multiplyS nsv 256.0
                 in vecToInt nv
     in unwords $! map show nvints
     -- in traceStack (show sv) ""

@@ -47,9 +47,9 @@ cornellBoxSpectral gen =
         cvfov = 40.0 
         -- set up camera
         sceneC = mkCamTime cfrom cto camVUp cvfov aspectRatio 0.0 camFocDistance
-        whiteTexture = TextureCons (SpectT $! fromRGBModel 1.0 1.0 1.0 ILLUMINANT)
-        redTexture = TextureCons (SpectT $! fromRGBModel 1.0 0.0 0.0 ILLUMINANT)
-        greenTexture = TextureCons (SpectT $! fromRGBModel 0.0 1.0 0.0 ILLUMINANT)
+        whiteTexture = TextureCons (SpectT $! fromRGBModel 1.0 1.0 1.0 REFLECTANCE)
+        redTexture = TextureCons (SpectT $! fromRGBModel 1.0 0.1 0.1 REFLECTANCE)
+        greenTexture = TextureCons (SpectT $! fromRGBModel 0.1 1.0 0.1 REFLECTANCE)
         highWhiteTexture = TextureCons (SpectT $! fromRGBModel 15.0 15.0 15.0 ILLUMINANT)
 
         whiteMat = LambMat $! LambT whiteTexture
@@ -88,11 +88,11 @@ cornellBoxSpectral gen =
                                                xyWhiteWall, lightR]}
     -- in error $ "\nN: " ++ show b2 ++ "\nR: " ++ show b2rot ++ "\nT: " ++ show b2trans
     in SceneVals {
-        img_width = 128,
+        img_width = imageWidth,
         aspect_ratio = aspectRatio,
-        img_height = getImgHeight 128 aspectRatio,
-        nb_samples = 3,
-        bounce_depth = 2,
+        img_height = imageHeight,
+        nb_samples = 5,
+        bounce_depth = 5,
         cam_look_from = cfrom,
         cam_look_to = cto,
         cam_vfov = cvfov,

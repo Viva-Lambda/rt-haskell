@@ -7,6 +7,12 @@ type WaveVal = Float
 type PowerVal = Double
 
 
+data NaNBehavior = ALL_NAN
+                 | ANY_NAN
+                 | REPLACE_NAN Double
+                 | DONT_CARE_NAN
+                 deriving(Eq, Show)
+
 
 -- cie trichromatic
 data CIETrichroma = CIE_X
