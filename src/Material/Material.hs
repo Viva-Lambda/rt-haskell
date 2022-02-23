@@ -19,7 +19,6 @@ data Material = LambMat Lambertian
                 | DielMat Dielectric
                 | LightMat DiffuseLight
                 | IsotMat Isotropic
-                | SpectralMat SpectralMaterial
                 | NoMat
 
 type Color = ColorRecord
@@ -46,7 +45,7 @@ data Dielectric where
     DielRefIndices :: [Double] -> Dielectric
 
 schlickRef :: Double -> Double -> Double
-schlickRef cosi ref_idx =
+schlickRef !cosi !ref_idx =
     let r0 = (1.0 - ref_idx) / (1.0 + ref_idx)
         r1 = r0 * r0
         pw = (1.0 - cosi) ** 5

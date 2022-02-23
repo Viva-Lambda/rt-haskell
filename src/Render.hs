@@ -65,8 +65,8 @@ rayColor !rayr !world lights !background !depth =
              (hithrec, isHit, g1) = hit world gen ray 0.001 infty hrec
              HRec { point = recp,
                     pnormal = recnorm,
-                    hUV_u = uu,
-                    hUV_v = vv,
+                    hUVu = uu,
+                    hUVv = vv,
                     matPtr = m } = hithrec
          in if isHit
             then let sout = scatter g1 m ray hithrec (stype background)

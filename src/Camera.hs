@@ -6,7 +6,7 @@ module Camera where
 import Math3D.Vector
 import Math3D.CommonOps
 import Math3D.Ray
-import Math3D.Transform
+-- import Math3D.Transform
 import Math3D.Onb
 
 
@@ -87,8 +87,8 @@ getCameraTime gen c =
         RandResult (res, _) = randomDouble gen (t0, t1)
     in res
 
-getCameraLocatingParams :: RandomGen g => g -> Camera -> LocatingParams
-getCameraLocatingParams g c = (corigin c, getCameraOnb c, getCameraTime g c)
+-- getCameraLocatingParams :: RandomGen g => g -> Camera -> LocatingParams
+-- getCameraLocatingParams g c = (corigin c, getCameraOnb c, getCameraTime g c)
 
 -- camera for listing 69
 lookF :: Vector

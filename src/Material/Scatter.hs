@@ -83,7 +83,7 @@ instance Scatterer Material where
 
 
 instance Scatterer Lambertian where
-    emitted _ _ _ _ w cflag = emptyEmitted w cflag
+    emitted _ _ _ _ = emptyEmitted
 
     scatter !gen !a !inray !hrec _ =
         case a of
@@ -92,8 +92,8 @@ instance Scatterer Lambertian where
                     recn = pnormal hrec
                     RandResult (uvec, g) = randomUnitVector gen
                     sdir = add recn uvec
-                    hu = hUV_u hrec
-                    hv = hUV_v hrec
+                    hu = hUVu hrec
+                    hv = hUVv hrec
                 in if nearZeroVec sdir
                    then (g,
                     mkSRecord 
@@ -102,7 +102,7 @@ instance Scatterer Lambertian where
                              rtime = rtime inray,
                              wavelength = wavelength inray
                              })
-                        (False)
+                        False
                         (color t hu hv recp (wavelength inray))
                         (PdfCons $! CosNormalPdf recn), True
                         )
@@ -129,15 +129,15 @@ instance Scatterer Lambertian where
 
 
 instance Scatterer Metal where
-    emitted _ _ _ _ w cflag = emptyEmitted w cflag
+    emitted _ _ _ _  = emptyEmitted
 
     scatter !gen !c !inray !hrec _ =
         case c of
             (MetT a b) -> 
                 let recp = point hrec
                     recn = pnormal hrec
-                    hu = hUV_u hrec
-                    hv = hUV_v hrec
+                    hu = hUVu hrec
+                    hv = hUVv hrec
                     indir = toUnit $! direction inray
                     refdir = reflect indir recn
                     RandResult (uvec, g) = randomUnitSphere gen
@@ -149,9 +149,9 @@ instance Scatterer Metal where
                              rtime = rtime inray,
                              wavelength = wavelength inray
                              })
-                        (True)
+                        True
                         (color a hu hv recp (wavelength inray)) 
-                        (emptyPdfObj),
+                        emptyPdfObj,
                     True)
 
     scattering_pdf _ _ _ _ = 0.0
@@ -159,7 +159,7 @@ instance Scatterer Metal where
 
 instance Scatterer Dielectric where
     scattering_pdf _ _ _ _ = 0.0
-    emitted _ _ _ _ w cflag = emptyEmitted w cflag
+    emitted _ _ _ _  = emptyEmitted
     scatter !gen !a !inray !hrec _ =
         case a of
             (DielRefIndices rs) ->
@@ -200,14 +200,14 @@ instance Scatterer DiffuseLight where
 
 instance Scatterer Isotropic where
     scattering_pdf _ _ _ _ = 0.0
-    emitted _ _ _ _ w cflag = emptyEmitted w cflag
+    emitted _ _ _ _  = emptyEmitted
     scatter !gen !b !inray !hrec _ =
         case b of
             IsotTexture a ->
                 let RandResult (uvec, g) = randomUnitSphere gen
                     recp = point hrec
-                    hu = hUV_u hrec
-                    hv = hUV_v hrec
+                    hu = hUVu hrec
+                    hv = hUVv hrec
                     outray = Rd {origin = recp,
                                  direction = uvec,
                                  rtime = rtime inray,

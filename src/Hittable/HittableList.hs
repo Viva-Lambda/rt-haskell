@@ -51,15 +51,15 @@ instance Hittable HittableList where
         where bbox False t0 t1 tbox [] outBox = (outBox, True)
               bbox fbox t0 t1 tbox (htl:htls) outBox =
                 let (sbox, hasBox) = boundingBox htl t0 t1 tbox
-                in if hasBox == False
-                   then (tbox, False)
-                   else if fbox
-                        then bbox False t0 t1 sbox htls sbox
-                        else let obox = ssBox outBox sbox
-                             in bbox False t0 t1 sbox htls obox
+                    result 
+                        | not hasBox = (tbox, False)
+                        | fbox = bbox False t0 t1 sbox htls sbox
+                        | otherwise = let obox = ssBox outBox sbox
+                                      in bbox False t0 t1 sbox htls obox
+                in result
 
-    pdf_value hobjs gen orig dir =
-        let weight = 1.0 / (int2Double $ lengthNL (objects hobjs))
+    pdf_value !hobjs gen !orig !dir =
+        let weight = 1.0 / (int2Double $! lengthNL (objects hobjs))
             fn acc hobj = let RandResult (sumval, g) = acc 
                               resPval = pdf_value hobj g orig dir
                               res2 = rfmap (+ sumval) resPval
@@ -67,7 +67,7 @@ instance Hittable HittableList where
             objs = nl2List $! objects hobjs
         in foldl fn (RandResult (0.0, gen)) objs
 
-    hrandom hobjs gen orig =
+    hrandom !hobjs gen !orig =
         let upper = lengthNL $! objects hobjs
             -- randomInt produces random values in a closed range
             resIndex = randomInt gen (0, (upper - 1))

@@ -71,8 +71,8 @@ instance Hittable Sphere where
                                 hr = HRec {hdist = nroot, point = hpoint,
                                             pnormal = hnorm,
                                             matPtr = sm,
-                                            hUV_u = hu,
-                                            hUV_v = hv,
+                                            hUVu = hu,
+                                            hUVv = hv,
                                             isFront = False}
                              in (setFaceNormal hr ry hnorm, True, g)
                         | otherwise =
@@ -81,7 +81,7 @@ instance Hittable Sphere where
                                 (hu, hv) = getSphereUV hnorm
                                 hr = HRec {hdist = root, point = hpoint,
                                        pnormal = hnorm, matPtr = sm,
-                                       hUV_u = hu, hUV_v = hv,
+                                       hUVu = hu, hUVv = hv,
                                        isFront = False}
                             in (setFaceNormal hr ry hnorm, True, g)
                 in result

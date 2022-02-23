@@ -85,34 +85,40 @@ instance Hittable MovingSphere where
             discriminant = hb * hb - a * c
             ry = Rd {origin = ro, direction = rd, rtime = t0,
                      wavelength = rwave}
-        in if discriminant < 0
-           then (hrec, False, g)
-           else let sqd = sqrt discriminant
-                    root = (-hb - sqd) / a
-                    nroot = (-hb + sqd) / a
-                    cond1 = root < tmin || tmax < root
-                    cond2 = nroot < tmin || tmax < nroot
-                in if cond1
-                   then if cond2
-                        then (hrec, False, g)
-                        else let hpoint = at ry nroot
+            nrootfn dis = (-hb + (sqrt dis)) / a
+            rootfn dis = (-hb - (sqrt dis)) / a
+            discrimfn dis = let 
+                                root = rootfn dis
+                                nroot = nrootfn dis
+                                cond1 = root < tmin || tmax < root
+                                cond2 = nroot < tmin || tmax < nroot
+                            in (cond2 || cond1, cond1 && cond2)
+            result
+                | discriminant < 0 = (hrec, False, g)
+                | snd (discrimfn discriminant) = (hrec, False, g)
+                | fst (discrimfn discriminant) =
+                             let nroot = nrootfn discriminant
+                                 hpoint = at ry nroot
                                  hnorm = divideS (subtract hpoint sc) sr
                                  (hu, hv) = getSphereUV hnorm
                                  hr = HRec {hdist = nroot, point = hpoint,
                                             pnormal = hnorm,
                                             matPtr = sm,
-                                            hUV_u = hu,
-                                            hUV_v = hv,
+                                            hUVu = hu,
+                                            hUVv = hv,
                                             isFront = False}
                              in (setFaceNormal hr ry hnorm, True, g)
-                   else let hpoint = at ry root
+                | otherwise =
+                        let root = rootfn discriminant
+                            hpoint = at ry root
                             hnorm = divideS (subtract hpoint sc) sr
                             (hu, hv) = getSphereUV hnorm
                             hr = HRec {hdist = root, point = hpoint,
                                        pnormal = hnorm, matPtr = sm,
-                                       hUV_u = hu, hUV_v = hv,
+                                       hUVu = hu, hUVv = hv,
                                        isFront = False}
                         in (setFaceNormal hr ry hnorm, True, g)
+        in result
 
     boundingBox !s !time0 !time1 !ab =
         let ct0 = getMSphereCenter s time0
@@ -127,7 +133,7 @@ instance Hittable MovingSphere where
         let hr = emptyRec
             ry = Rd {origin = orig, direction = v,
                      rtime = 0.0, wavelength = 0}
-            (ahit, isHit, g1) = hit a g ry 0.001 (infty) hr
+            (ahit, isHit, g1) = hit a g ry 0.001 infty hr
         in if not isHit
            then RandResult (0.0, g1)
            else let cent = getMSphereCenter a 0.0

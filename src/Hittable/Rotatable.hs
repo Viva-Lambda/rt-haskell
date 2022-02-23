@@ -111,13 +111,16 @@ mkRotatable ptr angle axis =
         box = AaBbox {aabbMin = minv, aabbMax = maxv}
     in Rotate ptr angle axis hasAb box
 
+getThetaRotInvRotMat :: RotationAxis -> Double -> (Double, Matrix, Matrix)
+getThetaRotInvRotMat axis angle = 
+    let theta = degrees_to_radians angle
+    in (theta, toMatrix axis theta, toMatrix axis (-theta))
+
 
 instance Hittable Rotatable where
     hit (Rotate a angle axis _ _ _) g ry tmin tmax hrec =
         --
-        let theta = degrees_to_radians angle
-            rotmat = toMatrix axis theta
-            invrot = toMatrix axis (-theta)
+        let (theta, rotmat, invrot) = getThetaRotInvRotMat axis angle
             ro = origin ry
             rd = direction ry
             rro = rotateByMatrix ro rotmat -- rotated origin
@@ -131,10 +134,10 @@ instance Hittable Rotatable where
                     invn = rotateByMatrix (pnormal srec) invrot
                     HRec {
                         hdist = h1, point = h2, pnormal = h3, matPtr = h4,
-                        hUV_u = h5, hUV_v = h6, isFront = h7
+                        hUVu = h5, hUVv = h6, isFront = h7
                         } = srec
                     nsrec = HRec {hdist = h1, point = invp, pnormal = invn, 
-                                  matPtr = h4, hUV_u = h5, hUV_v = h6,
+                                  matPtr = h4, hUVu = h5, hUVv = h6,
                                   isFront = h7}
                 in (setFaceNormal nsrec nry invn, True, g1)
 
@@ -155,8 +158,6 @@ instance Hittable Rotatable where
     hrandom a g orig =
         case a of
             (Rotate b angle axis _ _ _) ->
-                let theta = degrees_to_radians angle
-                    rotmat = toMatrix axis theta
-                    invrot = toMatrix axis (-theta)
+                let (theta, rotmat, invrot) = getThetaRotInvRotMat axis angle
                     rro = rotateByMatrix orig rotmat -- rotated origin
                 in hrandom b g rro

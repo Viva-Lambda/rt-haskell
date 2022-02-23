@@ -8,15 +8,15 @@ import Material.Material
 
 
 data HitRecord = HRec {point :: Vector, pnormal :: Vector, hdist :: Double,
-                       hUV_u :: Double, hUV_v :: Double,
+                       hUVu :: Double, hUVv :: Double,
                        matPtr :: Material, isFront :: Bool}
 
 emptyRecord :: Int -> HitRecord
 emptyRecord nbDims = HRec {point = zeroV nbDims,
                            pnormal = zeroV nbDims,
                            hdist = 0.0,
-                           hUV_u = 0.0,
-                           hUV_v = 0.0,
+                           hUVu = 0.0,
+                           hUVv = 0.0,
                            matPtr = NoMat,
                            isFront = False}
 
@@ -27,20 +27,20 @@ setFaceNormal :: HitRecord -> Ray -> Vector -> HitRecord
 setFaceNormal HRec {point = p, 
                     pnormal = pv, 
                     hdist = t,
-                    hUV_u = u,
-                    hUV_v = v,
+                    hUVu = u,
+                    hUVv = v,
                     matPtr = m,
                     isFront = _} Rd {origin = ro, direction = rd} ov =
     let ffaceCond = (dot rd ov ) < 0.0
     in if ffaceCond
-       then HRec {point = p, pnormal = ov, hUV_u = u,
-                  hUV_v = v, hdist = t, matPtr = m,
+       then HRec {point = p, pnormal = ov, hUVu = u,
+                  hUVv = v, hdist = t, matPtr = m,
                   isFront = ffaceCond}
        else HRec {point = p,
                   pnormal = multiplyS ov (-1.0),
                   hdist = t,
                   matPtr = m,
-                  hUV_u = u,
-                  hUV_v = v,
+                  hUVu = u,
+                  hUVv = v,
                   isFront = ffaceCond
                   }

@@ -81,8 +81,7 @@ cornellBoxDemotic gen !bmp =
 
         -- boxes
         -- get locating parameters
-        loc = getCameraLocatingParams gen sceneC
-        (_, _, time) = loc
+        time = getCameraTime gen sceneC
         b1 = mkBox (zeroV3) (fromList2Vec 165.0 [ 330.0, 165.0]) metMat
         b1rot = mkRotatable b1 45.0 RY (show b1)
         b1off = fromList2Vec 265.0 [0.0, 295.0]

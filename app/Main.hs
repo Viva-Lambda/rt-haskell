@@ -4,6 +4,13 @@ module Main where
 -- options +RTS (enables statistics) -N2 (two threads) -p 
 -- the order of options is important
 
+-- generating documentation
+-- cd src | stack exec -- haddock --html Random.hs --odir=../docs/
+
+-- linting
+-- cd src | hlint . --report=../report.html
+
+
 import Render
 import Color.Pixel
 import Color.ColorIO
@@ -88,7 +95,7 @@ printColor :: IO ()
 printColor = do
     tstart <- getCurrentTime
     g <- newStdGen
-    choice <- return 11
+    choice <- return 7
     imD <- loadImages choice ["./earthmap.jpg", "./demotic.jpg"]
     (smpl, (imw, imh), ps) <- traceScene g imD choice
     -- print pixCoords

@@ -28,7 +28,7 @@ instance Eq Translatable where
     a == b = case a of
                 Translate _ _ an ->
                     case b of
-                        Translate _ _ bn -> (an == bn)
+                        Translate _ _ bn -> an == bn
 
 instance Hittable Translatable where
     hit (Translate a offset _) g !(Rd {origin = ro, 
@@ -43,10 +43,10 @@ instance Hittable Translatable where
            else let p = add (point srec) offset
                     HRec {
                         hdist = h1, point = h2, pnormal = h3, matPtr = h4,
-                        hUV_u = h5, hUV_v = h6, isFront = h7
+                        hUVu = h5, hUVv = h6, isFront = h7
                         } = srec
                     nsrec = HRec {hdist = h1, point = p, pnormal = h3, 
-                                  matPtr = h4, hUV_u = h5, hUV_v = h6,
+                                  matPtr = h4, hUVu = h5, hUVv = h6,
                                   isFront = h7}
                 in (setFaceNormal nsrec ry h3, True, g1)
 

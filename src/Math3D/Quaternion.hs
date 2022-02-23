@@ -4,13 +4,28 @@ module Math3D.Quaternion where
 import Math3D.Vector
 import Math3D.CommonOps
 
+data QuatComp = QuatR
+              | QuatX
+              | QuatY
+              | QuatZ
+              deriving (Eq, Show)
+
 data Quaternion = Quat {qR :: Double, qX :: Double,
                         qY :: Double, qZ :: Double} deriving(Eq, Show)
 
+getQuatComp :: QuatComp -> Quaternion -> Quaternion -> (Double, Double)
+getQuatComp QuatR q1 q2 = (qR q1, qR q2)
+getQuatComp QuatX q1 q2 = (qX q1, qX q2)
+getQuatComp QuatY q1 q2 = (qY q1, qY q2)
+getQuatComp QuatZ q1 q2 = (qZ q1, qZ q2)
+
+
 instance BinaryOps Quaternion where
     elementwiseOp _ f q1 q2 =
-        let {q1r = qR q1; q2r = qR q2; q1x = qX q1; q2x = qX q2;
-             q1y = qY q1; q2y = qY q2; q1z = qZ q1; q2z = qZ q2
+        let {(q1r, q2r) = getQuatComp QuatR q1 q2;
+             (q1x, q2x) = getQuatComp QuatX q1 q2;
+             (q1y, q2y) = getQuatComp QuatY q1 q2;
+             (q1z, q2z) = getQuatComp QuatZ q1 q2;
             }
         in Quat {qR = f q1r q2r, qX = f q1x q2x,
                  qY = f q1y q2y, qZ = f q1z q2z}
@@ -36,7 +51,7 @@ qVector :: Quaternion -> Vector
 qVector q = fromList2Vec (qX q) [qY q, qZ q]
 
 qScalar :: Quaternion -> Double
-qScalar q = qR q
+qScalar = qR
 
 fromSVec2Quaternion :: Double -> Vector -> Quaternion
 fromSVec2Quaternion s v =

@@ -26,23 +26,23 @@ emptyRGBRecord :: ColorRecord
 emptyRGBRecord = ColorRec { model = ColorRGB zeroV3 }
 
 stype :: ColorRecord -> ColorFlag
-stype a = case model a of
+stype !a = case model a of
                 ColorRGB _ -> RGB
                 ColorSpec (b, _) -> Spectral b
 
 -- obtain color data: we upcast everything to vector
 colorData :: ColorRecord -> Vector
-colorData a = case model a of
+colorData !a = case model a of
                 ColorRGB  v -> v
                 ColorSpec (_, (_,v)) -> fromList2Vec v []
 
 emptyModelLike :: ColorRecord -> ColorRecord
-emptyModelLike a = case model a of
+emptyModelLike !a = case model a of
                         ColorRGB v -> ColorRec {model = ColorRGB $! zeroLikeVector v}
                         ColorSpec (s, (w, _)) -> ColorRec {model = ColorSpec (s, (w, 0.0)) }
 
 colorModelCheck :: ColorRecord -> ColorRecord -> (Bool, String)
-colorModelCheck a b =
+colorModelCheck !a !b =
     let sa = stype a
         sb = stype b
         isEqual = case sa of
@@ -58,7 +58,7 @@ colorModelCheck a b =
     in (isEqual, msg1 ++ msg2 ++ " " ++ msg3 )
 
 wavelengthStr :: WaveVal -> WaveVal -> String
-wavelengthStr a b =
+wavelengthStr !a !b =
     let msg1 = "wavelengths are not same" 
         msg2 = " for given spectral powers"
         msg3 = ", this library is not"
@@ -71,6 +71,7 @@ wavelengthStr a b =
 
 
 instance BinaryOps ColorRecord where
+    {-# INLINE elementwiseOp #-}
     elementwiseOp str f a b =
         let (isSame, s) = colorModelCheck a b
         in if not isSame
@@ -121,5 +122,5 @@ instance BinaryOps ColorRecord where
 
 
 fromRGB :: Double -> Double -> Double -> ColorRecord
-fromRGB a b c = ColorRec { model = ColorRGB $! fromList2Vec a [b, c] }
+fromRGB !a !b !c = ColorRec { model = ColorRGB $! fromList2Vec a [b, c] }
 

@@ -22,20 +22,25 @@ compHitAabb i (AaBbox {aabbMin = a, aabbMax = b}) ray tmin tmax =
         tsecond = if tfirst == t1 then t0 else t1
         t_min = if tfirst > tmin then tfirst else tmin
         t_max = if tsecond < tmax then tsecond else tmax
-    in not (t_max <= t_min)
+    in t_max > t_min
 
 aabbHit :: Aabb -> Ray -> Double -> Double -> Bool
 aabbHit ab ray t_min t_max =
         let AaBbox {aabbMin = a, aabbMax = b} = ab
             lena = vsize a
-            isHit = foldl1 (&&) [compHitAabb i ab ray t_min t_max | i <- [0..(lena - 1)]]
+            foldfn [] = True
+            foldfn (x:xs) = (compHitAabb x ab ray t_min t_max) && foldfn xs
+            isHit = if lena == 0
+                    then False
+                    else foldfn [0..(lena - 1)]
+            -- foldl1 and [compHitAabb i ab ray t_min t_max | i <- [0..(lena - 1)]]
         in isHit
 
 -- surrounding box
 ssBox :: Aabb -> Aabb -> Aabb
 ssBox (AaBbox {aabbMin = a, aabbMax = b}) 
       (AaBbox {aabbMin = c, aabbMax = d}) =
-      let f el = vec2List el
+      let f = vec2List
           (mi:mn) = zipWith min (f a) (f c)
           (ma:mx) = zipWith max (f b) (f d)
       in AaBbox {aabbMin = fromList2Vec mi mn, aabbMax = fromList2Vec ma mx}

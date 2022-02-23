@@ -34,13 +34,13 @@ instance Hittable FlipFace where
                point = point srec,
                pnormal = pnormal srec,
                hdist = hdist srec,
-               hUV_u = hUV_u srec,
-               hUV_v = hUV_v srec,
+               hUVu = hUVu srec,
+               hUVv = hUVv srec,
                matPtr = matPtr srec,
                isFront = not $! isFront srec
                }, True, g1)
 
-    boundingBox (FlipHittable a _) tmn tmx ab = boundingBox a tmn tmx ab
+    boundingBox (FlipHittable a _) = boundingBox a
     pdf_value a g orig v = 
         case a of 
             FlipHittable b _ -> pdf_value b g orig v

@@ -68,7 +68,7 @@ vsize :: Vector -> Int
 vsize (VList v) = lengthNL v
 
 vget :: Vector -> Int -> Double
-vget !(VList v) !index = getNL v index
+vget (VList v) !index = getNL v index
 
 
 sizeError :: Vector -> Vector -> String -> String
@@ -94,10 +94,11 @@ vecScalarOp :: (Double -> Double) -> Vector -> Vector
 vecScalarOp f !v = let (b:bs) = map f (vec2List v) in fromList2Vec b bs
 
 nearZeroVec :: Vector -> Bool
-nearZeroVec (VList v) =
-    let vs = nl2List v
-        nzero = 1e-10
-    in foldl1 (&&) $! map ((< nzero) . abs) vs
+nearZeroVec (VList vs) =
+    let nzero = 1e-10
+        foldfn (x:[]) = x
+        foldfn (x:xs) = x && foldfn xs
+    in foldfn $! map ((< nzero) . abs) (nl2List vs)
 
 instance BinaryOps Vector where
     elementwiseOp str f a b = vecArithmeticOp str f a b

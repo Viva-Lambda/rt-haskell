@@ -13,13 +13,13 @@ onbSize :: OrthoNormalBase -> Int
 onbSize (Onb nl) = lengthNL nl
 
 onbSizeCheck :: OrthoNormalBase -> Int -> Either String Bool
-onbSizeCheck onb size =
+onbSizeCheck !onb !size =
     if onbSize onb < size
     then Left $ "ortho normal base have less than requested size " ++ show size
     else Right True
 
 vBasis :: OrthoNormalBase -> Vector
-vBasis onb = case onbSizeCheck onb 3 of
+vBasis !onb = case onbSizeCheck onb 3 of
                 Left s -> error s
                 Right _ -> let Onb olst = onb in getNL olst 1
 

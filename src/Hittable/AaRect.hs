@@ -167,7 +167,7 @@ isPointInRect v a =
     let qdist = quadDistance a
         (minp, maxp) = minMaxPointsRect a
         vs = vec2List v
-    in case findIndex (== qdist) vs of
+    in case elemIndex qdist vs of
             Nothing -> False
             Just index -> 
                 let indices = [0..((length vs) - 1)]
@@ -245,7 +245,7 @@ instance Hittable AaRect where
                         rv = ((bdist axinfo t ro rd) - b1) / (b2 - b1)
                         rp = at inray t
                         hr = HRec {hdist = t, point = rp, pnormal = anormal,
-                                   matPtr = m, hUV_u = ru, hUV_v = rv,
+                                   matPtr = m, hUVu = ru, hUVv = rv,
                                    isFront = False}
                     in (setFaceNormal hr inray anormal, True, g)
         in result
@@ -289,7 +289,7 @@ instance Hittable AaRect where
         let hr = emptyRec
             ry = Rd {origin = orig, direction = v, 
                      rtime = 0.0, wavelength = 0}
-            (ahit, isHit, g1) = hit a g ry 0.001 (infty) hr
+            (ahit, isHit, g1) = hit a g ry 0.001 infty hr
         in if not isHit
            then RandResult (0.0, g1)
            else let a1 = quadAlignedAxisA1 a

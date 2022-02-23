@@ -89,8 +89,8 @@ instance Hittable ConstantMedium where
                                        pnormal = hnorm,
                                        matPtr = mat,
                                        isFront = True, -- arbitrary
-                                       hUV_u = hUV_u nrec1,
-                                       hUV_v = hUV_v nrec1
+                                       hUVu = hUVu nrec1,
+                                       hUVv = hUVv nrec1
                                        } ,
                                          True, g4)
     

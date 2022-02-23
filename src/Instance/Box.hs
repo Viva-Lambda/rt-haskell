@@ -6,7 +6,6 @@ module Instance.Box where
 import Math3D.Vector
 import Math3D.CommonOps
 import Math3D.Ray
-import Math3D.Transform
 
 import Hittable.AaRect
 import Hittable.Hittable
@@ -86,23 +85,24 @@ instance Hittable Box where
                 where bbox False t0 t1 tbox [] outBox = (outBox, True)
                       bbox fbox t0 t1 tbox (htl:htls) outBox =
                         let (sbox, hasBox) = boundingBox htl t0 t1 tbox
-                        in if hasBox == False
-                           then (tbox, False)
-                           else if fbox
-                                then bbox False t0 t1 sbox htls sbox
-                                else let obox = ssBox outBox sbox
-                                     in bbox False t0 t1 sbox htls obox
+                            result
+                                | hasBox = (tbox, False)
+                                | fbox = bbox False t0 t1 sbox htls sbox
+                                | otherwise =
+                                    let obox = ssBox outBox sbox
+                                    in bbox False t0 t1 sbox htls obox
+                        in result
 
     pdf_value a g orig v =
         let hr = emptyRec
             ry = Rd {origin = orig, direction = v,
                      rtime = 0.0, wavelength = 0}
-            (ahit, isHit, g1) = hit a g ry 0.001 (infty) hr
+            (ahit, isHit, g1) = hit a g ry 0.001 infty hr
         in if not isHit
            then RandResult (0.0, g1)
            else let hp = point ahit
                     rects = boxSides a
-                    compFn r = isPointInRect hp r
+                    compFn = isPointInRect hp
                     sideIndex = findIndex compFn rects
                 in case sideIndex of
                         Nothing -> RandResult (0.0, g1)

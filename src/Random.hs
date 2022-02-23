@@ -11,11 +11,14 @@ import Data.Functor
 import Utility.HelperTypes
 import Utility.BaseEnum
 
-
+{-|
+The result object to pass around between functions that depend on random state
+-}
 data RandomResult a g where
     RandResult :: RandomGen g => (a, g) -> RandomResult a g
 
-
+-- |The random function that produces a random value between given low and
+-- high values. It reorders the given range.
 randomFn :: (Random a, Ord a, RandomGen g) => g -> (a, a) -> RandomResult a g
 randomFn gen (!low, !high) = if low > high
                              then ranD high low
@@ -23,13 +26,14 @@ randomFn gen (!low, !high) = if low > high
     where ranD lval hval =
             let (a, g) = randomR (lval, hval) gen in RandResult (a, g)
 
-
+{- |Equivalent of fmap but for random results. It simply applies the given
+function to the result without changing its random state.
+-}
 rfmap :: RandomGen g => (a -> b) -> RandomResult a g -> RandomResult b g
 rfmap f a = case a of
                 (RandResult (b, g)) -> RandResult (f b, g)
 
-{-
-given a random result and a function that makes random result from two-tuple
+{- |given a random result and a function that makes random result from two-tuple
 and a two-tuple make a random result
 -}
 randomChain :: (Ord a, RandomGen g) => RandomResult a g -> (g -> (a, a) -> RandomResult a g) -> (a, a) -> RandomResult a g
