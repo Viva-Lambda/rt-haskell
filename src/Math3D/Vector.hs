@@ -102,7 +102,7 @@ nearZeroVec (VList vs) =
 
 instance BinaryOps Vector where
     elementwiseOp str f a b = vecArithmeticOp str f a b
-    elementwiseScalarOp _ f a = vecScalarOp f a
+    elementwiseScalarOp _ f a= vecScalarOp f a
     divide v e =
         let es = vec2List e
         in if 0.0 `elem` es

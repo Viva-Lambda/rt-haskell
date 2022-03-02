@@ -4,7 +4,7 @@ module Spectral.Fresnel where
 import Math3D.Vector
 import Math3D.CommonOps
 
-import Spectral.Wave
+import Physics.Wave
 
 
 cosTheta :: Vector -> Vector -> Double
@@ -168,7 +168,7 @@ getScatteringWave famp incidentLightWave
         direction = waveDir,
         -- see Hecht, p. 122 equation 4.18 for angular frequency
         angularFrequency = angularFrequency incidentLightWave,
-        time = time incidentLightWave
+        duration = duration incidentLightWave
         }
 
 

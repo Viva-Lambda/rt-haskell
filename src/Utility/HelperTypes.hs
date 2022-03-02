@@ -85,3 +85,4 @@ instance Eq a => Eq (NonEmptyList a) where
 
 instance Show a => Show (NonEmptyList a) where
     show a = show (nl2List a)
+
